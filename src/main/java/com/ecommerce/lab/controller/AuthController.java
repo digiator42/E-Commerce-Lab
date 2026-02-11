@@ -12,6 +12,7 @@ import jakarta.validation.Valid;
 
 import com.ecommerce.lab.model.User;
 import com.ecommerce.lab.dto.RegisterRequestDTO;
+import com.ecommerce.lab.dto.UserResponseDTO;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -24,7 +25,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<User> register(@Valid @RequestBody RegisterRequestDTO dto) {
+    public ResponseEntity<UserResponseDTO> register(@Valid @RequestBody RegisterRequestDTO dto) {
         return ResponseEntity.ok(userService.registerUser(dto));
     }
 }

@@ -3,6 +3,7 @@ package com.ecommerce.lab.service;
 import org.springframework.stereotype.Service;
 import com.ecommerce.lab.repository.UserRepository;
 import com.ecommerce.lab.dto.RegisterRequestDTO;
+import com.ecommerce.lab.dto.UserResponseDTO;
 import com.ecommerce.lab.exception.UserAlreadyExistsException;
 import com.ecommerce.lab.exception.UserNotFoundException;
 import com.ecommerce.lab.model.User;
@@ -11,9 +12,11 @@ import java.util.List;
 @Service
 public class UserService {
     private UserRepository userRepository;
+    private UserResponseDTO userResponseDTO;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, UserResponseDTO userResponseDTO) {
         this.userRepository = userRepository;
+        this.userResponseDTO = userResponseDTO;
     }
 
     public User createUser(User user) {
@@ -39,18 +42,19 @@ public class UserService {
         return null;
     }
 
-    public User registerUser(RegisterRequestDTO dto) {
+    public UserResponseDTO registerUser(RegisterRequestDTO dto) {
 
         if (userRepository.existsByEmail(dto.email())) {
             throw new UserAlreadyExistsException("Email is already registered");
         }
 
         User user = new User();
-
         user.setEmail(dto.email());
         user.setPassword(dto.password());
 
-        return userRepository.save(user);
+        userRepository.save(user);
+
+        return userResponseDTO.fromEntity(user);
     }
 
     public void deleteUser(Long id) {
