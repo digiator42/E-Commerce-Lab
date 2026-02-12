@@ -30,6 +30,11 @@ public class UserService {
         return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException());
     }
 
+    public User findByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new AuthenticationException("User not found"));
+    }
+
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
