@@ -3,8 +3,10 @@ package com.ecommerce.lab.service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.ecommerce.lab.repository.UserRepository;
+import com.ecommerce.lab.dto.LoginRequestDTO;
 import com.ecommerce.lab.dto.RegisterRequestDTO;
 import com.ecommerce.lab.dto.UserResponseDTO;
+import com.ecommerce.lab.exception.AuthenticationException;
 import com.ecommerce.lab.exception.UserAlreadyExistsException;
 import com.ecommerce.lab.exception.UserNotFoundException;
 import com.ecommerce.lab.model.User;
@@ -43,13 +45,13 @@ public class UserService {
         return null;
     }
 
-    public UserResponseDTO login(String email, String plainPassword) {
+    public UserResponseDTO login(LoginRequestDTO dto) {
 
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Invalid email or password"));
+        User user = userRepository.findByEmail(dto.email())
+                .orElseThrow(() -> new AuthenticationException("Invalid  email or password"));
 
-        if (!passwordEncoder.matches(plainPassword, user.getPassword())) {
-            throw new RuntimeException("Invalid email or password");
+        if (!passwordEncoder.matches(dto.password(), user.getPassword())) {
+            throw new AuthenticationException("Invalid email or password");
         }
 
         return UserResponseDTO.fromEntity(user);
@@ -62,6 +64,8 @@ public class UserService {
         }
 
         User user = new User();
+        user.setName(dto.name());
+        user.setUserName(dto.username());
         user.setEmail(dto.email());
         user.setPassword(passwordEncoder.encode(dto.password()));
 

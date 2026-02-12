@@ -10,6 +10,7 @@ import com.ecommerce.lab.service.UserService;
 
 import jakarta.validation.Valid;
 
+import com.ecommerce.lab.dto.LoginRequestDTO;
 import com.ecommerce.lab.dto.RegisterRequestDTO;
 import com.ecommerce.lab.dto.UserResponseDTO;
 
@@ -21,6 +22,11 @@ public class AuthController {
 
     public AuthController(UserService userService) {
         this.userService = userService;
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<UserResponseDTO> login(@Valid @RequestBody LoginRequestDTO dto) {
+        return ResponseEntity.ok(userService.login(dto));
     }
 
     @PostMapping("/register")
