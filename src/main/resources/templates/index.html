@@ -32,15 +32,21 @@
 
     <nav class="bg-white shadow-md sticky top-0 z-50">
         <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-            <h1 class="text-2xl font-bold text-blue-600 tracking-tight">MASTER<span class="text-gray-700">SHOP</span>
-            </h1>
+            <h1 class="text-2xl font-bold text-blue-600">GEMINI<span class="text-gray-700">SHOP</span></h1>
             <div class="space-x-6 flex items-center">
-                <a href="/" onclick="router(event)" class="hover:text-blue-500 font-medium transition">Home</a>
-                <a href="/products" onclick="router(event)" class="hover:text-blue-500 font-medium transition">Store</a>
-                <div id="user-area" class="flex items-center space-x-4">
-                    <a href="/login" onclick="router(event)"
-                        class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">Login</a>
+                <a href="/" onclick="router(event)" class="hover:text-blue-500 font-medium">Home</a>
+                <a href="/products" onclick="router(event)" class="hover:text-blue-500 font-medium">Store</a>
+
+                <div class="relative cursor-pointer" onclick="toggleCartDrawer()">
+                    <svg class="w-7 h-7 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                    </svg>
+                    <span id="cart-count"
+                        class="hidden absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">0</span>
                 </div>
+
+                <div id="user-area">...</div>
             </div>
         </div>
     </nav>

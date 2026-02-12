@@ -1,10 +1,49 @@
+let cartState = [];
+
+async function addToCart(productId) {
+    console.log(`Adding product ${productId} to cart...`);
+
+    const response = await fetch(`/api/cart/add/${productId}`, {
+        method: 'POST'
+    });
+
+    if (response.status === 401) {
+        alert("Please login first!");
+        window.history.pushState(null, "", "/login");
+        router();
+        return;
+    }
+
+    if (response.ok) {
+        updateCartBadge();
+    }
+}
+
+function updateCartBadge() {
+    const badge = document.getElementById('cart-count');
+    if (badge) {
+        let current = parseInt(badge.innerText) || 0;
+        badge.innerText = current + 1;
+        badge.classList.remove('hidden');
+    }
+}
+
 const ComponentStore = {
     templates: {},
 
     async load(name) {
         if (!this.templates[name]) {
-            const res = await fetch(`/components/${name}.html`);
-            this.templates[name] = await res.text();
+            try {
+                const res = await fetch(`/components/${name}.html`);
+                if (!res.ok) throw new Error(`Component ${name} not found (Status: ${res.status})`);
+                this.templates[name] = await res.text();
+            } catch (err) {
+                console.error("Template Load Error:", err);
+                // Return a fallback UI
+                return `<div class="p-8 text-red-500 bg-red-50 rounded-lg">
+                            <strong>Error:</strong> Could not load component "${name}".
+                        </div>`;
+            }
         }
         return this.templates[name];
     }
