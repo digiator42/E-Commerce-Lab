@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -28,11 +30,16 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(NoResourceFoundException.class)
-    public ResponseEntity<Map<String, String>> handleNoResource(NoResourceFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Map.of(
-                        "error", "Invalid Path",
-                        "message", "The endpoint does not exist."));
+    public ResponseEntity<?> handleNoResource(NoResourceFoundException ex, HttpServletRequest request)
+            throws Exception {
+        if (request.getRequestURI().startsWith("/api")) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of(
+                            "error", "Invalid Path",
+                            "message", "The API endpoint does not exist."));
+        }
+
+        throw ex;
     }
 
     @ExceptionHandler(UserAlreadyExistsException.class)
