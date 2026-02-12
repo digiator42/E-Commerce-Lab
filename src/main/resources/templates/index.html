@@ -36,7 +36,8 @@
             <div class="space-x-6 flex items-center">
                 <a href="/" onclick="router(event)" class="hover:text-blue-500 font-medium">Home</a>
                 <a href="/products" onclick="router(event)" class="hover:text-blue-500 font-medium">Store</a>
-                <a href="/login" onclick="router(event)" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium">Login</a>
+                <a href="/login" onclick="router(event)"
+                    class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium">Login</a>
 
                 <div class="relative cursor-pointer" onclick="toggleCartDrawer()">
                     <svg class="w-7 h-7 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -74,14 +75,18 @@
             <p class="text-gray-500 text-center mt-10">Your cart is empty.</p>
         </div>
 
-        <div class="p-6 border-t bg-gray-50">
-            <div class="flex justify-between mb-4 font-bold text-lg">
+        <div class="p-6 border-t bg-gray-50 space-y-3">
+            <div class="flex justify-between font-bold text-lg">
                 <span>Total</span>
                 <span id="cart-total">$0.00</span>
             </div>
             <button onclick="checkout()"
-                class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold hover:bg-black transition shadow-lg">
+                class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-black transition shadow-lg">
                 Checkout
+            </button>
+            <button onclick="clearAllItems()"
+                class="w-full text-gray-400 hover:text-red-500 text-sm font-medium transition py-1">
+                Clear Shopping Cart
             </button>
         </div>
     </div>

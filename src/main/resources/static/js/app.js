@@ -65,10 +65,29 @@ async function renderCartItems() {
     document.getElementById('cart-count').innerText = totalQty;
 }
 
-function removeFromCart(index) {
-    cartState.splice(index, 1);
-    updateCartBadge();
-    renderCartItems();
+async function removeFromCart(cartItemId) {
+    const response = await fetch(`/api/cart/remove/${cartItemId}`, {
+        method: 'DELETE'
+    });
+
+    if (response.ok) {
+        await syncCartWithServer(); // Refresh state from DB
+    }
+}
+
+async function clearAllItems() {
+    if (!confirm("Are you sure you want to empty your cart?")) return;
+
+    const response = await fetch('/api/cart/clear', {
+        method: 'DELETE'
+    });
+
+    if (response.ok) {
+        cartState = [];
+        renderCartItems();
+        updateCartBadge();
+        // toggleCartDrawer(); 
+    }
 }
 
 async function addToCart(productId) {
