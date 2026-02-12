@@ -12,11 +12,9 @@ import java.util.List;
 @Service
 public class UserService {
     private UserRepository userRepository;
-    private UserResponseDTO userResponseDTO;
 
-    public UserService(UserRepository userRepository, UserResponseDTO userResponseDTO) {
+    public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
-        this.userResponseDTO = userResponseDTO;
     }
 
     public User createUser(User user) {
@@ -54,7 +52,7 @@ public class UserService {
 
         userRepository.save(user);
 
-        return userResponseDTO.fromEntity(user);
+        return UserResponseDTO.fromEntity(user);
     }
 
     public void deleteUser(Long id) {
