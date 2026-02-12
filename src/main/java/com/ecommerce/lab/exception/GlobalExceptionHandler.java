@@ -34,4 +34,10 @@ public class GlobalExceptionHandler {
                         "error", "Invalid Path",
                         "message", "The endpoint does not exist."));
     }
+
+    @ExceptionHandler(UserAlreadyExistsException.class)
+    public ResponseEntity<Map<String, String>> handleUserExists(UserAlreadyExistsException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(Map.of("error", "Registration Failed", "message", ex.getMessage()));
+    }
 }
