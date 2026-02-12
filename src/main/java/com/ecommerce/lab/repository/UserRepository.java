@@ -3,8 +3,6 @@ package com.ecommerce.lab.repository;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -22,6 +20,4 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findAllByName(String userName);
 
     List<User> findAllByNameOrEmail(String name, String email);
-
-    Page<User> findByActiveTrue(Pageable pageable);
 }
