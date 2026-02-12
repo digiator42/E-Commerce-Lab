@@ -1,21 +1,90 @@
 let cartState = [];
+let isCartOpen = false;
+
+function toggleCartDrawer() {
+    const drawer = document.getElementById('cart-drawer');
+    const overlay = document.getElementById('cart-overlay');
+
+    isCartOpen = !isCartOpen;
+
+    if (isCartOpen) {
+        drawer.classList.remove('translate-x-full');
+        overlay.classList.remove('hidden');
+        setTimeout(() => overlay.classList.add('opacity-100'), 10);
+        renderCartItems();
+    } else {
+        drawer.classList.add('translate-x-full');
+        overlay.classList.remove('opacity-100');
+        setTimeout(() => overlay.classList.add('hidden'), 300);
+    }
+}
+
+async function renderCartItems() {
+    const container = document.getElementById('cart-items-list');
+    const totalEl = document.getElementById('cart-total');
+
+    if (cartState.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 text-center mt-10">Your cart is empty.</p>';
+        totalEl.innerText = '$0.00';
+        return;
+    }
+
+    let html = cartState.map((item, index) => `
+        <div class="flex items-center justify-between border-b pb-4">
+            <div>
+                <h4 class="font-bold text-sm">${item.name}</h4>
+                <p class="text-gray-500 text-xs">$${item.price.toFixed(2)}</p>
+            </div>
+            <div class="flex items-center space-x-2">
+                <button onclick="removeFromCart(${index})" class="text-red-500 hover:bg-red-50 p-1 rounded">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                </button>
+            </div>
+        </div>
+    `).join('');
+
+    container.innerHTML = html;
+
+    const total = cartState.reduce((sum, item) => sum + item.price, 0);
+    totalEl.innerText = `$${total.toFixed(2)}`;
+}
 
 async function addToCart(productId) {
-    console.log(`Adding product ${productId} to cart...`);
 
+    const productElement = event.target.closest('.group');
+    const name = productElement.querySelector('h3').innerText;
+    const price = parseFloat(productElement.querySelector('.text-2xl').innerText.replace('$', ''));
+
+    cartState.push({ id: productId, name: name, price: price });
+
+    updateCartBadge();
+    toggleCartDrawer();
+}
+
+async function addToCart(productId) {
     const response = await fetch(`/api/cart/add/${productId}`, {
         method: 'POST'
     });
 
     if (response.status === 401) {
-        alert("Please login first!");
+        alert("Please log in to add items to your cart.");
         window.history.pushState(null, "", "/login");
         router();
         return;
     }
 
     if (response.ok) {
+        await syncCartWithServer();
         updateCartBadge();
+        toggleCartDrawer();
+    }
+}
+
+async function syncCartWithServer() {
+    const res = await fetch('/api/cart');
+    if (res.ok) {
+        cartState = await res.json();
+        renderCartItems();
     }
 }
 
