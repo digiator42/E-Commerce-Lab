@@ -63,6 +63,10 @@ public class UserService {
             throw new UserAlreadyExistsException("Email is already registered");
         }
 
+        if (userRepository.existsByUserName(dto.username())) {
+            throw new UserAlreadyExistsException("Username is already taken");
+        }
+
         User user = new User();
         user.setName(dto.name());
         user.setUserName(dto.username());
