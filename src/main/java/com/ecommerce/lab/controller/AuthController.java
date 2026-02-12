@@ -10,7 +10,6 @@ import com.ecommerce.lab.service.UserService;
 
 import jakarta.validation.Valid;
 
-import com.ecommerce.lab.model.User;
 import com.ecommerce.lab.dto.RegisterRequestDTO;
 import com.ecommerce.lab.dto.UserResponseDTO;
 
