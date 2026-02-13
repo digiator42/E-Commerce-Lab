@@ -3,6 +3,8 @@ package com.ecommerce.lab.repository;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -18,4 +20,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findAllByName(String name);
 
     List<Product> findAllByNameOrBrand(String name, String brand);
+
+    Page<Product> findByNameContainingIgnoreCase(String name, Pageable pageable);
 }

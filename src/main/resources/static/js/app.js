@@ -1,5 +1,51 @@
 let cartState = [];
 let isCartOpen = false;
+let currentPage = 0;
+let currentSearch = "";
+let totalPages = 0;
+let searchTimeout;
+
+async function changePage(direction) {
+    currentPage += direction;
+    await fetchAndRenderProducts();
+}
+
+async function fetchAndRenderProducts() {
+    const container = document.getElementById('product-list-container');
+    const url = `/api/products?page=${currentPage}&size=6&search=${encodeURIComponent(currentSearch)}`;
+
+    window.history.pushState(null, "", url.substring(5)); 
+
+    const res = await fetch(url);
+    const data = await res.json(); // This is the Page object
+
+    totalPages = data.totalPages;
+
+    // Update Pagination Buttons
+    document.getElementById('prev-btn').disabled = data.first;
+    document.getElementById('next-btn').disabled = data.last;
+    document.getElementById('page-info').innerText = `Page ${data.number + 1} of ${data.totalPages}`;
+
+    const cardTemplate = await ComponentStore.load('product-card');
+
+    container.innerHTML = data.content.map(p => {
+        return cardTemplate
+            .replace(/{{name}}/g, p.name)
+            .replace(/{{description}}/g, p.description)
+            .replace(/{{price}}/g, p.price.toFixed(2))
+            .replace(/{{id}}/g, p.id);
+    }).join('');
+}
+
+async function handleSearch(event) {
+    currentSearch = event.target.value;
+    currentPage = 0; // Reset to first page on new search
+
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        fetchAndRenderProducts();
+    }, 300);
+}
 
 syncCartWithServer(); // Initial sync on page load
 
