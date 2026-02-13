@@ -356,6 +356,24 @@ const routes = {
 
         return template.replace('{{orderList}}', ordersHtml);
     },
+
+    '/product/:id': async (params) => {
+        const template = await ComponentStore.load('product-detail');
+        const res = await fetch(`/api/products/${params.id}`);
+
+        if (!res.ok) return `<h2>Product not found</h2>`;
+
+        const p = await res.json();
+
+        // Map data to template
+        return template
+            .replace(/{{name}}/g, p.name)
+            .replace(/{{description}}/g, p.description)
+            .replace(/{{price}}/g, p.price.toFixed(2))
+            .replace(/{{category}}/g, p.category.name)
+            .replace(/{{id}}/g, p.id);
+    },
+
     '/error': async () => {
         return await ComponentStore.load('404');
     }
@@ -370,6 +388,13 @@ async function router(event) {
     }
 
     const path = window.location.pathname;
+
+    if (path.startsWith('/product/')) {
+        const id = path.split('/')[2];
+        const html = await routes['/product/:id']({ id });
+        document.getElementById('content').innerHTML = html;
+        return;
+    }
     const viewFunc = routes[path] || routes['/error'];
 
     document.getElementById('content').innerHTML = '<div class="spinner">Loading...</div>';
