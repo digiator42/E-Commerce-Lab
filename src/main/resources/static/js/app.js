@@ -5,6 +5,32 @@ let currentSearch = "";
 let totalPages = 0;
 let searchTimeout;
 let currentCategory = null;
+let selectedRating = 0;
+
+function setRating(n) {
+    selectedRating = n;
+    const stars = document.querySelectorAll('#star-rating-input button');
+    stars.forEach((s, i) => {
+        s.style.color = i < n ? '#FBBF24' : '#D1D5DB'; // Yellow or Gray
+    });
+}
+
+async function submitReview(productId) {
+    const comment = document.getElementById('review-comment').value;
+    if (selectedRating === 0) return alert("Please select a star rating");
+
+    const res = await fetch(`/api/reviews/${productId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rating: selectedRating, comment: comment })
+    });
+
+    if (res.ok) {
+        location.reload();
+    } else {
+        alert("You must be logged in to review!");
+    }
+}
 
 async function filterCategory(categoryName) {
     currentCategory = categoryName;
@@ -299,8 +325,9 @@ const routes = {
     ` + categoryRes.map(cat => `
         <button onclick="filterCategory('${cat.name}')" 
             class="w-full text-left px-4 py-2 rounded-xl transition ${currentCategory === cat.name ? 'bg-blue-50 text-blue-600 font-bold' : 'text-gray-500 hover:bg-gray-50'}">
-            ${cat.name}
+            ${cat.icon} ${cat.name}
         </button>
+        
     `).join('');
 
         let finalHtml = template.replace('{{productList}}', productListHtml);
@@ -360,18 +387,27 @@ const routes = {
     '/product/:id': async (params) => {
         const template = await ComponentStore.load('product-detail');
         const res = await fetch(`/api/products/${params.id}`);
-
-        if (!res.ok) return `<h2>Product not found</h2>`;
-
         const p = await res.json();
 
-        // Map data to template
+        // HTML for the reviews list
+        const reviewsHtml = p.reviews.length > 0 ? p.reviews.map(rev => `
+        <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+            <div class="flex items-center justify-between mb-2">
+                <span class="font-bold text-sm text-gray-900">${rev.userEmail}</span>
+                <span class="text-yellow-400 font-bold">${'★'.repeat(rev.rating)}</span>
+            </div>
+            <p class="text-gray-600 text-sm">${rev.comment}</p>
+            <p class="text-[10px] text-gray-400 mt-2">${new Date(rev.date).toLocaleDateString()}</p>
+        </div>
+    `).join('') : '<p class="text-gray-400 italic">No reviews yet. Be the first!</p>';
+
         return template
             .replace(/{{name}}/g, p.name)
             .replace(/{{description}}/g, p.description)
             .replace(/{{price}}/g, p.price.toFixed(2))
-            .replace(/{{category}}/g, p.category.name)
-            .replace(/{{id}}/g, p.id);
+            .replace(/{{category}}/g, p.categoryName)
+            .replace(/{{id}}/g, p.id)
+            .replace('{{reviewsHtml}}', reviewsHtml);
     },
 
     '/error': async () => {
