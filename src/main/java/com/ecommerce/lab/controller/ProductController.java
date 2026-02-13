@@ -44,16 +44,26 @@ public class ProductController {
     @GetMapping
     public ResponseEntity<Page<ProductResponseDTO>> getAllProducts(
             @RequestParam(required = false) String search,
+            @RequestParam(required = false) String category,
             Pageable pageable) {
 
         Page<Product> productPage;
-        if (search != null && !search.isEmpty()) {
+
+        // Logic Tree for Filtering
+        if (search != null && !search.isEmpty() && category != null && !category.isEmpty()) {
+            // Filter by BOTH
+            productPage = productRepository.findByCategoryNameAndNameContainingIgnoreCase(category, search, pageable);
+        } else if (search != null && !search.isEmpty()) {
+            // Filter by SEARCH only
             productPage = productRepository.findByNameContainingIgnoreCase(search, pageable);
+        } else if (category != null && !category.isEmpty()) {
+            // Filter by CATEGORY only
+            productPage = productRepository.findByCategoryName(category, pageable);
         } else {
+            // No filters
             productPage = productRepository.findAll(pageable);
         }
 
         return ResponseEntity.ok(productPage.map(ProductResponseDTO::fromEntity));
     }
-
 }

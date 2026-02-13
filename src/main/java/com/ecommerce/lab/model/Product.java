@@ -24,7 +24,9 @@ public class Product {
     @Column(nullable = false)
     private Integer stock;
 
-    private String category;
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    private Category category;
 
     private String brand;
 

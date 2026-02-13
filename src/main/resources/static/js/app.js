@@ -4,6 +4,19 @@ let currentPage = 0;
 let currentSearch = "";
 let totalPages = 0;
 let searchTimeout;
+let currentCategory = null;
+
+async function filterCategory(categoryName) {
+    currentCategory = categoryName;
+    currentPage = 0;
+
+    document.querySelectorAll('#category-list button').forEach(btn => {
+        btn.classList.remove('bg-blue-50', 'text-blue-600', 'font-bold');
+    });
+    event.target.classList.add('bg-blue-50', 'text-blue-600', 'font-bold');
+
+    await fetchAndRenderProducts();
+}
 
 async function changePage(direction) {
     currentPage += direction;
@@ -12,9 +25,12 @@ async function changePage(direction) {
 
 async function fetchAndRenderProducts() {
     const container = document.getElementById('product-list-container');
-    const url = `/api/products?page=${currentPage}&size=6&search=${encodeURIComponent(currentSearch)}`;
 
-    window.history.pushState(null, "", url.substring(5)); 
+    let url = `/api/products?page=${currentPage}&size=6`;
+    if (currentSearch) url += `&search=${encodeURIComponent(currentSearch)}`;
+    if (currentCategory) url += `&category=${encodeURIComponent(currentCategory)}`;
+
+    window.history.pushState(null, "", url.substring(5));
 
     const res = await fetch(url);
     const data = await res.json(); // This is the Page object
@@ -255,13 +271,16 @@ const routes = {
     },
 
     '/products': async () => {
-        const [template, cardTemplate, res] = await Promise.all([
+        // Fetch everything in parallel
+        const [template, cardTemplate, productRes, categoryRes] = await Promise.all([
             ComponentStore.load('products'),
             ComponentStore.load('product-card'),
-            fetch('/api/products').then(r => r.json())
+            fetch(`/api/products?page=${currentPage}&size=6&search=${encodeURIComponent(currentSearch)}${currentCategory ? `&category=${encodeURIComponent(currentCategory)}` : ''}`).then(r => r.json()),
+            fetch('/api/categories').then(r => r.json())
         ]);
 
-        const productListHtml = res.content.map(p => {
+        // Product List
+        const productListHtml = productRes.content.map(p => {
             return cardTemplate
                 .replace(/{{name}}/g, p.name)
                 .replace(/{{description}}/g, p.description)
@@ -269,7 +288,28 @@ const routes = {
                 .replace(/{{id}}/g, p.id);
         }).join('');
 
-        return template.replace('{{productList}}', productListHtml);
+        // Category Sidebar HTML
+        const categoryHtml = `
+        <button onclick="filterCategory(null)" 
+            class="w-full text-left px-4 py-2 rounded-xl transition ${!currentCategory ? 'bg-blue-50 text-blue-600 font-bold' : 'text-gray-500 hover:bg-gray-50'}">
+            All Products
+        </button>
+    ` + categoryRes.map(cat => `
+        <button onclick="filterCategory('${cat.name}')" 
+            class="w-full text-left px-4 py-2 rounded-xl transition ${currentCategory === cat.name ? 'bg-blue-50 text-blue-600 font-bold' : 'text-gray-500 hover:bg-gray-50'}">
+            ${cat.name}
+        </button>
+    `).join('');
+
+        let finalHtml = template.replace('{{productList}}', productListHtml);
+
+        // We use a temporary DOM element to perform the sidebar injection before returning the string
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(finalHtml, 'text/html');
+        const catContainer = doc.getElementById('category-list');
+        if (catContainer) catContainer.innerHTML = categoryHtml;
+
+        return doc.body.innerHTML;
     },
 
     '/login': async () => {
