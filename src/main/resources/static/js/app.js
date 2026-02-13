@@ -49,7 +49,8 @@ async function fetchAndRenderProducts() {
             .replace(/{{name}}/g, p.name)
             .replace(/{{description}}/g, p.description)
             .replace(/{{price}}/g, p.price.toFixed(2))
-            .replace(/{{id}}/g, p.id);
+            .replace(/{{id}}/g, p.id)
+            .replace(/{{category}}/g, p.category);
     }).join('');
 }
 
@@ -285,7 +286,8 @@ const routes = {
                 .replace(/{{name}}/g, p.name)
                 .replace(/{{description}}/g, p.description)
                 .replace(/{{price}}/g, (p?.price ?? 0).toFixed(2))
-                .replace(/{{id}}/g, p.id);
+                .replace(/{{id}}/g, p.id)
+                .replace(/{{category}}/g, p.category);
         }).join('');
 
         // Category Sidebar HTML
