@@ -1,5 +1,6 @@
 package com.ecommerce.lab.controller;
 
+import java.security.Principal;
 import java.util.Collections;
 import java.util.Map;
 
@@ -59,5 +60,17 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<UserResponseDTO> register(@Valid @RequestBody RegisterRequestDTO dto) {
         return ResponseEntity.ok(userService.registerUser(dto));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(Principal principal, HttpServletRequest request) {
+        
+        SecurityContextHolder.clearContext();
+        
+        HttpSession session = request.getSession(true);
+        session.invalidate();
+
+        return ResponseEntity.ok(Map.of("message", "Logged out successfully"));
+
     }
 }

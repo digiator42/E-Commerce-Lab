@@ -228,6 +228,45 @@ const routes = {
 
     '/login': async () => {
         return await ComponentStore.load('login');
+    },
+
+    '/orders': async () => {
+        const template = await ComponentStore.load('orders');
+        const res = await fetch('/api/orders/my-orders');
+        const orders = await res.json();
+
+        if (orders.length === 0) {
+            return template.replace('{{orderList}}', '<p class="text-center py-10 text-gray-500">No orders found yet.</p>');
+        }
+
+        const ordersHtml = orders.map(order => `
+            <div class="bg-white border rounded-2xl p-6 shadow-sm mb-6">
+                <div class="flex justify-between items-center border-b pb-4 mb-4">
+                    <div>
+                        <p class="text-xs text-gray-400 uppercase font-bold">Order ID</p>
+                        <p class="font-mono text-sm">#ORD-${order.id}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-xs text-gray-400 uppercase font-bold">Date</p>
+                        <p class="text-sm">${new Date(order.orderDate).toLocaleDateString()}</p>
+                    </div>
+                </div>
+                <div class="space-y-3">
+                    ${order.items.map(item => `
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">${item.productName} (x${item.quantity})</span>
+                            <span class="font-medium">$${(item.priceAtPurchase * item.quantity).toFixed(2)}</span>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="border-t mt-4 pt-4 flex justify-between items-center">
+                    <span class="font-bold text-lg text-gray-900">Total Amount</span>
+                    <span class="text-2xl font-black text-blue-600">$${order.totalAmount.toFixed(2)}</span>
+                </div>
+            </div>
+        `).join('');
+
+        return template.replace('{{orderList}}', ordersHtml);
     }
 };
 
@@ -271,5 +310,18 @@ async function handleLogin(event) {
         router();
     } else {
         alert("Login failed! Check your credentials.");
+    }
+}
+
+async function handleLogout(event) {
+    const response = await fetch('/api/auth/logout', {
+        method: 'POST'
+    });
+    if (response.ok) {
+        alert("You have been logged out.");
+        window.history.pushState(null, "", "/login");
+        router();
+    } else {
+        alert("Logout failed. Please try again.");
     }
 }
