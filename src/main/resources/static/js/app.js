@@ -267,6 +267,9 @@ const routes = {
         `).join('');
 
         return template.replace('{{orderList}}', ordersHtml);
+    },
+    '/error': async () => {
+        return await ComponentStore.load('404');
     }
 };
 
@@ -279,7 +282,7 @@ async function router(event) {
     }
 
     const path = window.location.pathname;
-    const viewFunc = routes[path] || (() => '<h1>404 Not Found</h1>');
+    const viewFunc = routes[path] || routes['/error'];
 
     document.getElementById('content').innerHTML = '<div class="spinner">Loading...</div>';
 
