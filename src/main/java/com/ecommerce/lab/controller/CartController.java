@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ecommerce.lab.dto.CartItemDTO;
 import com.ecommerce.lab.model.CartItem;
 import com.ecommerce.lab.repository.CartRepository;
 import com.ecommerce.lab.service.CartService;
