@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,16 +31,25 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(NoResourceFoundException.class)
-    public ResponseEntity<?> handleNoResource(NoResourceFoundException ex, HttpServletRequest request)
-            throws Exception {
-        if (request.getRequestURI().startsWith("/api")) {
+    public Object handleNoResource(NoResourceFoundException ex, HttpServletRequest request) {
+        String uri = request.getRequestURI();
+
+        if (uri.startsWith("/api")) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of(
-                            "error", "Invalid Path",
-                            "message", "The API endpoint does not exist."));
+                            "error", "Not Found",
+                            "message", "The requested API endpoint does not exist."));
         }
 
-        throw ex;
+        // 2. Prevent infinite loops: If the request is for index.html or a file with an
+        // extension
+        // and it's still failing, don't forward again.
+        if (uri.equals("/index.html") || uri.contains(".")) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        // 3. For all other "fake" routes (like /products), forward to index.html
+        return new ModelAndView("forward:/index.html");
     }
 
     @ExceptionHandler(UserAlreadyExistsException.class)
