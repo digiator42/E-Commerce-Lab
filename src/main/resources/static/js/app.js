@@ -1,6 +1,8 @@
 let cartState = [];
 let isCartOpen = false;
 
+syncCartWithServer(); // Initial sync on page load
+
 function toggleCartDrawer() {
     const drawer = document.getElementById('cart-drawer');
     const overlay = document.getElementById('cart-overlay');
@@ -16,6 +18,54 @@ function toggleCartDrawer() {
         drawer.classList.add('translate-x-full');
         overlay.classList.remove('opacity-100');
         setTimeout(() => overlay.classList.add('hidden'), 300);
+    }
+}
+
+async function checkout() {
+    const checkoutBtn = event.target;
+
+    if (cartState.length === 0) return alert("Your cart is empty!");
+
+    // Prevent double clicks
+    checkoutBtn.disabled = true;
+    checkoutBtn.innerText = "Processing...";
+
+    try {
+        const response = await fetch('/api/orders/place', {
+            method: 'POST'
+        });
+
+        if (response.ok) {
+
+            cartState = [];
+
+            updateCartBadge();
+            toggleCartDrawer();
+
+            document.getElementById('content').innerHTML = `
+                <div class="text-center py-20 animate-fade-in">
+                    <div class="bg-green-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                    <h2 class="text-4xl font-black text-gray-900 mb-4">Success!</h2>
+                    <p class="text-gray-600 text-lg mb-8">Your order has been received and is being processed.</p>
+                    <button onclick="window.location.href='/products'; router(event);" class="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-black transition">
+                        Back to Shop
+                    </button>
+                </div>
+            `;
+            checkoutBtn.disabled = false;
+            checkoutBtn.innerText = "Checkout";
+        } else {
+            const error = await response.text();
+            alert("Checkout failed: " + error);
+            checkoutBtn.disabled = false;
+            checkoutBtn.innerText = "Checkout";
+        }
+    } catch (err) {
+        console.error("Checkout Error:", err);
+        checkoutBtn.disabled = false;
+        checkoutBtn.innerText = "Checkout";
     }
 }
 
@@ -91,18 +141,6 @@ async function clearAllItems() {
 }
 
 async function addToCart(productId) {
-
-    const productElement = event.target.closest('.group');
-    const name = productElement.querySelector('h3').innerText;
-    const price = parseFloat(productElement.querySelector('.text-2xl').innerText.replace('$', ''));
-
-    cartState.push({ id: productId, name: name, price: price });
-
-    updateCartBadge();
-    toggleCartDrawer();
-}
-
-async function addToCart(productId) {
     const response = await fetch(`/api/cart/add/${productId}`, {
         method: 'POST'
     });
@@ -122,6 +160,7 @@ async function addToCart(productId) {
 }
 
 async function syncCartWithServer() {
+    console.log("Syncing cart with server...");
     const res = await fetch('/api/cart');
     if (res.ok) {
         cartState = await res.json(); // This is now a List<CartItem>
