@@ -202,6 +202,34 @@ async function saveProduct(event) {
     }
 }
 
+async function switchAdminTab(tab) {
+
+    const isOrders = tab === 'orders';
+    document.getElementById('section-inventory').classList.toggle('hidden', isOrders);
+    document.getElementById('section-orders').classList.toggle('hidden', !isOrders);
+
+    document.getElementById('tab-inventory').className = !isOrders ? 'pb-4 px-2 border-b-2 border-blue-600 font-bold text-blue-600' : 'pb-4 px-2 text-gray-400 font-bold';
+    document.getElementById('tab-orders').className = isOrders ? 'pb-4 px-2 border-b-2 border-blue-600 font-bold text-blue-600' : 'pb-4 px-2 text-gray-400 font-bold';
+
+    if (isOrders) {
+        const res = await fetch('/api/admin/orders');
+        const orders = await res.json();
+
+        const tableBody = document.getElementById('admin-orders-table');
+        tableBody.innerHTML = orders.map(order => `
+            <tr class="border-b border-gray-50 hover:bg-gray-50">
+                <td class="py-4 px-6 font-mono text-sm">#ORD-${order.id}</td>
+                <td class="py-4 px-2 text-sm">${order.user.email}</td>
+                <td class="py-4 px-2 text-sm">${new Date(order.orderDate).toLocaleDateString()}</td>
+                <td class="py-4 px-2 font-bold text-green-600">$${order.totalAmount.toFixed(2)}</td>
+                <td class="py-4 px-2 text-xs text-gray-500">
+                    ${order.items.map(i => `${i.productName} (x${i.quantity})`).join(', ')}
+                </td>
+            </tr>
+        `).join('');
+    }
+}
+
 syncCartWithServer(); // Initial sync on page load
 
 function toggleCartDrawer() {

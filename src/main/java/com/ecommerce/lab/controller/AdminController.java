@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -98,6 +99,11 @@ public class AdminController {
             productRepository.save(product);
             return ResponseEntity.ok("Product updated successfully");
         }).orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/orders")
+    public ResponseEntity<List<Order>> getAllOrders() {
+        return ResponseEntity.ok(orderRepository.findAll(Sort.by(Sort.Direction.DESC, "orderDate")));
     }
 
     @GetMapping("/routes")

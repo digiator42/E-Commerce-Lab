@@ -26,10 +26,15 @@
     </div>
 
     <div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-        <div class="p-6 border-b border-gray-50">
-            <h3 class="text-xl font-bold text-gray-900">Inventory Management</h3>
+        <div class="flex space-x-8 border-b px-6 pt-4">
+            <button onclick="switchAdminTab('inventory')" id="tab-inventory"
+                class="pb-4 px-2 border-b-2 border-blue-600 font-bold text-blue-600">Inventory</button>
+            <button onclick="switchAdminTab('orders')" id="tab-orders"
+                class="pb-4 px-2 border-b-2 border-transparent text-gray-400 hover:text-gray-600 font-bold">Customer
+                Orders</button>
         </div>
-        <div class="overflow-x-auto">
+
+        <div id="section-inventory" class="block">
             <table class="w-full text-left">
                 <thead class="bg-gray-50 text-gray-400 text-xs uppercase font-bold">
                     <tr>
@@ -39,8 +44,24 @@
                         <th class="py-4 px-2">Actions</th>
                     </tr>
                 </thead>
-                <tbody id="admin-product-table" class="divide-y divide-gray-50">
+                <tbody id="admin-product-table">
                     {{productRows}}
+                </tbody>
+            </table>
+        </div>
+
+        <div id="section-orders" class="hidden">
+            <table class="w-full text-left">
+                <thead class="bg-gray-50 text-gray-400 text-xs uppercase font-bold">
+                    <tr>
+                        <th class="py-4 px-6">Order ID</th>
+                        <th class="py-4 px-2">Customer</th>
+                        <th class="py-4 px-2">Date</th>
+                        <th class="py-4 px-2">Total</th>
+                        <th class="py-4 px-2">Items</th>
+                    </tr>
+                </thead>
+                <tbody id="admin-orders-table">
                 </tbody>
             </table>
         </div>
