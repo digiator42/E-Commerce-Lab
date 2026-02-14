@@ -13,7 +13,6 @@ async function startApp() {
     console.log("Checking authentication...");
     isAuth = await isLoggedIn();
 
-    // Move your logs and user logic INSIDE here
     console.log("Auth check complete. isAuth:", isAuth);
 
     const user = JSON.parse(localStorage.getItem('user'));
@@ -24,6 +23,19 @@ async function startApp() {
 }
 
 startApp();
+
+function toggleAuthButtons() {
+    const loginBtn = document.getElementById('login-btn');
+    const logoutBtn = document.getElementById('logout-btn');
+
+    if (isAuth) {
+        loginBtn?.classList.add('hidden');
+        logoutBtn?.classList.remove('hidden');
+    } else {
+        loginBtn?.classList.remove('hidden');
+        logoutBtn?.classList.add('hidden');
+    }
+}
 
 const initData = (user) => {
     const userNameElement = document.getElementById('userName');
@@ -620,6 +632,8 @@ async function router(event) {
         const href = event.target.closest('a').getAttribute('href');
         window.history.pushState(null, "", href);
     }
+
+    toggleAuthButtons();
 
     const path = window.location.pathname;
 

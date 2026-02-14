@@ -41,10 +41,10 @@
                     <a href="/orders" onclick="router(event)" class="text-gray-600 hover:text-blue-600 font-medium">My
                         Orders</a>
                     <span class="text-gray-300">|</span>
-                    <button onclick="handleLogout(event)"
+                    <button id="logout-btn" onclick="handleLogout(event)"
                         class="text-red-500 hover:text-red-700 font-medium">Logout</button>
                 </div>
-                <a href="/login" onclick="router(event)"
+                <a href="/login" id="login-btn" onclick="router(event)"
                     class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium">Login</a>
 
                 <div class="relative cursor-pointer" onclick="toggleCartDrawer()">
