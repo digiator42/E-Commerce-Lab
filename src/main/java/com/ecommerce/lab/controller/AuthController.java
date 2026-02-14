@@ -2,10 +2,12 @@ package com.ecommerce.lab.controller;
 
 import java.security.Principal;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,6 +25,7 @@ import com.ecommerce.lab.dto.LoginRequestDTO;
 import com.ecommerce.lab.dto.RegisterRequestDTO;
 import com.ecommerce.lab.dto.UserResponseDTO;
 import com.ecommerce.lab.exception.AuthenticationException;
+import com.ecommerce.lab.model.Role;
 import com.ecommerce.lab.model.User;
 
 @RestController
@@ -46,15 +49,22 @@ public class AuthController {
             throw new AuthenticationException("Wrong password");
         }
 
+        String role = user.getRole() != null ? user.getRole().name() : Role.ROLE_USER.name();
+
+        var authorities = List.of(new SimpleGrantedAuthority(role));
+
         var auth = new UsernamePasswordAuthenticationToken(
-                user.getEmail(), null, Collections.emptyList());
+                user.getEmail(), null, authorities);
 
         SecurityContextHolder.getContext().setAuthentication(auth);
 
         HttpSession session = request.getSession(true);
         session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
 
-        return ResponseEntity.ok(Map.of("message", "Logged in successfully", "email", user.getEmail()));
+        return ResponseEntity.ok(Map.of(
+                "message", "Logged in successfully",
+                "email", user.getEmail(),
+                "role", role));
     }
 
     @PostMapping("/register")
@@ -64,9 +74,9 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout(Principal principal, HttpServletRequest request) {
-        
+
         SecurityContextHolder.clearContext();
-        
+
         HttpSession session = request.getSession(true);
         session.invalidate();
 

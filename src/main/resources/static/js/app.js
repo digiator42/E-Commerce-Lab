@@ -12,11 +12,16 @@ const user = JSON.parse(localStorage.getItem('user'));
 console.log("Current User:", user);
 
 const initData = () => {
+    const userNameElement = document.getElementById('userName');
     if (user) {
         const userName = user.email.split('@')[0];
-        const userNameElement = document.getElementById('userName');
         if (userNameElement) {
             userNameElement.innerText = userName;
+        }
+    }
+    else {
+        if (userNameElement) {
+            userNameElement.innerText = "Guest";
         }
     }
 }
@@ -108,6 +113,8 @@ async function saveProduct(event) {
     event.preventDefault();
     const formData = new FormData(event.target);
     const productData = Object.fromEntries(formData.entries());
+
+    console.log("Submitting Product:", productData);
 
     const res = await fetch('/api/admin/products', {
         method: 'POST',
@@ -327,6 +334,12 @@ const ComponentStore = {
     }
 };
 
+function navigateToAddProduct() {
+    window.history.pushState({}, "", "/admin/add-product");
+
+    router();
+}
+
 const routes = {
     '/': async () => {
         return await ComponentStore.load('home');
@@ -349,13 +362,16 @@ const routes = {
     },
 
     '/admin/add-product': async () => {
-        const template = await ComponentStore.load('add-product');
-        const catRes = await fetch('/api/categories');
-        const categories = await catRes.json();
+        const [template, categoryRes] = await Promise.all([
+            ComponentStore.load('add-product'),
+            fetch('/api/categories').then(r => r.json())
+        ]);
 
-        // Populate the category dropdown
-        const options = categories.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
-        return template.replace('{{categoryOptions}}', options);
+        const categoryOptions = categoryRes.map(cat =>
+            `<option value="${cat.name}">${cat.name}</option>`
+        ).join('');
+
+        return template.replace('{{categoryOptions}}', categoryOptions);
     },
 
     '/products': async () => {
@@ -535,6 +551,7 @@ async function handleLogout(event) {
     });
     if (response.ok) {
         alert("You have been logged out.");
+        localStorage.removeItem('user');
         window.history.pushState(null, "", "/login");
         router();
     } else {
