@@ -131,15 +131,15 @@ async function deleteProduct(id) {
     });
 
     if (res.ok) {
-        router();
+        await router();
     } else {
         alert("Failed to delete product. It might be linked to existing orders.");
     }
 }
 
-function editProduct(id) {
+async function editProduct(id) {
     window.history.pushState({}, "", `/admin/edit-product/${id}`);
-    router();
+    await router();
 }
 
 async function updateProduct(event, id) {
@@ -157,7 +157,7 @@ async function updateProduct(event, id) {
         if (res.ok) {
             alert("Product updated successfully!");
             window.history.pushState({}, "", "/admin");
-            router();
+            await router();
         } else {
             const error = await res.text();
             alert("Update failed: " + error);
@@ -183,7 +183,7 @@ async function saveProduct(event) {
     if (res.ok) {
         alert("Product Added Successfully!");
         window.history.pushState({}, "", "/admin");
-        router();
+        await router();
     } else {
         const err = await res.text();
         alert("Error: " + err);
@@ -337,7 +337,7 @@ async function addToCart(productId) {
     if (response.status === 401) {
         alert("Please log in to add items to your cart.");
         window.history.pushState(null, "", "/login");
-        router();
+        await router();
         return;
     }
 
@@ -392,10 +392,10 @@ const ComponentStore = {
     }
 };
 
-function navigateToAddProduct() {
+async function navigateToAddProduct() {
     window.history.pushState({}, "", "/admin/add-product");
 
-    router();
+    await router();
 }
 
 const routes = {
@@ -457,9 +457,19 @@ const routes = {
             ComponentStore.load('product-card'),
             fetch(
                 `/api/products?page=${currentPage}&size=6&search=${encodeURIComponent(currentSearch)}${currentCategory ? `&category=${encodeURIComponent(currentCategory)}` : ''}`
-            ).then(r => r.json()),
+            ).then(r => r.json()).catch(err => {
+                console.error("Product Fetch Error:", err);
+                return { content: [], totalPages: 0 };
+            }),
             fetch('/api/categories').then(r => r.json())
         ]);
+
+        console.log("Fetched Products: ======> ", productRes);
+        if (productRes.status === 401) {
+            window.history.pushState(null, "", "/login");
+            isAuth = false;
+            return await router();
+        }
 
         // Product List
         const productListHtml = productRes.content.map(p => {
@@ -601,7 +611,7 @@ async function isLoggedIn() {
     return response.ok;
 }
 
-const publicPaths = ['/', '/login', '/register', '/products'];
+const publicPaths = ['/', '/login', '/register'];
 
 async function router(event) {
     if (event) {
@@ -618,13 +628,13 @@ async function router(event) {
     if (!isAuth && !publicPaths.includes(path)) {
         console.log("Access Denied. Redirecting to login...");
         window.history.pushState(null, "", "/login");
-        return router();
+        return await router();
     }
 
     if (isAuth && (path === '/login' || path === '/register')) {
         console.log("Already logged in. Redirecting to home...");
         window.history.pushState(null, "", "/");
-        return router();
+        return await router();
     }
 
     let routeAction = routes[path];
@@ -680,7 +690,7 @@ async function handleLogin(event) {
 
     if (response.ok) {
         const user = await response.json();
-        alert(`Welcome back, ${user.email}!`);
+        // alert(`Welcome back, ${user.email}!`);
         isAuth = true;
         window.history.pushState(null, "", "/");
         await router();
@@ -696,11 +706,11 @@ async function handleLogout(event) {
         method: 'POST'
     });
     if (response.ok) {
-        alert("You have been logged out.");
+        // alert("You have been logged out.");
         localStorage.removeItem('user');
         window.history.pushState(null, "", "/login");
         isAuth = false;
-        router();
+        await router();
     } else {
         alert("Logout failed. Please try again.");
     }
