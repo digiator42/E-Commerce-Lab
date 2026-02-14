@@ -6,6 +6,7 @@ let totalPages = 0;
 let searchTimeout;
 let currentCategory = null;
 let selectedRating = 0;
+let allOrdersCache = [];
 
 const statusColors = {
     'PENDING': 'bg-yellow-100 text-yellow-700',
@@ -33,11 +34,11 @@ startApp();
 
 function showToast(msg, duration = 3000) {
     const toast = document.createElement('div');
-    toast.className = 'fixed bottom-4 right-4 bg-gray-900 text-white px-6 py-3 rounded-lg shadow-lg animate-fade-in z-50';
+    toast.className = 'fixed top-4 right-4 bg-gray-900 text-white px-6 py-3 rounded-lg shadow-lg animate-fade-in z-50';
     toast.innerText = msg;
-    
+
     document.body.appendChild(toast);
-    
+
     setTimeout(() => {
         toast.classList.add('opacity-0', 'transition-opacity');
         setTimeout(() => toast.remove(), 300);
@@ -237,31 +238,40 @@ async function updateOrderStatus(orderId, newStatus) {
             showToast(`Order #${orderId} status updated to ${newStatus}`);
         }
     } else {
-        alert("Failed to update status on the server.");
+        showToast("Failed to update status on the server.");
     }
 }
 
-async function switchAdminTab(tab) {
+function filterOrders() {
+    const searchTerm = document.getElementById('admin-order-search').value.toLowerCase();
+    const statusFilter = document.getElementById('admin-order-filter').value;
 
-    const isOrders = tab === 'orders';
-    document.getElementById('section-inventory').classList.toggle('hidden', isOrders);
-    document.getElementById('section-orders').classList.toggle('hidden', !isOrders);
+    const filteredOrders = allOrdersCache.filter(order => {
+        const matchesSearch = order.user.email.toLowerCase().includes(searchTerm) ||
+            `#ORD-${order.id}`.toLowerCase().includes(searchTerm);
+        const matchesStatus = statusFilter === 'ALL' || order.status === statusFilter;
 
-    document.getElementById('tab-inventory').className = !isOrders ? 'pb-4 px-2 border-b-2 border-blue-600 font-bold text-blue-600' : 'pb-4 px-2 text-gray-400 font-bold';
-    document.getElementById('tab-orders').className = isOrders ? 'pb-4 px-2 border-b-2 border-blue-600 font-bold text-blue-600' : 'pb-4 px-2 text-gray-400 font-bold';
+        return matchesSearch && matchesStatus;
+    });
 
-    if (isOrders) {
-        const res = await fetch('/api/admin/orders');
-        const orders = await res.json();
+    renderOrders(filteredOrders);
+}
 
-        const tableBody = document.getElementById('admin-orders-table');
-        tableBody.innerHTML = orders.map(order => {
+function renderOrders(ordersToRender) {
 
-            const itemsList = order.items.map(i => `${i.productName} (x${i.quantity})`).join(', ');
+    const tableBody = document.getElementById('admin-orders-table');
 
-            const status = order.status ? order.status : '';
+    if (ordersToRender.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="5" class="py-10 text-center text-gray-400 italic">No orders match your filters</td></tr>`;
+        return;
+    }
 
-            return `
+    tableBody.innerHTML = ordersToRender.map(order => {
+        const itemsList = order.items.map(i => `${i.productName} (x${i.quantity})`).join(', ');
+
+        const status = order.status ? order.status : '';
+
+        return `
                 <tr class="border-b border-gray-50 hover:bg-gray-50 transition">
                     <td class="py-4 px-6 font-mono text-xs">#ORD-${order.id}</td>
                     <td class="py-4 px-2">
@@ -288,7 +298,22 @@ async function switchAdminTab(tab) {
                     </td>
                 </tr>
             `;
-        }).join('');
+    }).join('');
+}
+
+async function switchAdminTab(tab) {
+
+    const isOrders = tab === 'orders';
+    document.getElementById('section-inventory').classList.toggle('hidden', isOrders);
+    document.getElementById('section-orders').classList.toggle('hidden', !isOrders);
+
+    document.getElementById('tab-inventory').className = !isOrders ? 'pb-4 px-2 border-b-2 border-blue-600 font-bold text-blue-600' : 'pb-4 px-2 text-gray-400 font-bold';
+    document.getElementById('tab-orders').className = isOrders ? 'pb-4 px-2 border-b-2 border-blue-600 font-bold text-blue-600' : 'pb-4 px-2 text-gray-400 font-bold';
+
+    if (tab === 'orders') {
+        const res = await fetch('/api/admin/orders');
+        allOrdersCache = await res.json();
+        renderOrders(allOrdersCache);
     }
 }
 
@@ -315,7 +340,7 @@ function toggleCartDrawer() {
 async function checkout() {
     const checkoutBtn = event.target;
 
-    if (cartState.length === 0) return alert("Your cart is empty!");
+    if (cartState.length === 0) return showToast("Your cart is empty!");
 
     // Prevent double clicks
     checkoutBtn.disabled = true;
