@@ -123,6 +123,36 @@ async function deleteProduct(id) {
     }
 }
 
+function editProduct(id) {
+    window.history.pushState({}, "", `/admin/edit-product/${id}`);
+    router();
+}
+
+async function updateProduct(event, id) {
+    event.preventDefault();
+    const formData = new FormData(event.target);
+    const data = Object.fromEntries(formData.entries());
+
+    try {
+        const res = await fetch(`/api/admin/products/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+
+        if (res.ok) {
+            alert("Product updated successfully!");
+            window.history.pushState({}, "", "/admin");
+            router();
+        } else {
+            const error = await res.text();
+            alert("Update failed: " + error);
+        }
+    } catch (err) {
+        console.error("Update Error:", err);
+    }
+}
+
 async function saveProduct(event) {
     event.preventDefault();
     const formData = new FormData(event.target);
@@ -519,6 +549,31 @@ const routes = {
             .replace('{{reviewsHtml}}', reviewsHtml);
     },
 
+    '/admin/edit-product/:id': async (params) => {
+
+        const [template, product, categories] = await Promise.all([
+            ComponentStore.load('add-product'),
+            fetch(`/api/products/${params.id}`).then(r => r.json()),
+            fetch('/api/categories').then(r => r.json())
+        ]);
+
+        const options = categories.map(c => `
+        <option value="${c.name}" ${c.name === product.categoryName ? 'selected' : ''}>
+            ${c.name}
+        </option>
+    `).join('');
+
+        return template
+            .replace('Create New Product', `Edit Product: ${product.name}`)
+            .replace('{{categoryOptions}}', options)
+            .replace('name="name"', `name="name" value="${product.name}"`)
+            .replace('name="price"', `name="price" value="${product.price}"`)
+            .replace('name="description"', `name="description"`)
+            .replace('name="stock"', `name="stock" value="${product.stock}"`)
+            .replace('</textarea>', `${product.description}</textarea>`)
+            .replace('onsubmit="saveProduct(event)"', `onsubmit="updateProduct(event, ${product.id})"`);
+    },
+
     '/error': async () => {
         return await ComponentStore.load('404');
     }
@@ -533,13 +588,32 @@ async function router(event) {
     }
 
     const path = window.location.pathname;
+    let routeAction = routes[path];
 
-    if (path.startsWith('/product/')) {
-        const id = path.split('/')[2];
-        const html = await routes['/product/:id']({ id });
+    console.log("Routing to:", routeAction);
+    
+    if (!routeAction) {
+        const editMatch = path.match(/^\/admin\/edit-product\/(\d+)$/);
+        const detailMatch = path.match(/^\/product\/(\d+)$/);
+
+        console.log("Dynamic Route Check:", { path, editMatch, detailMatch });
+        
+        if (editMatch) {
+            routeAction = () => routes['/admin/edit-product/:id']({ id: editMatch[1] });
+            console.log("Routing to:", routeAction);
+        } else if (detailMatch) {
+            routeAction = () => routes['/product/:id']({ id: detailMatch[1] });
+        }
+    }
+
+    if (routeAction) {
+        const html = await routeAction();
         document.getElementById('content').innerHTML = html;
+
+        window.scrollTo(0, 0);
         return;
     }
+
     const viewFunc = routes[path] || routes['/error'];
 
     document.getElementById('content').innerHTML = '<div class="spinner">Loading...</div>';

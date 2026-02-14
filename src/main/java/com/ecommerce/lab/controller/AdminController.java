@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -72,6 +73,23 @@ public class AdminController {
         }
         productRepository.deleteById(id);
         return ResponseEntity.ok("Product deleted successfully");
+    }
+
+    @PutMapping("/products/{id}")
+    public ResponseEntity<?> updateProduct(@PathVariable Long id, @RequestBody ProductRequestDTO dto) {
+        return productRepository.findById(id).map(product -> {
+
+            Category category = categoryRepository.findByName(dto.categoryName())
+                    .orElseThrow(() -> new RuntimeException("Category not found"));
+
+            product.setName(dto.name());
+            product.setPrice(dto.price());
+            product.setDescription(dto.description());
+            product.setCategory(category);
+
+            productRepository.save(product);
+            return ResponseEntity.ok("Product updated successfully");
+        }).orElse(ResponseEntity.notFound().build());
     }
 
 }
