@@ -24,4 +24,25 @@
             <p class="text-4xl font-black text-blue-600">{{totalProducts}} items</p>
         </div>
     </div>
+
+    <div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+        <div class="p-6 border-b border-gray-50">
+            <h3 class="text-xl font-bold text-gray-900">Inventory Management</h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead class="bg-gray-50 text-gray-400 text-xs uppercase font-bold">
+                    <tr>
+                        <th class="py-4 px-6">Product</th>
+                        <th class="py-4 px-2">Category</th>
+                        <th class="py-4 px-2">Price</th>
+                        <th class="py-4 px-2">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="admin-product-table" class="divide-y divide-gray-50">
+                    {{productRows}}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>

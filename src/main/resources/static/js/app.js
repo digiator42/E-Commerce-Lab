@@ -347,18 +347,36 @@ const routes = {
 
     '/admin': async () => {
         const template = await ComponentStore.load('admin-dashboard');
-        const res = await fetch('/api/admin/stats');
 
-        if (res.status === 403) {
-            return `<div class="py-20 text-center text-red-500 font-bold">Access Denied: Admin Privileges Required.</div>`;
-        }
+        // Fetch stats and the full product list
+        const [stats, productsPage] = await Promise.all([
+            fetch('/api/admin/stats').then(r => r.json()),
+            fetch('/api/products?size=100').then(r => r.json())
+        ]);
 
-        const stats = await res.json();
+        const productRows = productsPage.content.map(p => `
+        <tr class="border-b border-gray-50 hover:bg-gray-50 transition">
+            <td class="py-4 px-2 font-medium text-gray-900">${p.name}</td>
+            <td class="py-4 px-2 text-gray-500">${p.category}</td>
+            <td class="py-4 px-2 font-bold text-blue-600">$${p.price.toFixed(2)}</td>
+            <td class="py-4 px-2">
+                <div class="flex space-x-2">
+                    <button onclick="editProduct(${p.id})" class="text-gray-400 hover:text-blue-600">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                    </button>
+                    <button onclick="deleteProduct(${p.id})" class="text-gray-400 hover:text-red-600">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
 
         return template
             .replace('{{totalRevenue}}', stats.revenue.toFixed(2))
             .replace('{{totalOrders}}', stats.orders)
-            .replace('{{totalProducts}}', stats.products);
+            .replace('{{totalProducts}}', stats.products)
+            .replace('{{productRows}}', productRows);
     },
 
     '/admin/add-product': async () => {
