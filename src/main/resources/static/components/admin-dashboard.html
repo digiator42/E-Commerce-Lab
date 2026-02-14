@@ -1,0 +1,27 @@
+<div class="max-w-6xl mx-auto py-12">
+    <div class="flex justify-between items-end mb-10">
+        <div>
+            <h1 class="text-4xl font-black text-gray-900">Admin Control</h1>
+            <p class="text-gray-500">Overview of your store's performance.</p>
+        </div>
+        <button onclick="navigateToAddProduct()"
+            class="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-black transition">
+            + New Product
+        </button>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+        <div class="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm">
+            <p class="text-gray-400 text-sm font-bold uppercase tracking-widest mb-2">Revenue</p>
+            <p class="text-4xl font-black text-green-600">$ {{totalRevenue}}</p>
+        </div>
+        <div class="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm">
+            <p class="text-gray-400 text-sm font-bold uppercase tracking-widest mb-2">Total Orders</p>
+            <p class="text-4xl font-black text-gray-900">{{totalOrders}}</p>
+        </div>
+        <div class="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm">
+            <p class="text-gray-400 text-sm font-bold uppercase tracking-widest mb-2">Catalog Size</p>
+            <p class="text-4xl font-black text-blue-600">{{totalProducts}} items</p>
+        </div>
+    </div>
+</div>

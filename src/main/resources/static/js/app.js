@@ -297,6 +297,22 @@ const routes = {
         return await ComponentStore.load('home');
     },
 
+    '/admin': async () => {
+        const template = await ComponentStore.load('admin-dashboard');
+        const res = await fetch('/api/admin/stats');
+
+        if (res.status === 403) {
+            return `<div class="py-20 text-center text-red-500 font-bold">Access Denied: Admin Privileges Required.</div>`;
+        }
+
+        const stats = await res.json();
+
+        return template
+            .replace('{{totalRevenue}}', stats.revenue.toFixed(2))
+            .replace('{{totalOrders}}', stats.orders)
+            .replace('{{totalProducts}}', stats.products);
+    },
+
     '/products': async () => {
         // Fetch everything in parallel
         const [template, cardTemplate, productRes, categoryRes] = await Promise.all([
