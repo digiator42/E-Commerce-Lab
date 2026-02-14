@@ -27,9 +27,14 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/index.html", "/static/**", "/js/**", "/css/**", "/components/**")
                         .permitAll()
-                        .requestMatchers("/api/auth/is-logged-in", "/api/auth/login").permitAll()
+                        .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/orders/**", "/api/cart/**", "/api/products/**", "/api/reviews/**").authenticated()
+                        .requestMatchers("/api/orders/**",
+                                "/api/cart/**",
+                                "/api/products/**",
+                                "/api/reviews/**",
+                                "/api/categories/**")
+                        .authenticated()
                         .anyRequest().permitAll())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))

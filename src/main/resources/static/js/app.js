@@ -410,6 +410,16 @@ async function navigateToAddProduct() {
     await router();
 }
 
+function getMethodColor(method) {
+    switch (method) {
+        case 'GET': return 'bg-green-100 text-green-700';
+        case 'POST': return 'bg-blue-100 text-blue-700';
+        case 'PUT': return 'bg-yellow-100 text-yellow-700';
+        case 'DELETE': return 'bg-red-100 text-red-700';
+        default: return 'bg-gray-100 text-gray-700';
+    }
+}
+
 const routes = {
     '/': async () => {
         return await ComponentStore.load('home');
@@ -460,6 +470,53 @@ const routes = {
         ).join('');
 
         return template.replace('{{categoryOptions}}', categoryOptions);
+    },
+
+    '/admin/routes': async () => {
+        const template = `
+        <div class="p-6">
+            <h2 class="text-2xl font-bold mb-6">Backend API Explorer</h2>
+            <div class="overflow-hidden rounded-xl border border-gray-200 bg-white">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Path</th>
+                            <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Methods</th>
+                            <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Handler</th>
+                        </tr>
+                    </thead>
+                    <tbody id="api-route-rows" class="divide-y divide-gray-200">
+                        <tr><td colspan="4" class="p-4 text-center">Loading API routes...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `;
+
+        setTimeout(async () => {
+            const res = await fetch('/api/admin/routes');
+            if (res.ok) {
+                const data = await res.json();
+                const rowsHtml = data.map(route => `
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 font-mono text-sm text-blue-600">
+                        ${Array.isArray(route.path) ? route.path.join(', ') : route.path}
+                    </td>
+                    <td class="px-6 py-4">
+                        ${route.methods.map(m => `
+                            <span class="px-2 py-1 text-xs font-bold rounded ${getMethodColor(m)}">${m}</span>
+                        `).join('')}
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-600">${route.expectedStatus}</td>
+                    <td class="px-6 py-4 text-xs text-gray-400 italic">${route.handler}</td>
+                </tr>
+            `).join('');
+                document.getElementById('api-route-rows').innerHTML = rowsHtml;
+            }
+        }, 0);
+
+        return template;
     },
 
     '/products': async () => {
