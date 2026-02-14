@@ -5,11 +5,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -38,6 +40,25 @@ public class AuthController {
     public AuthController(UserService userService, PasswordEncoder passwordEncoder) {
         this.userService = userService;
         this.passwordEncoder = passwordEncoder;
+    }
+
+    @GetMapping("is-logged-in")
+    public ResponseEntity<?> isLoggedIn(Principal principal) {
+
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("isLoggedIn", false));
+        }
+
+        User user = userService.findByEmail(principal.getName());
+
+        String role = user.getRole() != null ? user.getRole().name() : Role.ROLE_USER.name();
+
+        return ResponseEntity.ok(Map.of(
+                "message", "Logged in successfully",
+                "email", user.getEmail(),
+                "role", role));
+
     }
 
     @PostMapping("/login")

@@ -7,11 +7,25 @@ let searchTimeout;
 let currentCategory = null;
 let selectedRating = 0;
 
-const user = JSON.parse(localStorage.getItem('user'));
+let isAuth = false;
 
-console.log("Current User:", user);
+async function startApp() {
+    console.log("Checking authentication...");
+    isAuth = await isLoggedIn();
 
-const initData = () => {
+    // Move your logs and user logic INSIDE here
+    console.log("Auth check complete. isAuth:", isAuth);
+
+    const user = JSON.parse(localStorage.getItem('user'));
+    console.log("Current User:", user);
+
+    await router();
+    initData(user);
+}
+
+startApp();
+
+const initData = (user) => {
     const userNameElement = document.getElementById('userName');
     if (user) {
         const userName = user.email.split('@')[0];
@@ -335,7 +349,7 @@ async function addToCart(productId) {
 }
 
 async function syncCartWithServer() {
-    console.log("Syncing cart with server...");
+    // console.log("Syncing cart with server...");
     const res = await fetch('/api/cart');
     if (res.ok) {
         cartState = await res.json(); // This is now a List<CartItem>
@@ -441,7 +455,9 @@ const routes = {
         const [template, cardTemplate, productRes, categoryRes] = await Promise.all([
             ComponentStore.load('products'),
             ComponentStore.load('product-card'),
-            fetch(`/api/products?page=${currentPage}&size=6&search=${encodeURIComponent(currentSearch)}${currentCategory ? `&category=${encodeURIComponent(currentCategory)}` : ''}`).then(r => r.json()),
+            fetch(
+                `/api/products?page=${currentPage}&size=6&search=${encodeURIComponent(currentSearch)}${currentCategory ? `&category=${encodeURIComponent(currentCategory)}` : ''}`
+            ).then(r => r.json()),
             fetch('/api/categories').then(r => r.json())
         ]);
 
@@ -579,6 +595,14 @@ const routes = {
     }
 };
 
+async function isLoggedIn() {
+    const response = await fetch('/api/auth/is-logged-in');
+    console.log("Auth Check Response:", response);
+    return response.ok;
+}
+
+const publicPaths = ['/', '/login', '/register', '/products'];
+
 async function router(event) {
     if (event) {
         event.preventDefault();
@@ -588,16 +612,31 @@ async function router(event) {
     }
 
     const path = window.location.pathname;
+
+    console.log("isAuth:", isAuth);
+
+    if (!isAuth && !publicPaths.includes(path)) {
+        console.log("Access Denied. Redirecting to login...");
+        window.history.pushState(null, "", "/login");
+        return router();
+    }
+
+    if (isAuth && (path === '/login' || path === '/register')) {
+        console.log("Already logged in. Redirecting to home...");
+        window.history.pushState(null, "", "/");
+        return router();
+    }
+
     let routeAction = routes[path];
 
     console.log("Routing to:", routeAction);
-    
+
     if (!routeAction) {
         const editMatch = path.match(/^\/admin\/edit-product\/(\d+)$/);
         const detailMatch = path.match(/^\/product\/(\d+)$/);
 
         console.log("Dynamic Route Check:", { path, editMatch, detailMatch });
-        
+
         if (editMatch) {
             routeAction = () => routes['/admin/edit-product/:id']({ id: editMatch[1] });
             console.log("Routing to:", routeAction);
@@ -621,7 +660,7 @@ async function router(event) {
     try {
         const html = await viewFunc();
         document.getElementById('content').innerHTML = html;
-        initData();
+        // initData();
     } catch (error) {
         console.error("Routing error:", error);
         document.getElementById('content').innerHTML = '<h1>Error loading content</h1>';
@@ -642,6 +681,7 @@ async function handleLogin(event) {
     if (response.ok) {
         const user = await response.json();
         alert(`Welcome back, ${user.email}!`);
+        isAuth = true;
         window.history.pushState(null, "", "/");
         await router();
         localStorage.setItem('user', JSON.stringify(user));
@@ -659,6 +699,7 @@ async function handleLogout(event) {
         alert("You have been logged out.");
         localStorage.removeItem('user');
         window.history.pushState(null, "", "/login");
+        isAuth = false;
         router();
     } else {
         alert("Logout failed. Please try again.");
