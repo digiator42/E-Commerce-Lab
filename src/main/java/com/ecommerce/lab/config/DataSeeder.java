@@ -6,18 +6,30 @@ import java.util.stream.IntStream;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.ecommerce.lab.model.Category;
 import com.ecommerce.lab.model.Product;
+import com.ecommerce.lab.model.Role;
+import com.ecommerce.lab.model.User;
 import com.ecommerce.lab.repository.CategoryRepository;
 import com.ecommerce.lab.repository.ProductRepository;
+import com.ecommerce.lab.repository.UserRepository;
 
 @Configuration
 public class DataSeeder {
 
     @Bean
-    CommandLineRunner initDatabase(ProductRepository productRepo, CategoryRepository categoryRepo) {
+    CommandLineRunner initDatabase(
+            ProductRepository productRepo,
+            CategoryRepository categoryRepo,
+            UserRepository userRepo,
+            PasswordEncoder passwordEncoder) {
+
         return args -> {
+
+            createAdminUser(userRepo, passwordEncoder);
+
             if (productRepo.count() > 0)
                 return;
 
@@ -47,7 +59,20 @@ public class DataSeeder {
 
             productRepo.saveAll(products);
             System.out.println("✅ Seeded categories and products successfully.");
+
         };
+    }
+
+    private void createAdminUser(UserRepository userRepo, PasswordEncoder passwordEncoder) {
+        if (userRepo.count() > 0)
+            return;
+
+        User admin = new User();
+        admin.setEmail("admin@ecommerce.com");
+        admin.setPassword(passwordEncoder.encode("admin123"));
+        admin.setRole(Role.ROLE_ADMIN);
+        userRepo.save(admin);
+        System.out.println("==> Created admin user successfully.");
     }
 
     private Category createCat(String name, String icon) {

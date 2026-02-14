@@ -7,6 +7,20 @@ let searchTimeout;
 let currentCategory = null;
 let selectedRating = 0;
 
+const user = JSON.parse(localStorage.getItem('user'));
+
+console.log("Current User:", user);
+
+const initData = () => {
+    if (user) {
+        const userName = user.email.split('@')[0];
+        const userNameElement = document.getElementById('userName');
+        if (userNameElement) {
+            userNameElement.innerText = userName;
+        }
+    }
+}
+
 function setRating(n) {
     selectedRating = n;
     const stars = document.querySelectorAll('#star-rating-input button');
@@ -88,6 +102,27 @@ async function handleSearch(event) {
     searchTimeout = setTimeout(() => {
         fetchAndRenderProducts();
     }, 300);
+}
+
+async function saveProduct(event) {
+    event.preventDefault();
+    const formData = new FormData(event.target);
+    const productData = Object.fromEntries(formData.entries());
+
+    const res = await fetch('/api/admin/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(productData)
+    });
+
+    if (res.ok) {
+        alert("Product Added Successfully!");
+        window.history.pushState({}, "", "/admin");
+        router();
+    } else {
+        const err = await res.text();
+        alert("Error: " + err);
+    }
 }
 
 syncCartWithServer(); // Initial sync on page load
@@ -313,6 +348,16 @@ const routes = {
             .replace('{{totalProducts}}', stats.products);
     },
 
+    '/admin/add-product': async () => {
+        const template = await ComponentStore.load('add-product');
+        const catRes = await fetch('/api/categories');
+        const categories = await catRes.json();
+
+        // Populate the category dropdown
+        const options = categories.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+        return template.replace('{{categoryOptions}}', options);
+    },
+
     '/products': async () => {
         // Fetch everything in parallel
         const [template, cardTemplate, productRes, categoryRes] = await Promise.all([
@@ -454,6 +499,7 @@ async function router(event) {
     try {
         const html = await viewFunc();
         document.getElementById('content').innerHTML = html;
+        initData();
     } catch (error) {
         console.error("Routing error:", error);
         document.getElementById('content').innerHTML = '<h1>Error loading content</h1>';
@@ -475,7 +521,9 @@ async function handleLogin(event) {
         const user = await response.json();
         alert(`Welcome back, ${user.email}!`);
         window.history.pushState(null, "", "/");
-        router();
+        await router();
+        localStorage.setItem('user', JSON.stringify(user));
+        document.getElementById('userName').innerText = user.email.split('@')[0];
     } else {
         alert("Login failed! Check your credentials.");
     }
