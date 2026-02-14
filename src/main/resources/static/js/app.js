@@ -7,6 +7,13 @@ let searchTimeout;
 let currentCategory = null;
 let selectedRating = 0;
 
+const statusColors = {
+    'PENDING': 'bg-yellow-100 text-yellow-700',
+    'SHIPPED': 'bg-blue-100 text-blue-700',
+    'DELIVERED': 'bg-green-100 text-green-700',
+    'CANCELLED': 'bg-red-100 text-red-700'
+};
+
 let isAuth = false;
 
 async function startApp() {
@@ -23,6 +30,19 @@ async function startApp() {
 }
 
 startApp();
+
+function showToast(msg, duration = 3000) {
+    const toast = document.createElement('div');
+    toast.className = 'fixed bottom-4 right-4 bg-gray-900 text-white px-6 py-3 rounded-lg shadow-lg animate-fade-in z-50';
+    toast.innerText = msg;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.classList.add('opacity-0', 'transition-opacity');
+        setTimeout(() => toast.remove(), 300);
+    }, duration);
+}
 
 function toggleAuthButtons() {
     const loginBtn = document.getElementById('login-btn');
@@ -202,6 +222,25 @@ async function saveProduct(event) {
     }
 }
 
+async function updateOrderStatus(orderId, newStatus) {
+
+    const res = await fetch(`/api/admin/orders/${orderId}/status?status=${newStatus}`, {
+        method: 'PATCH'
+    });
+
+    if (res.ok) {
+
+        const badge = document.getElementById(`status-badge-${orderId}`);
+        if (badge) {
+            badge.innerText = newStatus;
+            badge.className = `inline-block w-fit px-3 py-1 rounded-full text-[10px] font-bold uppercase ${statusColors[newStatus]}`;
+            showToast(`Order #${orderId} status updated to ${newStatus}`);
+        }
+    } else {
+        alert("Failed to update status on the server.");
+    }
+}
+
 async function switchAdminTab(tab) {
 
     const isOrders = tab === 'orders';
@@ -216,17 +255,40 @@ async function switchAdminTab(tab) {
         const orders = await res.json();
 
         const tableBody = document.getElementById('admin-orders-table');
-        tableBody.innerHTML = orders.map(order => `
-            <tr class="border-b border-gray-50 hover:bg-gray-50">
-                <td class="py-4 px-6 font-mono text-sm">#ORD-${order.id}</td>
-                <td class="py-4 px-2 text-sm">${order.user.email}</td>
-                <td class="py-4 px-2 text-sm">${new Date(order.orderDate).toLocaleDateString()}</td>
-                <td class="py-4 px-2 font-bold text-green-600">$${order.totalAmount.toFixed(2)}</td>
-                <td class="py-4 px-2 text-xs text-gray-500">
-                    ${order.items.map(i => `${i.productName} (x${i.quantity})`).join(', ')}
-                </td>
-            </tr>
-        `).join('');
+        tableBody.innerHTML = orders.map(order => {
+
+            const itemsList = order.items.map(i => `${i.productName} (x${i.quantity})`).join(', ');
+
+            const status = order.status ? order.status : '';
+
+            return `
+                <tr class="border-b border-gray-50 hover:bg-gray-50 transition">
+                    <td class="py-4 px-6 font-mono text-xs">#ORD-${order.id}</td>
+                    <td class="py-4 px-2">
+                        <div class="text-sm font-medium text-gray-900">${order.user.email}</div>
+                        <div class="text-[10px] text-gray-400">${new Date(order.orderDate).toLocaleDateString()}</div>
+                    </td>
+                    <td class="py-4 px-2">
+                        <div class="flex flex-col gap-2">
+                            <span id="status-badge-${order.id}" class="inline-block w-fit px-3 py-1 rounded-full text-[10px] font-bold uppercase ${statusColors[status]}">
+                                ${status ? status : 'PENDING'}
+                            </span>
+                            <select onchange="updateOrderStatus(${order.id}, this.value)" 
+                                    class="text-[10px] border-none bg-gray-50 rounded-lg p-1 focus:ring-2 focus:ring-blue-500">
+                                <option value="PENDING" ${order.status === 'PENDING' ? 'selected' : ''}>Pending</option>
+                                <option value="SHIPPED" ${order.status === 'SHIPPED' ? 'selected' : ''}>Shipped</option>
+                                <option value="DELIVERED" ${order.status === 'DELIVERED' ? 'selected' : ''}>Delivered</option>
+                                <option value="CANCELLED" ${order.status === 'CANCELLED' ? 'selected' : ''}>Cancel</option>
+                            </select>
+                        </div>
+                    </td>
+                    <td class="py-4 px-2 font-bold text-gray-900">$${order.totalAmount.toFixed(2)}</td>
+                    <td class="py-4 px-2 text-xs text-gray-500 max-w-xs truncate" title="${itemsList}">
+                        ${itemsList}
+                    </td>
+                </tr>
+            `;
+        }).join('');
     }
 }
 

@@ -17,6 +17,9 @@ public class Order {
     private LocalDateTime orderDate;
     private Double totalAmount;
 
+    @Enumerated(EnumType.STRING)
+    private OrderStatus status = OrderStatus.PENDING;
+
     @ManyToOne
     private User user;
 

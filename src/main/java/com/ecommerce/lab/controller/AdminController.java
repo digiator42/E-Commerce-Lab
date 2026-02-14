@@ -9,10 +9,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.method.HandlerMethod;
@@ -23,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import com.ecommerce.lab.dto.ProductRequestDTO;
 import com.ecommerce.lab.model.Category;
 import com.ecommerce.lab.model.Order;
+import com.ecommerce.lab.model.OrderStatus;
 import com.ecommerce.lab.model.Product;
 import com.ecommerce.lab.repository.CategoryRepository;
 import com.ecommerce.lab.repository.OrderRepository;
@@ -104,6 +107,14 @@ public class AdminController {
     @GetMapping("/orders")
     public ResponseEntity<List<Order>> getAllOrders() {
         return ResponseEntity.ok(orderRepository.findAll(Sort.by(Sort.Direction.DESC, "orderDate")));
+    }
+
+    @PatchMapping("/orders/{id}/status")
+    public ResponseEntity<?> updateOrderStatus(@PathVariable Long id, @RequestParam OrderStatus status) {
+        Order order = orderRepository.findById(id).orElseThrow();
+        order.setStatus(status);
+        orderRepository.save(order);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/routes")
