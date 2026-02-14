@@ -32,6 +32,9 @@
             <button onclick="switchAdminTab('orders')" id="tab-orders"
                 class="pb-4 px-2 border-b-2 border-transparent text-gray-400 hover:text-gray-600 font-bold">Customer
                 Orders</button>
+            <button onclick="switchAdminTab('users')" id="tab-users"
+                class="pb-4 px-2 border-b-2 border-transparent text-gray-400 hover:text-gray-600 font-bold">User
+                Access</button>
         </div>
 
         <div id="section-inventory" class="block">
@@ -83,6 +86,20 @@
                 </thead>
                 <tbody id="admin-orders-table">
                 </tbody>
+            </table>
+        </div>
+
+        <div id="section-users" class="hidden">
+            <table class="w-full text-left">
+                <thead class="bg-gray-50 text-gray-400 text-xs uppercase font-bold">
+                    <tr>
+                        <th class="py-4 px-6">User ID</th>
+                        <th class="py-4 px-2">Email</th>
+                        <th class="py-4 px-2">Current Role</th>
+                        <th class="py-4 px-2">Manage Access</th>
+                    </tr>
+                </thead>
+                <tbody id="admin-users-table"></tbody>
             </table>
         </div>
     </div>

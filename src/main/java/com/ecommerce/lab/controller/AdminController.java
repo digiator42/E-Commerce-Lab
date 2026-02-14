@@ -23,13 +23,17 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 import org.springframework.web.bind.annotation.RequestBody;
 
 import com.ecommerce.lab.dto.ProductRequestDTO;
+import com.ecommerce.lab.dto.UserResponseDTO;
 import com.ecommerce.lab.model.Category;
 import com.ecommerce.lab.model.Order;
 import com.ecommerce.lab.model.OrderStatus;
 import com.ecommerce.lab.model.Product;
+import com.ecommerce.lab.model.Role;
+import com.ecommerce.lab.model.User;
 import com.ecommerce.lab.repository.CategoryRepository;
 import com.ecommerce.lab.repository.OrderRepository;
 import com.ecommerce.lab.repository.ProductRepository;
+import com.ecommerce.lab.repository.UserRepository;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -39,13 +43,16 @@ public class AdminController {
     private final OrderRepository orderRepository;
     private final CategoryRepository categoryRepository;
     private final RequestMappingHandlerMapping handlerMapping;
+    private final UserRepository userRepository;
 
     public AdminController(ProductRepository productRepository, OrderRepository orderRepository,
-            CategoryRepository categoryRepository, RequestMappingHandlerMapping handlerMapping) {
+            CategoryRepository categoryRepository, RequestMappingHandlerMapping handlerMapping,
+            UserRepository userRepository) {
         this.productRepository = productRepository;
         this.orderRepository = orderRepository;
         this.categoryRepository = categoryRepository;
         this.handlerMapping = handlerMapping;
+        this.userRepository = userRepository;
     }
 
     @GetMapping("/stats")
@@ -114,6 +121,30 @@ public class AdminController {
         Order order = orderRepository.findById(id).orElseThrow();
         order.setStatus(status);
         orderRepository.save(order);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/users")
+    public ResponseEntity<List<UserResponseDTO>> getAllUsers() {
+        return ResponseEntity.ok(userRepository.findAll().stream()
+                .map(u -> {
+                    String role = u.getRole() != null ? u.getRole().name() : "ROLE_USER";
+                    return new UserResponseDTO(
+                            u.getId(),
+                            u.getName(),
+                            u.getUserName(),
+                            u.getEmail(),
+                            role);
+                })
+                .toList());
+    }
+
+    @PatchMapping("/users/{id}/role")
+    public ResponseEntity<?> updateUserRole(@PathVariable Long id, @RequestParam Role role) {
+        User user = userRepository.findById(id).orElseThrow();
+
+        user.setRole(role);
+        userRepository.save(user);
         return ResponseEntity.ok().build();
     }
 

@@ -301,19 +301,60 @@ function renderOrders(ordersToRender) {
     }).join('');
 }
 
+function renderUsers(users) {
+    const tableBody = document.getElementById('admin-users-table');
+    tableBody.innerHTML = users.map(u => `
+        <tr class="border-b border-gray-50 hover:bg-gray-50">
+            <td class="py-4 px-6 font-mono text-xs text-gray-400">#USR-${u.id}</td>
+            <td class="py-4 px-2 text-sm font-medium">${u.email}</td>
+            <td class="py-4 px-2">
+                <span class="px-2 py-1 rounded-md text-[10px] font-bold ${u.role === 'ROLE_ADMIN' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600'}">
+                    ${u.role}
+                </span>
+            </td>
+            <td class="py-4 px-2">
+                <select onchange="updateUserRole(${u.id}, this.value)" class="text-xs bg-gray-50 border-none rounded-lg p-1">
+                    <option value="ROLE_USER" ${u.role === 'ROLE_USER' ? 'selected' : ''}>User</option>
+                    <option value="ROLE_ADMIN" ${u.role === 'ROLE_ADMIN' ? 'selected' : ''}>Admin</option>
+                </select>
+            </td>
+        </tr>
+    `).join('');
+}
+
+async function updateUserRole(userId, newRole) {
+    const res = await fetch(`/api/admin/users/${userId}/role?role=${newRole}`, {
+        method: 'PATCH'
+    });
+    if (res.ok) {
+        showToast("Permissions updated!");
+        switchAdminTab('users'); // Refresh
+    }
+}
+
 async function switchAdminTab(tab) {
 
-    const isOrders = tab === 'orders';
-    document.getElementById('section-inventory').classList.toggle('hidden', isOrders);
-    document.getElementById('section-orders').classList.toggle('hidden', !isOrders);
-
-    document.getElementById('tab-inventory').className = !isOrders ? 'pb-4 px-2 border-b-2 border-blue-600 font-bold text-blue-600' : 'pb-4 px-2 text-gray-400 font-bold';
-    document.getElementById('tab-orders').className = isOrders ? 'pb-4 px-2 border-b-2 border-blue-600 font-bold text-blue-600' : 'pb-4 px-2 text-gray-400 font-bold';
+    const sections = ['inventory', 'orders', 'users'];
+    sections.forEach(s => {
+        document.getElementById(`section-${s}`).classList.toggle('hidden', s !== tab);
+        const btn = document.getElementById(`tab-${s}`);
+        if (s === tab) {
+            btn.className = 'pb-4 px-2 border-b-2 border-blue-600 font-bold text-blue-600';
+        } else {
+            btn.className = 'pb-4 px-2 text-gray-400 font-bold';
+        }
+    });
 
     if (tab === 'orders') {
         const res = await fetch('/api/admin/orders');
         allOrdersCache = await res.json();
         renderOrders(allOrdersCache);
+    }
+
+    if (tab === 'users') {
+        const res = await fetch('/api/admin/users');
+        const users = await res.json();
+        renderUsers(users);
     }
 }
 
