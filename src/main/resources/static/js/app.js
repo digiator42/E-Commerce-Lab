@@ -109,6 +109,20 @@ async function handleSearch(event) {
     }, 300);
 }
 
+async function deleteProduct(id) {
+    if (!confirm("Are you sure? This will permanently remove this product.")) return;
+
+    const res = await fetch(`/api/admin/products/${id}`, {
+        method: 'DELETE'
+    });
+
+    if (res.ok) {
+        router();
+    } else {
+        alert("Failed to delete product. It might be linked to existing orders.");
+    }
+}
+
 async function saveProduct(event) {
     event.preventDefault();
     const formData = new FormData(event.target);
