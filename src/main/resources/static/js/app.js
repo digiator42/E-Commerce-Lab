@@ -132,6 +132,40 @@ function setRating(n) {
     });
 }
 
+async function uploadProductImage(productId) {
+    const fileInput = document.getElementById('product-image-input');
+    if (fileInput.files.length === 0) return;
+
+    const formData = new FormData();
+    formData.append("file", fileInput.files[0]);
+
+    const res = await fetch(`/api/admin/products/${productId}/upload-image`, {
+        method: 'POST',
+        body: formData
+    });
+
+    if (res.ok) {
+        console.log("Image saved successfully");
+    }
+}
+
+function previewImage(event) {
+    const reader = new FileReader();
+    const file = event.target.files[0];
+
+    reader.onload = function () {
+        const preview = document.getElementById('image-preview');
+        const container = document.getElementById('image-preview-container');
+
+        preview.src = reader.result; // Base64 data for the preview
+        container.classList.remove('hidden');
+    }
+
+    if (file) {
+        reader.readAsDataURL(file);
+    }
+}
+
 async function submitReview(productId) {
     const comment = document.getElementById('review-comment').value;
     if (selectedRating === 0) return alert("Please select a star rating");
@@ -197,9 +231,12 @@ async function fetchAndRenderProducts(sortBy = null) {
     document.getElementById('page-info').innerText = `Page ${data.number + 1} of ${data.totalPages}`;
 
     const cardTemplate = await ComponentStore.load('product-card');
-
+    console.log("====> ", data.content[0]);
     container.innerHTML = data.content.map(p => {
+        const imageSrc = p.imageUrl ? p.imageUrl : 'https://placehold.co/600x400/EEE/31343C';
+        console.log("====>> ", imageSrc);
         return cardTemplate
+            .replace(/{{imageSrc}}/g, imageSrc)
             .replace(/{{name}}/g, p.name)
             .replace(/{{description}}/g, p.description)
             .replace(/{{price}}/g, p.price.toFixed(2))
@@ -254,26 +291,36 @@ async function updateProduct(event, id) {
 
 async function saveProduct(event) {
     event.preventDefault();
-    const formData = new FormData(event.target);
-    const productData = Object.fromEntries(formData.entries());
+    const form = event.target;
+    const formData = new FormData();
 
-    console.log("Submitting Product:", productData);
+    const productData = {
+        name: form.name.value,
+        price: form.price.value,
+        stock: form.stock.value,
+        description: form.description.value,
+        categoryName: form.categoryName.value
+    };
 
+    formData.append("product", new Blob([JSON.stringify(productData)], {
+        type: "application/json"
+    }));
 
-    try {
-        const res = await apiFetch('/api/admin/products', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(productData)
-        });
+    const fileInput = document.getElementById('product-image-input');
+    if (fileInput.files[0]) {
+        formData.append("file", fileInput.files[0]);
+    }
 
-        showToast("Product Added Successfully!");
+    const res = await fetch('/api/admin/products', {
+        method: 'POST',
+        body: formData
+    });
+
+    if (res.ok) {
+        const product = await res.json();
+        console.log("Saved everything in one go:", product);
         window.history.pushState({}, "", "/admin");
-        await router();
-
-    } catch (error) {
-        showToast("Failed to save product: " + error.message);
-        return;
+        router();
     }
 }
 
@@ -575,8 +622,11 @@ async function addToCart(productId) {
 
 async function syncCartWithServer() {
 
-    let res;
+    if (!isAuth) {
+        return;
+    }
 
+    let res;
     try {
         res = await apiFetch('/api/cart');
         console.log("Cart Sync Response:", res);
@@ -781,12 +831,15 @@ const routes = {
 
         // Product List
         const productListHtml = productRes.content.map(p => {
+            const imageSrc = p.imageUrl ? p.imageUrl : 'https://placehold.co/600x400/EEE/31343C';
+
             return cardTemplate
                 .replace(/{{name}}/g, p.name)
                 .replace(/{{description}}/g, p.description)
                 .replace(/{{price}}/g, (p?.price ?? 0).toFixed(2))
                 .replace(/{{id}}/g, p.id)
-                .replace(/{{category}}/g, p.category);
+                .replace(/{{category}}/g, p.category)
+                .replace(/{{imageSrc}}/g, imageSrc);
         }).join('');
 
         // Category Sidebar HTML
@@ -888,13 +941,17 @@ const routes = {
             </div>
         </div>
         `).join('') : '<p class="text-gray-400 italic">No reviews yet. Be the first!</p>';
+
         console.log("Product Detail Data:", p);
+        const imageSrc = p.imageUrl ? p.imageUrl : 'https://placehold.co/600x400/EEE/31343C';
+
         return template
             .replace(/{{name}}/g, p.name)
             .replace(/{{stock}}/g, p.stock > 0 ? '<span class="text-green-600 font-bold">' + p.stock + ' in stock</span>' : '<span class="text-red-600 font-bold">Out of stock</span>')
             .replace(/{{description}}/g, p.description)
             .replace(/{{price}}/g, p.price.toFixed(2))
             .replace(/{{category}}/g, p.category)
+            .replace(/{{imageSrc}}/g, imageSrc)
             .replace(/{{id}}/g, p.id)
             .replace('{{reviewsHtml}}', reviewsHtml);
     },

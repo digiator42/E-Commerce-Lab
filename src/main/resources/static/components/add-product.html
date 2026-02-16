@@ -3,6 +3,18 @@
         <h2 class="text-3xl font-black mb-6">Create New Product</h2>
 
         <form id="add-product-form" onsubmit="saveProduct(event)" class="space-y-6">
+            <div class="mt-6 p-4 border-2 border-dashed border-gray-200 rounded-2xl text-center">
+                <label class="block text-sm font-bold text-gray-400 uppercase mb-4">Product Image</label>
+                <div id="image-preview-container" class="mb-4 hidden">
+                    <img id="image-preview" src="" class="h-32 mx-auto rounded-lg shadow-md">
+                </div>
+                <input type="file" id="product-image-input" accept="image/*" class="hidden"
+                    onchange="previewImage(event)">
+                <button type="button" onclick="document.getElementById('product-image-input').click()"
+                    class="bg-gray-100 text-gray-600 px-4 py-2 rounded-xl text-sm font-bold hover:bg-gray-200">
+                    Choose Photo
+                </button>
+            </div>
             <div>
                 <label class="block text-sm font-bold text-gray-400 uppercase mb-2">Product Name</label>
                 <input type="text" name="name" required
