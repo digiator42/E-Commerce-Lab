@@ -21,7 +21,9 @@
             </span>
             <h1 class="text-5xl font-black text-gray-900 leading-tight">{{name}}</h1>
             <p class="text-3xl font-light text-gray-400">$<span class="text-gray-900 font-bold">{{price}}</span></p>
-
+            <p class="text-sm font-medium {{stock > 0 ? 'text-green-600' : 'text-red-600'}}">
+                {{stock}}
+            </p>
             <div class="py-6 border-y border-gray-100">
                 <h3 class="text-sm font-bold text-gray-400 uppercase mb-3">Description</h3>
                 <p class="text-gray-600 leading-relaxed text-lg">{{description}}</p>

@@ -1,9 +1,12 @@
 package com.ecommerce.lab.controller;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -52,18 +55,13 @@ public class ProductController {
 
         Page<Product> productPage;
 
-        // Logic Tree for Filtering
-        if (search != null && !search.isEmpty() && category != null && !category.isEmpty()) {
-            // Filter by BOTH
+        if (StringUtils.hasText(search) && StringUtils.hasText(category)) {
             productPage = productRepository.findByCategoryNameAndNameContainingIgnoreCase(category, search, pageable);
-        } else if (search != null && !search.isEmpty()) {
-            // Filter by SEARCH only
-            productPage = productRepository.findByNameContainingIgnoreCase(search, pageable);
-        } else if (category != null && !category.isEmpty()) {
-            // Filter by CATEGORY only
+        } else if (StringUtils.hasText(category)) {
             productPage = productRepository.findByCategoryName(category, pageable);
+        } else if (StringUtils.hasText(search)) {
+            productPage = productRepository.findByNameContainingIgnoreCase(search, pageable);
         } else {
-            // No filters
             productPage = productRepository.findAll(pageable);
         }
 

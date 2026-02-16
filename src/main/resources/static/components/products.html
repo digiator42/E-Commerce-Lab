@@ -29,6 +29,14 @@
                 <input type="text" id="product-search" oninput="handleSearch(event)" placeholder="Search products..."
                     class="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-2xl leading-5 bg-gray-50 placeholder-gray-500 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150">
             </div>
+            <select id="products-filter" onchange="filterProducts()"
+                class="md:w-48 p-2 rounded-xl border-none ring-1 ring-gray-200 focus:ring-2 focus:ring-blue-500 text-sm">
+                <option value="all">Sort by</option>
+                <option value="price,asc">Price (Low to High)</option>
+                <option value="price,desc">Price (High to Low)</option>
+                <option value="stock,desc">Stock</option>
+                <option value="name,asc">Name (A-Z)</option>
+            </select>
         </div>
 
         <div id="product-list-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">

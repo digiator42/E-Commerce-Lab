@@ -8,6 +8,7 @@ let currentCategory = null;
 let selectedRating = 0;
 let allOrdersCache = [];
 let user = null;
+let isAuth = false;
 
 const statusColors = {
     'PENDING': 'bg-yellow-100 text-yellow-700',
@@ -16,7 +17,56 @@ const statusColors = {
     'CANCELLED': 'bg-red-100 text-red-700'
 };
 
-let isAuth = false;
+async function navigate(path) {
+    window.history.pushState(null, "", path);
+    await router();
+}
+
+async function apiFetch(url, options = {}) {
+    const response = await fetch(url, options);
+
+    if (response.status === 401) {
+        await handleLogout();
+        return await navigate("/login");
+    }
+
+    if (response.status === 403) {
+        return await navigate("/orders");
+    }
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || `Error ${response.status}`);
+    }
+
+    const contentLength = response.headers.get("content-length");
+
+    if (response.status === 204 || contentLength === "0") return null;
+
+    const contentType = response.headers.get("content-type");
+    if (contentType && contentType.includes("application/json")) {
+        return await response.json();
+    }
+
+    return null;
+}
+
+function debounce(func, delay) {
+    let timeoutId;
+    return function (...args) {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => func.apply(this, args), delay);
+    }
+}
+
+function smoothScroll(elementId) {
+    setTimeout(() => {
+        const element = document.getElementById(elementId);
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, 500);
+}
 
 async function startApp() {
     console.log("Checking authentication...");
@@ -86,16 +136,19 @@ async function submitReview(productId) {
     const comment = document.getElementById('review-comment').value;
     if (selectedRating === 0) return alert("Please select a star rating");
 
-    const res = await fetch(`/api/reviews/${productId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rating: selectedRating, comment: comment })
-    });
+    try {
+        const res = await apiFetch(`/api/reviews/${productId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ rating: selectedRating, comment: comment })
+        });
+        showToast("Review submitted!...");
+        await navigate(`/product/${productId}`);
 
-    if (res.ok) {
-        location.reload();
-    } else {
-        alert("You must be logged in to review!");
+        smoothScroll('reviews-list');
+
+    } catch (error) {
+        console.error("Error submitting review:", error);
     }
 }
 
@@ -116,17 +169,25 @@ async function changePage(direction) {
     await fetchAndRenderProducts();
 }
 
-async function fetchAndRenderProducts() {
+async function fetchAndRenderProducts(sortBy = null) {
     const container = document.getElementById('product-list-container');
 
     let url = `/api/products?page=${currentPage}&size=6`;
     if (currentSearch) url += `&search=${encodeURIComponent(currentSearch)}`;
     if (currentCategory) url += `&category=${encodeURIComponent(currentCategory)}`;
+    if (sortBy) url += `&sort=${sortBy}`;
 
     window.history.pushState(null, "", url.substring(5));
 
-    const res = await fetch(url);
-    const data = await res.json(); // This is the Page object
+    let res;
+    try {
+        res = await apiFetch(url);
+
+    } catch (error) {
+        console.error("Error fetching products:", error);
+        return;
+    }
+    const data = res; // This is the Page object
 
     totalPages = data.totalPages;
 
@@ -160,15 +221,10 @@ async function handleSearch(event) {
 async function deleteProduct(id) {
     if (!confirm("Are you sure? This will permanently remove this product.")) return;
 
-    const res = await fetch(`/api/admin/products/${id}`, {
+    const res = await apiFetch(`/api/admin/products/${id}`, {
         method: 'DELETE'
     });
 
-    if (res.ok) {
-        await router();
-    } else {
-        alert("Failed to delete product. It might be linked to existing orders.");
-    }
 }
 
 async function editProduct(id) {
@@ -182,20 +238,15 @@ async function updateProduct(event, id) {
     const data = Object.fromEntries(formData.entries());
 
     try {
-        const res = await fetch(`/api/admin/products/${id}`, {
+        const res = await apiFetch(`/api/admin/products/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
         });
 
-        if (res.ok) {
-            alert("Product updated successfully!");
-            window.history.pushState({}, "", "/admin");
-            await router();
-        } else {
-            const error = await res.text();
-            alert("Update failed: " + error);
-        }
+        showToast("Product updated successfully!");
+        await navigate("/admin");
+
     } catch (err) {
         console.error("Update Error:", err);
     }
@@ -208,39 +259,47 @@ async function saveProduct(event) {
 
     console.log("Submitting Product:", productData);
 
-    const res = await fetch('/api/admin/products', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(productData)
-    });
 
-    if (res.ok) {
-        alert("Product Added Successfully!");
+    try {
+        const res = await apiFetch('/api/admin/products', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(productData)
+        });
+
+        showToast("Product Added Successfully!");
         window.history.pushState({}, "", "/admin");
         await router();
-    } else {
-        const err = await res.text();
-        alert("Error: " + err);
+
+    } catch (error) {
+        showToast("Failed to save product: " + error.message);
+        return;
     }
 }
 
 async function updateOrderStatus(orderId, newStatus) {
 
-    const res = await fetch(`/api/admin/orders/${orderId}/status?status=${newStatus}`, {
-        method: 'PATCH'
-    });
+    try {
+        const res = await apiFetch(`/api/admin/orders/${orderId}/status?status=${newStatus}`, {
+            method: 'PATCH'
+        });
 
-    if (res.ok) {
-
-        const badge = document.getElementById(`status-badge-${orderId}`);
-        if (badge) {
-            badge.innerText = newStatus;
-            badge.className = `inline-block w-fit px-3 py-1 rounded-full text-[10px] font-bold uppercase ${statusColors[newStatus]}`;
-            showToast(`Order #${orderId} status updated to ${newStatus}`);
-        }
-    } else {
-        showToast("Failed to update status on the server.");
+    } catch (error) {
+        showToast("Error updating order status: " + error.message);
+        return;
     }
+
+    const badge = document.getElementById(`status-badge-${orderId}`);
+    if (badge) {
+        badge.innerText = newStatus;
+        badge.className = `inline-block w-fit px-3 py-1 rounded-full text-[10px] font-bold uppercase ${statusColors[newStatus]}`;
+        showToast(`Order #${orderId} status updated to ${newStatus}`);
+    }
+}
+
+function filterProducts() {
+    const filterValue = document.getElementById('products-filter').value;
+    fetchAndRenderProducts(filterValue);
 }
 
 function filterOrders() {
@@ -324,16 +383,17 @@ function renderUsers(users) {
 }
 
 async function updateUserRole(userId, newRole) {
-    const res = await fetch(`/api/admin/users/${userId}/role?role=${newRole}`, {
-        method: 'PATCH'
-    });
-    if (res.status === 400) {
-        showToast("Self-downgrade protected.");
-        return;
-    }
-    if (res.ok) {
+
+    try {
+        const res = await apiFetch(`/api/admin/users/${userId}/role?role=${newRole}`, {
+            method: 'PATCH'
+        });
+
         showToast("Permissions updated!");
         switchAdminTab('users'); // Refresh
+    } catch (error) {
+        showToast("Self-downgrade protected.");
+
     }
 }
 
@@ -351,14 +411,12 @@ async function switchAdminTab(tab) {
     });
 
     if (tab === 'orders') {
-        const res = await fetch('/api/admin/orders');
-        allOrdersCache = await res.json();
+        const allOrdersCache = await apiFetch('/api/admin/orders');
         renderOrders(allOrdersCache);
     }
 
     if (tab === 'users') {
-        const res = await fetch('/api/admin/users');
-        const users = await res.json();
+        const users = await apiFetch('/api/admin/users');
         renderUsers(users);
     }
 }
@@ -393,18 +451,17 @@ async function checkout() {
     checkoutBtn.innerText = "Processing...";
 
     try {
-        const response = await fetch('/api/orders/place', {
+        const response = await apiFetch('/api/orders/place', {
             method: 'POST'
         });
 
-        if (response.ok) {
 
-            cartState = [];
+        cartState = [];
 
-            updateCartBadge();
-            toggleCartDrawer();
+        updateCartBadge();
+        toggleCartDrawer();
 
-            document.getElementById('content').innerHTML = `
+        document.getElementById('content').innerHTML = `
                 <div class="text-center py-20 animate-fade-in">
                     <div class="bg-green-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
                         <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
@@ -416,14 +473,8 @@ async function checkout() {
                     </button>
                 </div>
             `;
-            checkoutBtn.disabled = false;
-            checkoutBtn.innerText = "Checkout";
-        } else {
-            const error = await response.text();
-            alert("Checkout failed: " + error);
-            checkoutBtn.disabled = false;
-            checkoutBtn.innerText = "Checkout";
-        }
+        checkoutBtn.disabled = false;
+        checkoutBtn.innerText = "Checkout";
     } catch (err) {
         console.error("Checkout Error:", err);
         checkoutBtn.disabled = false;
@@ -478,7 +529,7 @@ async function renderCartItems() {
 }
 
 async function removeFromCart(cartItemId) {
-    const response = await fetch(`/api/cart/remove/${cartItemId}`, {
+    const response = await apiFetch(`/api/cart/remove/${cartItemId}`, {
         method: 'DELETE'
     });
 
@@ -490,49 +541,56 @@ async function removeFromCart(cartItemId) {
 async function clearAllItems() {
     if (!confirm("Are you sure you want to empty your cart?")) return;
 
-    const response = await fetch('/api/cart/clear', {
-        method: 'DELETE'
-    });
+    try {
+        const response = await apiFetch('/api/cart/clear', {
+            method: 'DELETE'
+        });
 
-    if (response.ok) {
-        cartState = [];
-        renderCartItems();
-        updateCartBadge();
-        // toggleCartDrawer(); 
+    } catch (error) {
+        showToast("Error clearing cart: " + error.message);
     }
+
+    cartState = [];
+    renderCartItems();
+    updateCartBadge();
+    syncCartWithServer();
+    // toggleCartDrawer(); 
 }
 
 async function addToCart(productId) {
-    const response = await fetch(`/api/cart/add/${productId}`, {
-        method: 'POST'
-    });
 
-    if (response.status === 401) {
-        alert("Please log in to add items to your cart.");
-        window.history.pushState(null, "", "/login");
-        await router();
-        return;
+    try {
+        const response = await apiFetch(`/api/cart/add/${productId}`, {
+            method: 'POST'
+        });
+
+    } catch (error) {
+
     }
 
-    if (response.ok) {
-        await syncCartWithServer();
-        updateCartBadge();
-        toggleCartDrawer();
-    }
+    await syncCartWithServer();
+    updateCartBadge();
+    toggleCartDrawer();
 }
 
 async function syncCartWithServer() {
-    // console.log("Syncing cart with server...");
-    const res = await fetch('/api/cart');
-    if (res.ok) {
-        cartState = await res.json(); // This is now a List<CartItem>
-        renderCartItems();
 
-        const badge = document.getElementById('cart-count');
-        const totalQty = cartState.reduce((sum, item) => sum + item.quantity, 0);
-        badge.innerText = totalQty;
-        totalQty > 0 ? badge.classList.remove('hidden') : badge.classList.add('hidden');
+    let res;
+
+    try {
+        res = await apiFetch('/api/cart');
+        console.log("Cart Sync Response:", res);
+
+    } catch (error) {
+        showToast("Error syncing cart with server: " + error.message);
     }
+    cartState = res; // This is now a List<CartItem>
+    renderCartItems();
+
+    const badge = document.getElementById('cart-count');
+    const totalQty = cartState.reduce((sum, item) => sum + item.quantity, 0);
+    badge.innerText = totalQty;
+    totalQty > 0 ? badge.classList.remove('hidden') : badge.classList.add('hidden');
 }
 
 function updateCartBadge() {
@@ -587,25 +645,23 @@ const routes = {
     },
 
     '/admin': async () => {
+
         const template = await ComponentStore.load('admin-dashboard');
-
         // Fetch stats and the full product list
-        const [statsRes, productsRes] = await Promise.all([
-            fetch('/api/admin/stats'),
-            fetch('/api/products?size=100')
-        ]);
+        let [statsRes, productsRes] = []
 
-        if ([401, 403].includes(statsRes.status) || [401, 403].includes(productsRes.status)) {
-            console.warn("Access Denied to Admin. Redirecting...");
-            window.history.pushState(null, "", "/orders");
+        try {
+            [statsRes, productsRes] = await Promise.all([
+                apiFetch('/api/admin/stats'),
+                apiFetch('/api/products?size=100')
+            ]);
+
+        } catch (error) {
+            showToast("Error fetching admin stats or products: " + error.message);
         }
 
-        const [stats, productsPage] = await Promise.all([
-            statsRes.json(),
-            productsRes.json()
-        ]);
 
-        const productRows = productsPage.content.map(p => `
+        const productRows = productsRes.content.map(p => `
         <tr class="border-b border-gray-50 hover:bg-gray-50 transition">
             <td class="py-4 px-2 font-medium text-gray-900">${p.name}</td>
             <td class="py-4 px-2 text-gray-500">${p.category}</td>
@@ -624,17 +680,25 @@ const routes = {
     `).join('');
 
         return template
-            .replace('{{totalRevenue}}', stats.revenue?.toFixed(2))
-            .replace('{{totalOrders}}', stats.orders)
-            .replace('{{totalProducts}}', stats.products)
+            .replace('{{totalRevenue}}', statsRes.revenue?.toFixed(2))
+            .replace('{{totalOrders}}', statsRes.orders)
+            .replace('{{totalProducts}}', statsRes.products)
             .replace('{{productRows}}', productRows);
     },
 
     '/admin/add-product': async () => {
-        const [template, categoryRes] = await Promise.all([
-            ComponentStore.load('add-product'),
-            fetch('/api/categories').then(r => r.json())
-        ]);
+
+        let [template, categoryRes] = [];
+
+        try {
+            [template, categoryRes] = await Promise.all([
+                ComponentStore.load('add-product'),
+                apiFetch('/api/categories')
+            ]);
+
+        } catch (error) {
+            showToast("Error loading categories: " + error.message);
+        }
 
         const categoryOptions = categoryRes.map(cat =>
             `<option value="${cat.name}">${cat.name}</option>`
@@ -666,10 +730,16 @@ const routes = {
     `;
 
         setTimeout(async () => {
-            const res = await fetch('/api/admin/routes');
-            if (res.ok) {
-                const data = await res.json();
-                const rowsHtml = data.map(route => `
+
+            let data;
+            try {
+                data = await apiFetch('/api/admin/routes');
+            } catch (error) {
+                showToast("Error fetching API routes: " + error.message);
+                return;
+            }
+
+            const rowsHtml = data.map(route => `
                 <tr class="hover:bg-gray-50">
                     <td class="px-6 py-4 font-mono text-sm text-blue-600">
                         ${Array.isArray(route.path) ? route.path.join(', ') : route.path}
@@ -683,8 +753,7 @@ const routes = {
                     <td class="px-6 py-4 text-xs text-gray-400 italic">${route.handler}</td>
                 </tr>
             `).join('');
-                document.getElementById('api-route-rows').innerHTML = rowsHtml;
-            }
+            document.getElementById('api-route-rows').innerHTML = rowsHtml;
         }, 0);
 
         return template;
@@ -692,23 +761,22 @@ const routes = {
 
     '/products': async () => {
         // Fetch everything in parallel
-        const [template, cardTemplate, productRes, categoryRes] = await Promise.all([
-            ComponentStore.load('products'),
-            ComponentStore.load('product-card'),
-            fetch(
-                `/api/products?page=${currentPage}&size=6&search=${encodeURIComponent(currentSearch)}${currentCategory ? `&category=${encodeURIComponent(currentCategory)}` : ''}`
-            ).then(r => r.json()).catch(err => {
-                console.error("Product Fetch Error:", err);
-                return { content: [], totalPages: 0 };
-            }),
-            fetch('/api/categories').then(r => r.json())
-        ]);
+        const categoryParams = currentCategory ? `&category=${encodeURIComponent(currentCategory)}` : '';
+        const searchParams = encodeURIComponent(currentSearch);
+        const productsUrl = `/api/products?page=${currentPage}&size=6&search=${searchParams}${categoryParams}`;
+        let [template, cardTemplate, productRes, categoryRes] = [];
 
-        console.log("Fetched Products: ======> ", productRes);
-        if (productRes.status === 401) {
-            window.history.pushState(null, "", "/login");
-            isAuth = false;
-            return await router();
+        try {
+            [template, cardTemplate, productRes, categoryRes] = await Promise.all([
+                ComponentStore.load('products'),
+                ComponentStore.load('product-card'),
+                apiFetch(productsUrl),
+                apiFetch('/api/categories')
+            ]);
+        } catch (error) {
+            showToast("Error loading products or categories: " + error.message);
+            window.history.pushState(null, "", productsUrl.replace(currentPage, 0)); // Reset to first page on error
+            return productRes = { content: [], totalPages: 0 };
         }
 
         // Product List
@@ -752,8 +820,16 @@ const routes = {
 
     '/orders': async () => {
         const template = await ComponentStore.load('orders');
-        const res = await fetch('/api/orders/my-orders');
-        const orders = await res.json();
+
+        let orders = [];
+
+        try {
+            orders = await apiFetch('/api/orders/my-orders');
+
+        } catch (error) {
+            showToast("Error loading orders: " + error.message);
+            return template.replace('{{orderList}}', '<p class="text-center py-10 text-gray-500">Failed to load orders.</p>');
+        }
 
         if (orders.length === 0) {
             return template.replace('{{orderList}}', '<p class="text-center py-10 text-gray-500">No orders found yet.</p>');
@@ -791,8 +867,14 @@ const routes = {
 
     '/product/:id': async (params) => {
         const template = await ComponentStore.load('product-detail');
-        const res = await fetch(`/api/products/${params.id}`);
-        const p = await res.json();
+
+        let p;
+
+        try {
+            p = await apiFetch(`/api/products/${params.id}`);
+        } catch (error) {
+            showToast("Error loading product details: " + error.message);
+        }
 
         // HTML for the reviews list
         const reviewsHtml = p.reviews.length > 0 ? p.reviews.map(rev => `
@@ -801,33 +883,44 @@ const routes = {
                 <span class="font-bold text-sm text-gray-900">${rev.userEmail}</span>
                 <span class="text-yellow-400 font-bold">${'★'.repeat(rev.rating)}</span>
             </div>
-            <p class="text-gray-600 text-sm">${rev.comment}</p>
-            <p class="text-[10px] text-gray-400 mt-2">${new Date(rev.date).toLocaleDateString()}</p>
+                <p class="text-gray-600 text-sm">${rev.comment}</p>
+                <p class="text-[10px] text-gray-400 mt-2">${new Date(rev.date).toLocaleString()}</p>
+            </div>
         </div>
-    `).join('') : '<p class="text-gray-400 italic">No reviews yet. Be the first!</p>';
-
+        `).join('') : '<p class="text-gray-400 italic">No reviews yet. Be the first!</p>';
+        console.log("Product Detail Data:", p);
         return template
             .replace(/{{name}}/g, p.name)
+            .replace(/{{stock}}/g, p.stock > 0 ? '<span class="text-green-600 font-bold">' + p.stock + ' in stock</span>' : '<span class="text-red-600 font-bold">Out of stock</span>')
             .replace(/{{description}}/g, p.description)
             .replace(/{{price}}/g, p.price.toFixed(2))
-            .replace(/{{category}}/g, p.categoryName)
+            .replace(/{{category}}/g, p.category)
             .replace(/{{id}}/g, p.id)
             .replace('{{reviewsHtml}}', reviewsHtml);
     },
 
     '/admin/edit-product/:id': async (params) => {
 
-        const [template, product, categories] = await Promise.all([
-            ComponentStore.load('add-product'),
-            fetch(`/api/products/${params.id}`).then(r => r.json()),
-            fetch('/api/categories').then(r => r.json())
-        ]);
+        let [template, product, categories] = [];
+
+        try {
+            [template, product, categories] = await Promise.all([
+                ComponentStore.load('add-product'),
+                apiFetch(`/api/products/${params.id}`),
+                apiFetch('/api/categories')
+            ]);
+
+        } catch (error) {
+            showToast("Error loading product details: " + error.message);
+        }
+
+        console.log("Edit Product Data:", { product, categories });
 
         const options = categories.map(c => `
-        <option value="${c.name}" ${c.name === product.categoryName ? 'selected' : ''}>
-            ${c.name}
-        </option>
-    `).join('');
+            <option value="${c.name}" ${c.name === product.category ? 'selected' : ''}>
+                ${c.name}
+            </option>
+        `).join('');
 
         return template
             .replace('Create New Product', `Edit Product: ${product.name}`)
@@ -933,23 +1026,26 @@ async function handleLogin(event) {
     const formData = new FormData(event.target);
     const data = Object.fromEntries(formData.entries());
 
-    const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-    });
+    let user;
 
-    if (response.ok) {
-        user = await response.json();
-        // alert(`Welcome back, ${user.email}!`);
-        isAuth = true;
-        window.history.pushState(null, "", "/");
-        await router();
-        localStorage.setItem('user', JSON.stringify(user));
-        document.getElementById('userName').innerText = user.email.split('@')[0];
-    } else {
-        alert("Login failed! Check your credentials.");
+    try {
+        user = await apiFetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+    } catch (error) {
+        showToast("Login failed: " + error.message);
+        return;
     }
+
+    syncCartWithServer(); // Load cart after login
+    isAuth = true;
+    window.history.pushState(null, "", "/");
+    await router();
+    localStorage.setItem('user', JSON.stringify(user));
+    document.getElementById('userName').innerText = user.email.split('@')[0];
+    showToast("Login successful!");
 }
 
 async function handleLogout(event) {
@@ -957,12 +1053,10 @@ async function handleLogout(event) {
         method: 'POST'
     });
     if (response.ok) {
-        // alert("You have been logged out.");
         localStorage.removeItem('user');
-        window.history.pushState(null, "", "/login");
         isAuth = false;
-        await router();
+        await navigate('/login');
     } else {
-        alert("Logout failed. Please try again.");
+        showToast("Logout failed. Please try again.");
     }
 }

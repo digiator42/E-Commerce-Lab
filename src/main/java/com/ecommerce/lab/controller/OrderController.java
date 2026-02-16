@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,18 +29,17 @@ public class OrderController {
     }
 
     @PostMapping("/place")
-    public ResponseEntity<?> placeOrder(Principal principal) {
+    public ResponseEntity<?> placeOrder(Authentication authentication) {
 
-        if (principal == null) {
+        if (authentication == null || !authentication.isAuthenticated()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Please login to checkout.");
         }
 
         try {
-            orderService.placeOrder(principal.getName());
+            orderService.placeOrder(authentication.getName());
             return ResponseEntity.ok(Map.of("message", "Order successfully created"));
-        } catch (RuntimeException e) {
-            // Cart is empty
-            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
 
