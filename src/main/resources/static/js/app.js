@@ -7,6 +7,7 @@ let searchTimeout;
 let currentCategory = null;
 let selectedRating = 0;
 let allOrdersCache = [];
+let user = null;
 
 const statusColors = {
     'PENDING': 'bg-yellow-100 text-yellow-700',
@@ -23,7 +24,7 @@ async function startApp() {
 
     console.log("Auth check complete. isAuth:", isAuth);
 
-    const user = JSON.parse(localStorage.getItem('user'));
+    user = JSON.parse(localStorage.getItem('user'));
     console.log("Current User:", user);
 
     await router();
@@ -326,6 +327,10 @@ async function updateUserRole(userId, newRole) {
     const res = await fetch(`/api/admin/users/${userId}/role?role=${newRole}`, {
         method: 'PATCH'
     });
+    if (res.status === 400) {
+        showToast("Self-downgrade protected.");
+        return;
+    }
     if (res.ok) {
         showToast("Permissions updated!");
         switchAdminTab('users'); // Refresh
@@ -585,9 +590,19 @@ const routes = {
         const template = await ComponentStore.load('admin-dashboard');
 
         // Fetch stats and the full product list
+        const [statsRes, productsRes] = await Promise.all([
+            fetch('/api/admin/stats'),
+            fetch('/api/products?size=100')
+        ]);
+
+        if ([401, 403].includes(statsRes.status) || [401, 403].includes(productsRes.status)) {
+            console.warn("Access Denied to Admin. Redirecting...");
+            window.history.pushState(null, "", "/orders");
+        }
+
         const [stats, productsPage] = await Promise.all([
-            fetch('/api/admin/stats').then(r => r.json()),
-            fetch('/api/products?size=100').then(r => r.json())
+            statsRes.json(),
+            productsRes.json()
         ]);
 
         const productRows = productsPage.content.map(p => `
@@ -609,7 +624,7 @@ const routes = {
     `).join('');
 
         return template
-            .replace('{{totalRevenue}}', stats.revenue.toFixed(2))
+            .replace('{{totalRevenue}}', stats.revenue?.toFixed(2))
             .replace('{{totalOrders}}', stats.orders)
             .replace('{{totalProducts}}', stats.products)
             .replace('{{productRows}}', productRows);
@@ -833,6 +848,8 @@ const routes = {
 async function isLoggedIn() {
     const response = await fetch('/api/auth/is-logged-in');
     console.log("Auth Check Response:", response);
+    user = await response.json();
+    console.log("Auth Check User:", user);
     return response.ok;
 }
 
@@ -852,6 +869,12 @@ async function router(event) {
 
     console.log("isAuth:", isAuth);
 
+    if (path.startsWith('/admin') && user.role !== 'ROLE_ADMIN') {
+        console.error("User is not an admin. Diverting...");
+        window.history.pushState(null, "", "/orders");
+        return await router();
+    }
+
     if (!isAuth && !publicPaths.includes(path)) {
         console.log("Access Denied. Redirecting to login...");
         window.history.pushState(null, "", "/login");
@@ -864,7 +887,7 @@ async function router(event) {
         return await router();
     }
 
-    let routeAction = routes[path];
+    let routeAction = await routes[path];
 
     console.log("Routing to:", routeAction);
 
@@ -884,6 +907,7 @@ async function router(event) {
 
     if (routeAction) {
         const html = await routeAction();
+        console.log("Rendered HTML Length:", html?.length);
         document.getElementById('content').innerHTML = html;
 
         window.scrollTo(0, 0);
@@ -916,7 +940,7 @@ async function handleLogin(event) {
     });
 
     if (response.ok) {
-        const user = await response.json();
+        user = await response.json();
         // alert(`Welcome back, ${user.email}!`);
         isAuth = true;
         window.history.pushState(null, "", "/");

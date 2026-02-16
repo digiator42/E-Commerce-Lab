@@ -68,7 +68,7 @@ public class DataSeeder {
             return;
 
         User admin = new User();
-        admin.setEmail("admin@ecommerce.com");
+        admin.setEmail("admin@admin.com");
         admin.setPassword(passwordEncoder.encode("admin123"));
         admin.setRole(Role.ROLE_ADMIN);
         userRepo.save(admin);

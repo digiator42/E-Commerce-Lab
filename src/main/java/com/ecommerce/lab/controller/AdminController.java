@@ -1,12 +1,18 @@
 package com.ecommerce.lab.controller;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -140,11 +146,31 @@ public class AdminController {
     }
 
     @PatchMapping("/users/{id}/role")
-    public ResponseEntity<?> updateUserRole(@PathVariable Long id, @RequestParam Role role) {
-        User user = userRepository.findById(id).orElseThrow();
+    public ResponseEntity<?> updateUserRole(
+            @PathVariable Long id,
+            @RequestParam Role role) {
 
-        user.setRole(role);
-        userRepository.save(user);
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        if (auth == null || !auth.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        String loggedInIdentifier = auth.getName();
+
+        User targetUser = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if ((Objects.equals(targetUser.getUserName(), loggedInIdentifier) ||
+                Objects.equals(targetUser.getEmail(), loggedInIdentifier)) &&
+                role != Role.ROLE_ADMIN) {
+
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "Self-downgrade protected."));
+        }
+
+        targetUser.setRole(role);
+        userRepository.save(targetUser);
         return ResponseEntity.ok().build();
     }
 
