@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
+import com.ecommerce.lab.dto.CartItemResponseDTO;
 import com.ecommerce.lab.model.CartItem;
 import com.ecommerce.lab.model.Product;
 import com.ecommerce.lab.model.User;
@@ -49,7 +50,7 @@ public class CartService {
         }
     }
     
-    public List<CartItem> getCartItems(String email) {
+    public List<CartItemResponseDTO> getCartItems(String email) {
         return cartRepository.findByUserEmail(email);
     }
 }

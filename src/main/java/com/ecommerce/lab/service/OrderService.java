@@ -26,7 +26,7 @@ public class OrderService {
 
     @Transactional
     public void placeOrder(String email) {
-        List<CartItem> cartItems = cartRepository.findByUserEmail(email);
+        List<CartItem> cartItems = cartRepository.findAllByUserEmail(email);
         if (cartItems.isEmpty())
             throw new RuntimeException("Cart is empty");
 

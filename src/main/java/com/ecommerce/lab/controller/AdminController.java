@@ -68,8 +68,10 @@ public class AdminController {
     private final RequestMappingHandlerMapping handlerMapping;
     private final UserRepository userRepository;
 
-    public AdminController(ProductRepository productRepository, OrderRepository orderRepository,
-            CategoryRepository categoryRepository, RequestMappingHandlerMapping handlerMapping,
+    public AdminController(ProductRepository productRepository,
+            OrderRepository orderRepository,
+            CategoryRepository categoryRepository,
+            RequestMappingHandlerMapping handlerMapping,
             UserRepository userRepository) {
         this.productRepository = productRepository;
         this.orderRepository = orderRepository;

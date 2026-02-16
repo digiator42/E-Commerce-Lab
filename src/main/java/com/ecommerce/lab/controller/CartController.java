@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ecommerce.lab.dto.CartItemResponseDTO;
 import com.ecommerce.lab.model.CartItem;
 import com.ecommerce.lab.repository.CartRepository;
 import com.ecommerce.lab.service.CartService;
@@ -38,13 +39,13 @@ public class CartController {
     }
 
     @GetMapping
-    public ResponseEntity<List<CartItem>> getCart(Principal principal) {
+    public ResponseEntity<?> getCart(Principal principal) {
 
         if (principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        List<CartItem> items = cartService.getCartItems(principal.getName());
+        List<CartItemResponseDTO> items = cartService.getCartItems(principal.getName());
         return ResponseEntity.ok(items);
     }
 
@@ -56,7 +57,7 @@ public class CartController {
 
     @DeleteMapping("/clear")
     public ResponseEntity<?> clearCart(Principal principal) {
-        List<CartItem> items = cartRepository.findByUserEmail(principal.getName());
+        List<CartItem> items = cartRepository.findAllByUserEmail(principal.getName());
         cartRepository.deleteAll(items);
         return ResponseEntity.ok().build();
     }

@@ -468,8 +468,6 @@ async function switchAdminTab(tab) {
     }
 }
 
-syncCartWithServer(); // Initial sync on page load
-
 function toggleCartDrawer() {
     const drawer = document.getElementById('cart-drawer');
     const overlay = document.getElementById('cart-overlay');
@@ -546,14 +544,21 @@ async function renderCartItems() {
         const itemTotal = (product.price * item.quantity).toFixed(2);
 
         return `
-            <div class="flex items-center justify-between border-b border-gray-100 pb-4 group">
+            <div class="flex items-center space-x-4 border-b border-gray-100 pb-4 group">
+                <div class="flex-shrink-0 w-16 h-16 bg-gray-50 rounded-lg overflow-hidden">
+                    <img src="${product.imageUrl || '/api/placeholder/64/64'}" 
+                        alt="${product.name}" 
+                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                </div>
+
                 <div class="flex-grow">
-                    <h4 class="font-bold text-sm text-gray-800">${product.name}</h4>
+                    <h4 class="font-bold text-sm text-gray-800 line-clamp-1">${product.name}</h4>
                     <div class="flex items-center space-x-2 mt-1">
                         <span class="text-blue-600 font-semibold text-xs">$${product.price.toFixed(2)}</span>
                         <span class="text-gray-400 text-[10px]">x ${item.quantity}</span>
                     </div>
                 </div>
+
                 <div class="flex flex-col items-end space-y-2">
                     <span class="font-bold text-sm text-gray-900">$${itemTotal}</span>
                     <button onclick="removeFromCart(${item.id})" class="text-gray-400 hover:text-red-500 transition-colors p-1">
@@ -562,8 +567,7 @@ async function renderCartItems() {
                         </svg>
                     </button>
                 </div>
-            </div>
-        `;
+            </div>`;
     }).join('');
 
     container.innerHTML = html;
@@ -580,9 +584,7 @@ async function removeFromCart(cartItemId) {
         method: 'DELETE'
     });
 
-    if (response.ok) {
-        await syncCartWithServer(); // Refresh state from DB
-    }
+    await syncCartWithServer(); // Refresh state from DB
 }
 
 async function clearAllItems() {
@@ -635,6 +637,7 @@ async function syncCartWithServer() {
         showToast("Error syncing cart with server: " + error.message);
     }
     cartState = res; // This is now a List<CartItem>
+    console.log("Updated Cart State: ==>", cartState);
     renderCartItems();
 
     const badge = document.getElementById('cart-count');
@@ -1040,6 +1043,8 @@ async function router(event) {
     let routeAction = await routes[path];
 
     console.log("Routing to:", routeAction);
+
+    await syncCartWithServer(); // Refresh state from DB
 
     if (!routeAction) {
         const editMatch = path.match(/^\/admin\/edit-product\/(\d+)$/);
