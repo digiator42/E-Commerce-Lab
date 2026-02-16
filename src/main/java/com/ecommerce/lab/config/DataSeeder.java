@@ -70,6 +70,7 @@ public class DataSeeder {
         User admin = new User();
         admin.setEmail("admin@admin.com");
         admin.setPassword(passwordEncoder.encode("admin123"));
+        admin.setName("Admin");
         admin.setRole(Role.ROLE_ADMIN);
         userRepo.save(admin);
         System.out.println("==> Created admin user successfully.");
