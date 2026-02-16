@@ -3,11 +3,13 @@ package com.ecommerce.lab.model;
 import java.util.List;
 
 import jakarta.persistence.*;
+import jakarta.transaction.Transactional;
 import lombok.Data;
 
 @Entity
 @Table(name = "products")
 @Data
+@Transactional
 public class Product {
 
     @Id
@@ -35,5 +37,6 @@ public class Product {
 
     private String brand;
 
+    @Column(columnDefinition = "TEXT")
     private String imageUrl;
 }

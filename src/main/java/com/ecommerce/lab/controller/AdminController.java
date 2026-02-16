@@ -1,18 +1,30 @@
 package com.ecommerce.lab.controller;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.Principal;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.core.io.UrlResource;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -21,14 +33,17 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.method.HandlerMethod;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import com.ecommerce.lab.dto.ProductRequestDTO;
+import com.ecommerce.lab.dto.ProductResponseDTO;
 import com.ecommerce.lab.dto.UserResponseDTO;
 import com.ecommerce.lab.model.Category;
 import com.ecommerce.lab.model.Order;
@@ -40,6 +55,8 @@ import com.ecommerce.lab.repository.CategoryRepository;
 import com.ecommerce.lab.repository.OrderRepository;
 import com.ecommerce.lab.repository.ProductRepository;
 import com.ecommerce.lab.repository.UserRepository;
+
+import tools.jackson.databind.ObjectMapper;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -75,8 +92,14 @@ public class AdminController {
                 "revenue", totalRevenue));
     }
 
-    @PostMapping("/products")
-    public ResponseEntity<?> createProduct(@RequestBody ProductRequestDTO dto) {
+    @PostMapping(value = "/products", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> createProduct(
+            @RequestPart("product") String productJson,
+            @RequestPart(value = "file", required = false) MultipartFile file) throws IOException {
+
+        ObjectMapper mapper = new ObjectMapper();
+        ProductRequestDTO dto = mapper.readValue(productJson, ProductRequestDTO.class);
+
         Category category = categoryRepository.findByName(dto.categoryName())
                 .orElseThrow(() -> new RuntimeException("Category not found"));
 
@@ -86,6 +109,21 @@ public class AdminController {
         product.setPrice(dto.price());
         product.setStock(dto.stock());
         product.setCategory(category);
+
+        // Handle File if present
+        if (file != null && !file.isEmpty()) {
+            String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+            Path uploadPath = Paths.get("uploads");
+
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+
+            Path filePath = uploadPath.resolve(fileName);
+            Files.write(filePath, file.getBytes());
+
+            product.setImageUrl("/api/images/" + fileName);
+        }
 
         Product saved = productRepository.save(product);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
@@ -172,6 +210,48 @@ public class AdminController {
         targetUser.setRole(role);
         userRepository.save(targetUser);
         return ResponseEntity.ok().build();
+    }
+
+    private final String UPLOAD_DIR = "uploads/";
+
+    @PostMapping("/products/{id}/upload-image")
+    public ResponseEntity<?> uploadImage(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
+        try {
+            // Validate File
+            String contentType = file.getContentType();
+            if (contentType == null || !contentType.startsWith("image/")) {
+                return ResponseEntity.badRequest().body("Only images are allowed");
+            }
+
+            // Generate a Unique, Clean Filename
+            String extension = StringUtils.getFilenameExtension(file.getOriginalFilename());
+            String cleanName = UUID.randomUUID().toString() + "." + extension;
+
+            // Save to Local Filesystem
+            Path path = Paths.get(UPLOAD_DIR + cleanName);
+            Files.createDirectories(path.getParent());
+            Files.write(path, file.getBytes());
+
+            // Save only the Filename in the DB
+            Product product = productRepository.findById(id).orElseThrow();
+            product.setImageUrl("/api/images/" + cleanName); // Virtual path
+            productRepository.save(product);
+
+            return ResponseEntity.ok("Image uploaded successfully");
+        } catch (IOException e) {
+            return ResponseEntity.status(500).body("Upload failed");
+        }
+    }
+
+    @GetMapping("/api/images/{filename}")
+    public ResponseEntity<Resource> getImage(@PathVariable String filename) throws MalformedURLException {
+        Path path = Paths.get("uploads/" + filename);
+        Resource resource = new UrlResource(path.toUri());
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.IMAGE_JPEG) // Or detect based on extension
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline")
+                .body(resource);
     }
 
     @GetMapping("/routes")

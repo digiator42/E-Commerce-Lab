@@ -11,6 +11,7 @@ public record ProductResponseDTO(
         Double price,
         Integer stock,
         String category,
+        String imageUrl,
         List<ReviewDTO> reviews) {
 
     public static ProductResponseDTO fromEntity(Product product) {
@@ -21,6 +22,7 @@ public record ProductResponseDTO(
                 product.getPrice(),
                 product.getStock(),
                 product.getCategory().getName(),
+                product.getImageUrl(),
                 product.getReviews().stream()
                         .map(r -> new ReviewDTO(r.getUser().getEmail(), r.getRating(), r.getComment(),
                                 r.getCreatedAt()))
