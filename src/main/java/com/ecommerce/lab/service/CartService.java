@@ -49,8 +49,12 @@ public class CartService {
             cartRepository.save(newItem);
         }
     }
-    
+
     public List<CartItemResponseDTO> getCartItems(String email) {
-        return cartRepository.findByUserEmail(email);
+        List<CartItem> entities = cartRepository.findAllByUserEmail(email);
+
+        return entities.stream()
+                .map(CartItemResponseDTO::fromEntity)
+                .toList();
     }
 }

@@ -540,13 +540,13 @@ async function renderCartItems() {
 
     let html = cartState.map((item) => {
 
-        const product = item.product;
+        const product = item;
         const itemTotal = (product.price * item.quantity).toFixed(2);
 
         return `
             <div class="flex items-center space-x-4 border-b border-gray-100 pb-4 group">
                 <div class="flex-shrink-0 w-16 h-16 bg-gray-50 rounded-lg overflow-hidden">
-                    <img src="${product.imageUrl || '/api/placeholder/64/64'}" 
+                    <img src="${product.imageUrl || 'https://placehold.co/600x400/EEE/31343C'}" 
                         alt="${product.name}" 
                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                 </div>
@@ -572,7 +572,7 @@ async function renderCartItems() {
 
     container.innerHTML = html;
 
-    const total = cartState.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
+    const total = cartState.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     totalEl.innerText = `$${total.toFixed(2)}`;
 
     const totalQty = cartState.reduce((sum, item) => sum + item.quantity, 0);
