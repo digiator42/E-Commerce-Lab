@@ -83,15 +83,18 @@ async function startApp() {
 
 startApp();
 
-function showToast(msg, duration = 3000) {
+function showToast(msg, type = "success", duration = 3000) {
     const toast = document.createElement('div');
-    toast.className = 'fixed top-4 right-4 bg-gray-900 text-white px-6 py-3 rounded-lg shadow-lg animate-fade-in z-50';
+
+    const bgColor = type === "error" ? "bg-red-600" : "bg-gray-900";
+
+    toast.className = `fixed top-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg animate-fade-in z-50`;
     toast.innerText = msg;
 
     document.body.appendChild(toast);
 
     setTimeout(() => {
-        toast.classList.add('opacity-0', 'transition-opacity');
+        toast.classList.add('opacity-0', 'transition-opacity', 'duration-300');
         setTimeout(() => toast.remove(), 300);
     }, duration);
 }
@@ -176,7 +179,7 @@ async function submitReview(productId) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ rating: selectedRating, comment: comment })
         });
-        showToast("Review submitted!...");
+        showToast("Review submitted!...", "success", 2000);
         await navigate(`/product/${productId}`);
 
         smoothScroll('reviews-list');
@@ -262,6 +265,8 @@ async function deleteProduct(id) {
         method: 'DELETE'
     });
 
+    document.getElementById(`delete-product-${id}`).remove(); // Optimistic UI update
+
 }
 
 async function editProduct(id) {
@@ -281,7 +286,7 @@ async function updateProduct(event, id) {
             body: JSON.stringify(data)
         });
 
-        showToast("Product updated successfully!");
+        showToast("Product updated successfully!", "success", 2000);
         await navigate("/admin");
 
     } catch (err) {
@@ -332,7 +337,7 @@ async function updateOrderStatus(orderId, newStatus) {
         });
 
     } catch (error) {
-        showToast("Error updating order status: " + error.message);
+        showToast("Error updating order status: " + error.message, "error");
         return;
     }
 
@@ -340,7 +345,7 @@ async function updateOrderStatus(orderId, newStatus) {
     if (badge) {
         badge.innerText = newStatus;
         badge.className = `inline-block w-fit px-3 py-1 rounded-full text-[10px] font-bold uppercase ${statusColors[newStatus]}`;
-        showToast(`Order #${orderId} status updated to ${newStatus}`);
+        showToast(`Order #${orderId} status updated to ${newStatus}`, "success", 2000);
     }
 }
 
@@ -436,10 +441,10 @@ async function updateUserRole(userId, newRole) {
             method: 'PATCH'
         });
 
-        showToast("Permissions updated!");
+        showToast("Permissions updated!", "success", 2000);
         switchAdminTab('users'); // Refresh
     } catch (error) {
-        showToast("Self-downgrade protected.");
+        showToast("Self-downgrade protected.", "error");
 
     }
 }
@@ -486,42 +491,107 @@ function toggleCartDrawer() {
     }
 }
 
-async function checkout() {
+async function checkout(event) {
     const checkoutBtn = event.target;
 
-    if (cartState.length === 0) return showToast("Your cart is empty!");
+    if (cartState.length === 0) return showToast("Your cart is empty!", "error");
 
-    // Prevent double clicks
     checkoutBtn.disabled = true;
     checkoutBtn.innerText = "Processing...";
 
-    try {
-        const response = await apiFetch('/api/orders/place', {
-            method: 'POST'
-        });
+    openPaymentModal();
+}
 
+function openPaymentModal() {
+    const total = cartState.reduce((sum, item) => sum + (item.price * item.quantity), 0).toFixed(2);
+    const modalHtml = `
+        <div id="payment-overlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-43 flex items-center justify-center p-4">
+            <div class="bg-white w-full max-w-md rounded-3xl p-8 shadow-2xl scale-in-center">
+                <h3 class="text-2xl font-black mb-6">Fake Secure Payment</h3>
+                <div class="space-y-4">
+                    <div class="bg-gray-100 p-4 rounded-2xl flex justify-between">
+                        <span class="text-gray-500">Total to Pay</span>
+                        <span class="font-black text-blue-600">$${total}</span>
+                    </div>
+                    <input type="text" placeholder="Card Number" class="w-full p-4 bg-gray-50 rounded-xl border-none ring-1 ring-gray-200 focus:ring-2 focus:ring-blue-500">
+                    <div class="grid grid-cols-2 gap-4">
+                        <input type="text" placeholder="MM/YY" class="p-4 bg-gray-50 rounded-xl border-none ring-1 ring-gray-200">
+                        <input type="text" id="card-cvv" placeholder="CVV (3 digits)" class="p-4 bg-gray-50 rounded-xl border-none ring-1 ring-gray-200">
+                    </div>
+                </div>
+                <div class="mt-8 flex gap-4">
+                    <button onclick="closePaymentModal()" class="flex-1 font-bold text-gray-400">Cancel</button>
+                    <button onclick="processFakePayment()" id="pay-now-btn" class="flex-1 bg-black text-white py-4 rounded-2xl font-bold hover:bg-blue-600 transition">
+                        Pay Now
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+}
+
+function closePaymentModal() {
+    const modal = document.getElementById('payment-overlay');
+    if (modal) modal.remove();
+    const checkoutBtn = document.getElementById('checkout-btn');
+
+    checkoutBtn.disabled = false;
+    checkoutBtn.innerText = "Checkout";
+}
+
+async function processFakePayment() {
+    const btn = document.getElementById('pay-now-btn');
+    const cvv = document.getElementById('card-cvv').value;
+
+    btn.innerText = "Verifying...";
+    btn.disabled = true;
+
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    if (cvv === "000") {
+        showToast("Payment Declined: Insufficient Funds", "error");
+        btn.innerText = "Try Again";
+        btn.disabled = false;
+        return;
+    }
+
+    await finalizeCheckout();
+}
+
+async function finalizeCheckout() {
+
+    const checkoutBtn = document.getElementById('checkout-btn');
+
+    try {
+        const response = await apiFetch('/api/orders/place', { method: 'POST' });
 
         cartState = [];
-
         updateCartBadge();
         toggleCartDrawer();
 
         document.getElementById('content').innerHTML = `
-                <div class="text-center py-20 animate-fade-in">
-                    <div class="bg-green-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
-                    </div>
-                    <h2 class="text-4xl font-black text-gray-900 mb-4">Success!</h2>
-                    <p class="text-gray-600 text-lg mb-8">Your order has been received and is being processed.</p>
-                    <button onclick="window.location.href='/products'; router(event);" class="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-black transition">
-                        Back to Shop
-                    </button>
+            <div class="text-center py-20 animate-fade-in">
+                <div class="bg-green-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
                 </div>
-            `;
+                <h2 class="text-4xl font-black text-gray-900 mb-4">Success!</h2>
+                <p class="text-gray-600 text-lg mb-8">Your order has been received. Transaction ID: #FAKE-${Math.floor(Math.random() * 100000000)}</p>
+                <button onclick="navigate('/products')" class="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-black transition">
+                    Back to Shop
+                </button>
+            </div>
+        `;
+
+        closePaymentModal();
+        await syncCartWithServer();
+
         checkoutBtn.disabled = false;
         checkoutBtn.innerText = "Checkout";
     } catch (err) {
-        console.error("Checkout Error:", err);
+        showToast("Order Creation Failed: " + err.message, "error", 5000);
+        closePaymentModal();
+        await syncCartWithServer();
         checkoutBtn.disabled = false;
         checkoutBtn.innerText = "Checkout";
     }
@@ -539,6 +609,8 @@ async function renderCartItems() {
     }
 
     let html = cartState.map((item) => {
+
+        console.log("Rendering cart item: ==> ", item);
 
         const product = item;
         const itemTotal = (product.price * item.quantity).toFixed(2);
@@ -596,7 +668,7 @@ async function clearAllItems() {
         });
 
     } catch (error) {
-        showToast("Error clearing cart: " + error.message);
+        showToast("Error clearing cart: " + error.message, "error");
     }
 
     cartState = [];
@@ -634,9 +706,9 @@ async function syncCartWithServer() {
         console.log("Cart Sync Response:", res);
 
     } catch (error) {
-        showToast("Error syncing cart with server: " + error.message);
+        showToast("Error syncing cart with server: " + error.message, "error");
     }
-    cartState = res; // This is now a List<CartItem>
+    cartState = res; // This is now a List<dto>
     console.log("Updated Cart State: ==>", cartState);
     renderCartItems();
 
@@ -710,12 +782,12 @@ const routes = {
             ]);
 
         } catch (error) {
-            showToast("Error fetching admin stats or products: " + error.message);
+            showToast("Error fetching admin stats or products: " + error.message, "error");
         }
 
 
         const productRows = productsRes.content.map(p => `
-        <tr class="border-b border-gray-50 hover:bg-gray-50 transition">
+        <tr id="delete-product-${p.id}" class="border-b border-gray-50 hover:bg-gray-50 transition">
             <td class="py-4 px-2 font-medium text-gray-900">${p.name}</td>
             <td class="py-4 px-2 text-gray-500">${p.category}</td>
             <td class="py-4 px-2 font-bold text-blue-600">$${p.price.toFixed(2)}</td>
@@ -750,7 +822,7 @@ const routes = {
             ]);
 
         } catch (error) {
-            showToast("Error loading categories: " + error.message);
+            showToast("Error loading categories: " + error.message, "error");
         }
 
         const categoryOptions = categoryRes.map(cat =>
@@ -788,7 +860,7 @@ const routes = {
             try {
                 data = await apiFetch('/api/admin/routes');
             } catch (error) {
-                showToast("Error fetching API routes: " + error.message);
+                showToast("Error fetching API routes: " + error.message, "error");
                 return;
             }
 
@@ -827,7 +899,7 @@ const routes = {
                 apiFetch('/api/categories')
             ]);
         } catch (error) {
-            showToast("Error loading products or categories: " + error.message);
+            showToast("Error loading products or categories: " + error.message, "error");
             window.history.pushState(null, "", productsUrl.replace(currentPage, 0)); // Reset to first page on error
             return productRes = { content: [], totalPages: 0 };
         }
@@ -883,7 +955,7 @@ const routes = {
             orders = await apiFetch('/api/orders/my-orders');
 
         } catch (error) {
-            showToast("Error loading orders: " + error.message);
+            showToast("Error loading orders: " + error.message, "error");
             return template.replace('{{orderList}}', '<p class="text-center py-10 text-gray-500">Failed to load orders.</p>');
         }
 
@@ -929,7 +1001,7 @@ const routes = {
         try {
             p = await apiFetch(`/api/products/${params.id}`);
         } catch (error) {
-            showToast("Error loading product details: " + error.message);
+            showToast("Error loading product details: " + error.message, "error");
         }
 
         // HTML for the reviews list
@@ -971,7 +1043,7 @@ const routes = {
             ]);
 
         } catch (error) {
-            showToast("Error loading product details: " + error.message);
+            showToast("Error loading product details: " + error.message, "error");
         }
 
         console.log("Edit Product Data:", { product, categories });
@@ -1097,7 +1169,7 @@ async function handleLogin(event) {
             body: JSON.stringify(data)
         });
     } catch (error) {
-        showToast("Login failed: " + error.message);
+        showToast("Login failed: " + error.message, "error");
         return;
     }
 
@@ -1107,7 +1179,7 @@ async function handleLogin(event) {
     await router();
     localStorage.setItem('user', JSON.stringify(user));
     document.getElementById('userName').innerText = user.email.split('@')[0];
-    showToast("Login successful!");
+    showToast("Login successful!", "success");
 }
 
 async function handleLogout(event) {
@@ -1119,6 +1191,6 @@ async function handleLogout(event) {
         isAuth = false;
         await navigate('/login');
     } else {
-        showToast("Logout failed. Please try again.");
+        showToast("Logout failed. Please try again.", "error");
     }
 }

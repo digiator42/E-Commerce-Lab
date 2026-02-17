@@ -12,7 +12,7 @@ import com.ecommerce.lab.exception.ProductNotFoundException;
 import com.ecommerce.lab.model.Product;
 import com.ecommerce.lab.repository.ProductRepository;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;;
 import jakarta.validation.Valid;
 
 @Service

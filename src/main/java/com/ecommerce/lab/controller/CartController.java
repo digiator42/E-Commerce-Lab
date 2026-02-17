@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,6 +17,7 @@ import com.ecommerce.lab.dto.CartItemResponseDTO;
 import com.ecommerce.lab.model.CartItem;
 import com.ecommerce.lab.repository.CartRepository;
 import com.ecommerce.lab.service.CartService;
+
 
 @RestController
 @RequestMapping("/api/cart")
@@ -50,12 +52,15 @@ public class CartController {
     }
 
     @DeleteMapping("/remove/{id}")
+    @Transactional
     public ResponseEntity<?> removeFromCart(@PathVariable Long id) {
         cartRepository.deleteById(id);
+        cartRepository.flush(); // Force the DB to sync NOW
         return ResponseEntity.ok().build();
     }
-
+    
     @DeleteMapping("/clear")
+    @Transactional
     public ResponseEntity<?> clearCart(Principal principal) {
         List<CartItem> items = cartRepository.findAllByUserEmail(principal.getName());
         cartRepository.deleteAll(items);

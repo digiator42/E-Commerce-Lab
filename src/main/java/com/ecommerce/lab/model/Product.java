@@ -2,8 +2,9 @@ package com.ecommerce.lab.model;
 
 import java.util.List;
 
+import org.springframework.transaction.annotation.Transactional;
+
 import jakarta.persistence.*;
-import jakarta.transaction.Transactional;
 import lombok.Data;
 
 @Entity

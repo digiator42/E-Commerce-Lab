@@ -25,4 +25,7 @@ public class Order {
 
     @OneToMany(cascade = CascadeType.ALL)
     private List<OrderItem> items = new ArrayList<>();
+
+    private String paymentTransactionId;
+    private String paymentStatus;
 }

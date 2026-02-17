@@ -1,5 +1,5 @@
 package com.ecommerce.lab.model;
 
 public enum OrderStatus {
-    PENDING, SHIPPED, DELIVERED, CANCELLED
+    PENDING, SHIPPED, DELIVERED, CANCELLED, COMPLETED
 }

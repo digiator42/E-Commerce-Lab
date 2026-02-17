@@ -13,7 +13,7 @@ import com.ecommerce.lab.repository.CartRepository;
 import com.ecommerce.lab.repository.ProductRepository;
 import com.ecommerce.lab.repository.UserRepository;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;;
 
 @Service
 public class CartService {
