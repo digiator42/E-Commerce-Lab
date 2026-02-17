@@ -961,6 +961,14 @@ const routes = {
         const catContainer = doc.getElementById('category-list');
         if (catContainer) catContainer.innerHTML = categoryHtml;
 
+        totalPages = productRes.totalPages;
+
+        // Update Pagination Buttons
+        doc.getElementById('prev-btn').disabled = productRes.first;
+        doc.getElementById('next-btn').disabled = productRes.last;
+        doc.getElementById('page-info').innerText = `Page ${productRes.number + 1} of ${productRes.totalPages}`;
+
+
         return doc.body.innerHTML;
     },
 
