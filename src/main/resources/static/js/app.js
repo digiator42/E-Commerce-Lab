@@ -1195,6 +1195,8 @@ async function handleLogin(event) {
     const data = Object.fromEntries(formData.entries());
 
     const loginBtn = event.target.querySelector('#login-btn');
+    loginBtn.innerHTML = '<div class="m-auto w-6 h-6 spinner"></div>';
+    loginBtn.disabled = true;
 
     let user;
 
@@ -1204,8 +1206,6 @@ async function handleLogin(event) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
         });
-        loginBtn.innerHTML = '<div class="m-auto spinner">Loading...</div>';
-        loginBtn.disabled = true;
     } catch (error) {
         showToast("Login failed: " + error.message, "error");
         return;
