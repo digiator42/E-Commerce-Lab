@@ -59,12 +59,34 @@ function debounce(func, delay) {
     }
 }
 
-function smoothScroll(elementId) {
+function smoothScroll(elementId, duration = 800) {
     setTimeout(() => {
-        const element = document.getElementById(elementId);
-        if (element) {
-            element.scrollIntoView({ behavior: 'smooth' });
+        const target = document.getElementById(elementId);
+        if (!target) return;
+
+        const targetPosition = target.getBoundingClientRect().top + window.pageYOffset;
+        const startPosition = window.pageYOffset;
+        const distance = targetPosition - startPosition;
+        let startTime = null;
+
+        const easeOutQuad = (t, b, c, d) => {
+            t /= d;
+            return -c * t * (t - 2) + b;
+        };
+
+        function animation(currentTime) {
+            if (startTime === null) startTime = currentTime;
+            const timeElapsed = currentTime - startTime;
+
+            const run = easeOutQuad(timeElapsed, startPosition, distance, duration);
+            window.scrollTo(0, run);
+
+            if (timeElapsed < duration) {
+                requestAnimationFrame(animation);
+            }
         }
+
+        requestAnimationFrame(animation);
     }, 500);
 }
 
@@ -1013,7 +1035,6 @@ const routes = {
             </div>
                 <p class="text-gray-600 text-sm">${rev.comment}</p>
                 <p class="text-[10px] text-gray-400 mt-2">${new Date(rev.date).toLocaleString()}</p>
-            </div>
         </div>
         `).join('') : '<p class="text-gray-400 italic">No reviews yet. Be the first!</p>';
 
@@ -1090,7 +1111,11 @@ async function router(event) {
 
     toggleAuthButtons();
 
-    const path = window.location.pathname;
+    let path = window.location.pathname;
+
+    if (path.endsWith('/') && path.length > 1) {
+        path = path.slice(0, -1);
+    }
 
     console.log("isAuth:", isAuth);
 
@@ -1113,6 +1138,8 @@ async function router(event) {
     }
 
     let routeAction = await routes[path];
+
+    document.getElementById('content').innerHTML = '<div class="flex items-center justify-center w-full h-screen"><div class="spinner">Loading...</div></div>';
 
     console.log("Routing to:", routeAction);
 
@@ -1143,7 +1170,6 @@ async function router(event) {
 
     const viewFunc = routes[path] || routes['/error'];
 
-    document.getElementById('content').innerHTML = '<div class="spinner">Loading...</div>';
 
     try {
         const html = await viewFunc();
@@ -1160,6 +1186,8 @@ async function handleLogin(event) {
     const formData = new FormData(event.target);
     const data = Object.fromEntries(formData.entries());
 
+    const loginBtn = event.target.querySelector('#login-btn');
+
     let user;
 
     try {
@@ -1168,6 +1196,8 @@ async function handleLogin(event) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
         });
+        loginBtn.innerHTML = '<div class="m-auto spinner">Loading...</div>';
+        loginBtn.disabled = true;
     } catch (error) {
         showToast("Login failed: " + error.message, "error");
         return;
