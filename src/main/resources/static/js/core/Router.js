@@ -1,7 +1,6 @@
 import { ComponentStore } from './ComponentStore.js';
 import { UIManager } from '../modules/UIManager.js';
 import { Constants } from '../config/Constants.js';
-import { CartManager } from '../modules/CartManager.js';
 
 export class Router {
     static instance = null;

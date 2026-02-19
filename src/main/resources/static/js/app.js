@@ -12,7 +12,7 @@ class App {
     constructor() {
         console.log('App constructor started');
         
-        // 1. Initialize core services (no dependencies)
+        // Initialize core services (no dependencies)
         this.router = Router.getInstance();
         this.authManager = AuthManager.getInstance();
         this.uiManager = UIManager.getInstance();
@@ -20,11 +20,10 @@ class App {
 
         console.log('Core services initialized');
 
-        // 2. Create ApiClient (depends on authManager and router)
+        // ApiClient (depends on authManager and router)
         this.apiClient = new ApiClient(this.authManager, this.router);
-        console.log('ApiClient created:', this.apiClient);
 
-        // 3. Initialize managers with ApiClient
+        // Initialize managers with ApiClient dependency
         this.cartManager = CartManager.getInstance(this.apiClient);
         this.productManager = ProductManager.getInstance(this.apiClient);
         this.orderManager = OrderManager.getInstance(this.apiClient);
@@ -32,24 +31,25 @@ class App {
 
         console.log('Managers initialized with apiClient');
 
-        // 4. Inject all dependencies into Router
+        // Inject all dependencies into Router
         this.router.setAuthManager(this.authManager);
         this.router.setProductManager(this.productManager);
         this.router.setOrderManager(this.orderManager);
         this.router.setAdminManager(this.adminManager);
         this.router.setCartManager(this.cartManager);
+        this.adminManager.setRouter(this.router);
         
-        // 5. Initialize routes now that all dependencies are set
+        // Initialize routes
         this.router.initRoutes();
 
-        // 6. Resolve circular dependencies for AuthManager
+        // Resolve circular dependencies for AuthManager
         this.authManager.setRouter(this.router);
         this.authManager.setCartManager(this.cartManager);
         this.authManager.setApiClient(this.apiClient);
 
         console.log('All dependencies resolved');
 
-        // 7. Global availables
+        // Global mapping for debugging
         window.router = this.router;
         window.cartManager = this.cartManager;
         window.productManager = this.productManager;
@@ -75,7 +75,6 @@ class App {
         // Sync cart if authenticated
         if (this.authManager.isAuthenticated) {
             console.log('User is authenticated, syncing cart...');
-            console.log('CartManager apiClient:', this.cartManager.apiClient);
             await this.cartManager.syncWithServer();
         }
         

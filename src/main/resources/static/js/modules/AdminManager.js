@@ -10,6 +10,7 @@ export class AdminManager {
         this.apiClient = apiClient;
         this.componentStore = ComponentStore.getInstance();
         this.uiManager = UIManager.getInstance();
+        this.router = null;
         this.allOrdersCache = [];
         this.statusColors = Constants.STATUS_COLORS;
     }
@@ -19,6 +20,10 @@ export class AdminManager {
             AdminManager.instance = new AdminManager(apiClient);
         }
         return AdminManager.instance;
+    }
+
+    async setRouter(router) {
+        this.router = router;
     }
 
     async getStats() {
@@ -227,5 +232,9 @@ export class AdminManager {
             this.uiManager.showToast('Error fetching API routes: ' + error.message, 'error');
             return [];
         }
+    }
+
+    async navigateToAddProduct() {
+        this.router.navigate("/admin/add-product");
     }
 }

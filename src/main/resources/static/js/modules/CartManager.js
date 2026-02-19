@@ -19,12 +19,10 @@ export class CartManager {
         return CartManager.instance;
     }
 
-    // Rest of the CartManager methods remain the same...
     async syncWithServer() {
         if (!this.authManager.isAuthenticated) return;
 
         try {
-            console.log('Syncing cart with server...', this.apiClient);
             this.items = await this.apiClient.fetch('/api/cart') || [];
             this.render();
             this.updateBadge();

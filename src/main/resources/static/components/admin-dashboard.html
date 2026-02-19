@@ -4,7 +4,7 @@
             <h1 class="text-4xl font-black text-gray-900">Admin Control</h1>
             <p class="text-gray-500">Overview of your store's performance.</p>
         </div>
-        <button onclick="navigateToAddProduct()"
+        <button onclick="window.adminManager.navigateToAddProduct(event)"
             class="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-black transition">
             + New Product
         </button>
@@ -27,12 +27,12 @@
 
     <div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
         <div class="flex space-x-8 border-b px-6 pt-4">
-            <button onclick="switchAdminTab('inventory')" id="tab-inventory"
+            <button onclick="window.adminManager.switchTab('inventory')" id="tab-inventory"
                 class="pb-4 px-2 border-b-2 border-blue-600 font-bold text-blue-600">Inventory</button>
-            <button onclick="switchAdminTab('orders')" id="tab-orders"
+            <button onclick="window.adminManager.switchTab('orders')" id="tab-orders"
                 class="pb-4 px-2 border-b-2 border-transparent text-gray-400 hover:text-gray-600 font-bold">Customer
                 Orders</button>
-            <button onclick="switchAdminTab('users')" id="tab-users"
+            <button onclick="window.adminManager.switchTab('users')" id="tab-users"
                 class="pb-4 px-2 border-b-2 border-transparent text-gray-400 hover:text-gray-600 font-bold">User
                 Access</button>
         </div>

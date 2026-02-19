@@ -34,7 +34,6 @@ export class ProductManager {
         window.history.pushState(null, '', url.substring(5));
 
         try {
-            console.log('==> ', this.apiClient);
             const data = await this.apiClient.fetch(url);
             this.totalPages = data.totalPages;
             return data;
