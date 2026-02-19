@@ -8,7 +8,6 @@ export class OrderManager {
 
     constructor(apiClient) {
         this.apiClient = apiClient;
-        console.log('OrderManager initialized with API client:', apiClient);
         this.componentStore = ComponentStore.getInstance();
         this.uiManager = UIManager.getInstance();
         this.cartManager = CartManager.getInstance(apiClient);

@@ -1,7 +1,6 @@
 import { ComponentStore } from '../core/ComponentStore.js';
 import { UIManager } from './UIManager.js';
 import { CartManager } from './CartManager.js';
-import { ApiClient } from '../core/ApiClient.js';
 
 export class ProductManager {
     static instance = null;
@@ -20,12 +19,12 @@ export class ProductManager {
 
     static getInstance(apiClient) {
         if (!ProductManager.instance) {
-            ProductManager.instance = new ProductManager(apiClient);
+            ProductManager.instance = new ProductManager();
+            ProductManager.instance.apiClient = apiClient;
         }
         return ProductManager.instance;
     }
 
-    // Rest of the methods remain the same...
     async fetchProducts(sortBy = null) {
         let url = `/api/products?page=${this.currentPage}&size=6`;
         if (this.currentSearch) url += `&search=${encodeURIComponent(this.currentSearch)}`;
@@ -35,6 +34,7 @@ export class ProductManager {
         window.history.pushState(null, '', url.substring(5));
 
         try {
+            console.log('==> ', this.apiClient);
             const data = await this.apiClient.fetch(url);
             this.totalPages = data.totalPages;
             return data;
