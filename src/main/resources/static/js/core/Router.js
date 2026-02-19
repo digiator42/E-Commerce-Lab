@@ -2,7 +2,6 @@ import { ComponentStore } from './ComponentStore.js';
 import { UIManager } from '../modules/UIManager.js';
 import { Constants } from '../config/Constants.js';
 import { CartManager } from '../modules/CartManager.js';
-import { ProductManager } from '../modules/ProductManager.js';
 
 export class Router {
     static instance = null;
@@ -11,8 +10,11 @@ export class Router {
         this.componentStore = ComponentStore.getInstance();
         this.uiManager = UIManager.getInstance();
         this.cartManager = CartManager.getInstance();
-        this.productManager = ProductManager.getInstance();
         this.authManager = null;
+        this.productManager = null;
+        this.orderManager = null;
+        this.adminManager = null;
+        this.routes = null;
         this.routes = null;
     }
 
@@ -25,10 +27,22 @@ export class Router {
 
     setAuthManager(authManager) {
         this.authManager = authManager;
-        this.routes = this.defineRoutes();
+        this.routes = this.initRoutes();
     }
 
-    defineRoutes() {
+    setProductManager(productManager) {
+        this.productManager = productManager;
+    }
+
+    setOrderManager(orderManager) {
+        this.orderManager = orderManager;
+    }
+
+    setAdminManager(adminManager) {
+        this.adminManager = adminManager;
+    }
+
+    initRoutes() {
 
         if (!this.authManager) {
             console.error('AuthManager not set in Router');

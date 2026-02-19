@@ -1,20 +1,20 @@
 import { ComponentStore } from '../core/ComponentStore.js';
 import { UIManager } from './UIManager.js';
 import { CartManager } from './CartManager.js';
+import { ApiClient } from '../core/ApiClient.js';
 
 export class ProductManager {
     static instance = null;
 
-    constructor(apiClient) {
+    constructor() {
         this.currentPage = 0;
         this.currentSearch = '';
         this.currentCategory = null;
         this.selectedRating = 0;
         this.totalPages = 0;
-        this.apiClient = apiClient;
         this.componentStore = ComponentStore.getInstance();
         this.uiManager = UIManager.getInstance();
-        this.cartManager = CartManager.getInstance(apiClient);
+        this.cartManager = CartManager.getInstance();
         this.searchDebounce = null;
     }
 
