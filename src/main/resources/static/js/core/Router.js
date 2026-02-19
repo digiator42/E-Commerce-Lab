@@ -9,7 +9,7 @@ export class Router {
     constructor() {
         this.componentStore = ComponentStore.getInstance();
         this.uiManager = UIManager.getInstance();
-        this.cartManager = CartManager.getInstance();
+        this.cartManager = null;
         this.authManager = null;
         this.productManager = null;
         this.orderManager = null;
@@ -40,6 +40,10 @@ export class Router {
 
     setAdminManager(adminManager) {
         this.adminManager = adminManager;
+    }
+
+    setCartManager(cartManager) {
+        this.cartManager = cartManager;
     }
 
     initRoutes() {

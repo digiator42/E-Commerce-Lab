@@ -37,6 +37,7 @@ class App {
         this.router.setProductManager(this.productManager);
         this.router.setOrderManager(this.orderManager);
         this.router.setAdminManager(this.adminManager);
+        this.router.setCartManager(this.cartManager);
         
         // 5. Initialize routes now that all dependencies are set
         this.router.initRoutes();

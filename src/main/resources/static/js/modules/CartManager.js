@@ -15,9 +15,6 @@ export class CartManager {
     static getInstance(apiClient) {
         if (!CartManager.instance) {
             CartManager.instance = new CartManager(apiClient);
-        } else if (apiClient) {
-            // If instance exists, update apiClient
-            CartManager.instance.apiClient = apiClient;
         }
         return CartManager.instance;
     }
