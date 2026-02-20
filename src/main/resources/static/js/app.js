@@ -75,12 +75,6 @@ class App {
         const user = JSON.parse(localStorage.getItem('user'));
         this.uiManager.updateUserDisplay(user);
         
-        // Sync cart if authenticated
-        if (this.authManager.isAuthenticated) {
-            console.log('User is authenticated, syncing cart...');
-            await this.cartManager.syncWithServer();
-        }
-        
         // Initialize router
         await this.router.route();
         
