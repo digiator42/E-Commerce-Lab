@@ -261,7 +261,8 @@ export class Router {
                     .replace('name="description"', 'name="description"')
                     .replace('name="stock"', `name="stock" value="${product.stock}"`)
                     .replace('</textarea>', `${product.description}</textarea>`)
-                    .replace('onsubmit="window.adminManager.saveProduct(event)"', `onsubmit="window.adminManager.updateProduct(event, ${product.id})"`);
+                    .replace('saveProduct(event)', `updateProduct(event, ${product.id})`)
+                    .replace('Save Product', 'Update Product');
             },
 
             '/error': async () => {
