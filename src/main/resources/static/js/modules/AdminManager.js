@@ -85,7 +85,7 @@ export class AdminManager {
     }
 
     async deleteProduct(productId) {
-        if (!confirm('Are you sure? This will permanently remove this product.')) return;
+        if (!await this.uiManager.confirm('Delete Product', 'Are you sure? This will permanently remove this product.')) return;
 
         try {
             await this.apiClient.fetch(`/api/admin/products/${productId}`, {

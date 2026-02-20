@@ -52,7 +52,7 @@ export class CartManager {
     }
 
     async clear() {
-        if (!confirm('Are you sure you want to empty your cart?')) return;
+        if (!await this.uiManager.confirm('Clear Cart', 'Are you sure you want to empty your cart?')) return;
 
         try {
             await this.apiClient.fetch('/api/cart/clear', { method: 'DELETE' });
