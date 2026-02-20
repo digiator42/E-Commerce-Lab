@@ -13,6 +13,7 @@ export class Router {
         this.productManager = null;
         this.orderManager = null;
         this.adminManager = null;
+        this.apiClient = null;
         this.routes = null;
         this.routes = null;
     }
@@ -45,6 +46,10 @@ export class Router {
         this.cartManager = cartManager;
     }
 
+    setApiClient(apiClient) {
+        this.apiClient = apiClient;
+    }
+
     initRoutes() {
 
         if (!this.authManager) {
@@ -61,7 +66,7 @@ export class Router {
                 const template = await this.componentStore.load('admin-dashboard');
                 const [statsRes, productsRes] = await Promise.all([
                     this.adminManager.getStats(),
-                    this.apiFetch('/api/products?size=100')
+                    this.apiClient.fetch('/api/products?size=100')
                 ]);
 
                 const productRows = productsRes.content.map(p => `
@@ -96,7 +101,7 @@ export class Router {
             '/admin/add-product': async () => {
                 const [template, categories] = await Promise.all([
                     this.componentStore.load('add-product'),
-                    this.apiFetch('/api/categories')
+                    this.apiClient.fetch('/api/categories')
                 ]);
 
                 const categoryOptions = categories.map(cat =>
@@ -158,8 +163,8 @@ export class Router {
                 const [template, cardTemplate, productRes, categoryRes] = await Promise.all([
                     this.componentStore.load('products'),
                     this.componentStore.load('product-card'),
-                    this.apiFetch(productsUrl),
-                    this.apiFetch('/api/categories')
+                    this.apiClient.fetch(productsUrl),
+                    this.apiClient.fetch('/api/categories')
                 ]);
 
                 const productListHtml = productRes?.content.map(p => {
@@ -209,7 +214,7 @@ export class Router {
 
             '/product/:id': async (params) => {
                 const template = await this.componentStore.load('product-detail');
-                const p = await this.apiFetch(`/api/products/${params.id}`);
+                const p = await this.apiClient.fetch(`/api/products/${params.id}`);
 
                 const reviewsHtml = p.reviews.length > 0 ? p.reviews.map(rev => `
                     <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
@@ -238,8 +243,8 @@ export class Router {
             '/admin/edit-product/:id': async (params) => {
                 const [template, product, categories] = await Promise.all([
                     this.componentStore.load('add-product'),
-                    this.apiFetch(`/api/products/${params.id}`),
-                    this.apiFetch('/api/categories')
+                    this.apiClient.fetch(`/api/products/${params.id}`),
+                    this.apiClient.fetch('/api/categories')
                 ]);
 
                 const options = categories.map(c => `
@@ -263,36 +268,6 @@ export class Router {
                 return await this.componentStore.load('404');
             }
         };
-    }
-
-    async apiFetch(url, options = {}) {
-        const response = await fetch(url, options);
-
-        if (response.status === 401) {
-            await this.authManager.logout();
-            await this.navigate('/login');
-            return null;
-        }
-
-        if (response.status === 403) {
-            await this.navigate('/orders');
-            return null;
-        }
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(errorText || `Error ${response.status}`);
-        }
-
-        const contentLength = response.headers.get('content-length');
-        if (response.status === 204 || contentLength === '0') return null;
-
-        const contentType = response.headers.get('content-type');
-        if (contentType && contentType.includes('application/json')) {
-            return await response.json();
-        }
-
-        return null;
     }
 
     async navigate(path) {
