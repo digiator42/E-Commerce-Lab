@@ -27,6 +27,7 @@ export class ProductManager {
 
     async fetchProducts(sortBy = null) {
         let url = `/api/products?page=${this.currentPage}&size=6`;
+        console.log('Fetching products with URL:', url);
         if (this.currentSearch) url += `&search=${encodeURIComponent(this.currentSearch)}`;
         if (this.currentCategory) url += `&category=${encodeURIComponent(this.currentCategory)}`;
         if (sortBy) url += `&sort=${sortBy}`;
@@ -99,9 +100,15 @@ export class ProductManager {
     filterCategory(categoryName) {
         this.currentCategory = categoryName;
         this.currentPage = 0;
+
+        document.querySelectorAll('#category-list button').forEach(btn => {
+            btn.classList.remove('bg-blue-50', 'text-blue-600', 'font-bold');
+        });
+        event.target.classList.add('bg-blue-50', 'text-blue-600', 'font-bold');
+
         this.renderProducts('product-list-container');
     }
-    
+
     filterProducts() {
         const filterValue = document.getElementById('products-filter').value;
         this.renderProducts('product-list-container', filterValue);

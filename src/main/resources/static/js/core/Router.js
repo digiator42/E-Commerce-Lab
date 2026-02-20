@@ -61,7 +61,7 @@ export class Router {
                 const template = await this.componentStore.load('admin-dashboard');
                 const [statsRes, productsRes] = await Promise.all([
                     this.adminManager.getStats(),
-                    this.productManager.fetchProducts()
+                    this.apiFetch('/api/products?size=100')
                 ]);
 
                 const productRows = productsRes.content.map(p => `
