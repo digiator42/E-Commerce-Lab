@@ -27,7 +27,6 @@ export class ProductManager {
 
     async fetchProducts(sortBy = null) {
         let url = `/api/products?page=${this.currentPage}&size=6`;
-        console.log('Fetching products with URL:', url);
         if (this.currentSearch) url += `&search=${encodeURIComponent(this.currentSearch)}`;
         if (this.currentCategory) url += `&category=${encodeURIComponent(this.currentCategory)}`;
         if (sortBy) url += `&sort=${sortBy}`;
