@@ -56,7 +56,7 @@
         <div id="section-orders" class="hidden">
             <div class="p-6 bg-gray-50/50 border-b border-gray-100 flex flex-col md:flex-row gap-4">
                 <div class="relative flex-grow">
-                    <input type="text" id="admin-order-search" oninput="filterOrders()"
+                    <input type="text" id="admin-order-search" oninput="window.adminManager.filterOrders()"
                         placeholder="Search by email or Order ID..."
                         class="w-full pl-10 pr-4 py-2 rounded-xl border-none ring-1 ring-gray-200 focus:ring-2 focus:ring-blue-500 text-sm">
                     <span class="absolute left-3 top-2.5 text-gray-400">
@@ -65,7 +65,7 @@
                         </svg>
                     </span>
                 </div>
-                <select id="admin-order-filter" onchange="filterOrders()"
+                <select id="admin-order-filter" onchange="window.adminManager.filterOrders(this.value)"
                     class="md:w-48 p-2 rounded-xl border-none ring-1 ring-gray-200 focus:ring-2 focus:ring-blue-500 text-sm">
                     <option value="ALL">All Statuses</option>
                     <option value="PENDING">Pending</option>

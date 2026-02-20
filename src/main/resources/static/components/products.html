@@ -3,7 +3,7 @@
         <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm sticky top-24">
             <h3 class="font-black text-gray-900 mb-4 uppercase tracking-widest text-xs">Categories</h3>
             <div id="category-list" class="space-y-2">
-                <button onclick="filterCategory(null)"
+                <button onclick="window.productManager.filterCategory(null)"
                     class="w-full text-left px-4 py-2 rounded-xl bg-blue-50 text-blue-600 font-bold">
                     All Products
                 </button>
@@ -26,10 +26,10 @@
                             d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                     </svg>
                 </span>
-                <input type="text" id="product-search" oninput="handleSearch(event)" placeholder="Search products..."
+                <input type="text" id="product-search" oninput="window.productManager.handleSearch(event)" placeholder="Search products..."
                     class="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-2xl leading-5 bg-gray-50 placeholder-gray-500 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150">
             </div>
-            <select id="products-filter" onchange="filterProducts()"
+            <select id="products-filter" onchange="window.productManager.filterProducts()"
                 class="md:w-48 p-2 rounded-xl border-none ring-1 ring-gray-200 focus:ring-2 focus:ring-blue-500 text-sm">
                 <option value="all">Sort by</option>
                 <option value="price,asc">Price (Low to High)</option>
@@ -44,12 +44,12 @@
         </div>
 
         <div class="flex justify-center items-center space-x-4 pt-10 pb-20">
-            <button id="prev-btn" onclick="changePage(-1)"
+            <button id="prev-btn" onclick="window.productManager.changePage(-1)"
                 class="px-4 py-2 border rounded-xl hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition">
                 Previous
             </button>
             <span id="page-info" class="font-medium text-gray-600 italic">Page 1 of 1</span>
-            <button id="next-btn" onclick="changePage(1)"
+            <button id="next-btn" onclick="window.productManager.changePage(1)"
                 class="px-4 py-2 border rounded-xl hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition">
                 Next
             </button>

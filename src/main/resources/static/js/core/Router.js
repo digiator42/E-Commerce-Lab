@@ -162,7 +162,7 @@ export class Router {
                     this.apiFetch('/api/categories')
                 ]);
 
-                const productListHtml = productRes.content.map(p => {
+                const productListHtml = productRes?.content.map(p => {
                     const imageSrc = p.imageUrl || 'https://placehold.co/600x400/EEE/31343C';
                     return cardTemplate
                         .replace(/{{name}}/g, p.name)

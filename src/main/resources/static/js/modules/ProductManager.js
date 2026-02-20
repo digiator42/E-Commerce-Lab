@@ -43,9 +43,9 @@ export class ProductManager {
         }
     }
 
-    async renderProducts(containerId) {
+    async renderProducts(containerId, sortBy = null) {
         const container = document.getElementById(containerId);
-        const data = await this.fetchProducts();
+        const data = await this.fetchProducts(sortBy);
 
         if (!data) return;
 
@@ -101,10 +101,17 @@ export class ProductManager {
         this.currentPage = 0;
         this.renderProducts('product-list-container');
     }
+    
+    filterProducts() {
+        const filterValue = document.getElementById('products-filter').value;
+        this.renderProducts('product-list-container', filterValue);
+    }
 
-    handleSearch(value) {
-        this.currentSearch = value;
+    handleSearch(event) {
+        this.currentSearch = event.target.value;
         this.currentPage = 0;
+
+        this.uiManager.showLoading('product-list-container');
 
         clearTimeout(this.searchDebounce);
         this.searchDebounce = setTimeout(() => {

@@ -32,7 +32,7 @@ export class UIManager {
     showLoading(containerId) {
         const container = document.getElementById(containerId);
         if (container) {
-            container.innerHTML = '<div class="flex items-center justify-center w-full h-screen"><div class="spinner">Loading...</div></div>';
+            container.innerHTML = '<div class="flex items-center justify-center w-full h-screen col-span-full"><div class="spinner">Loading...</div></div>';
         }
     }
 
