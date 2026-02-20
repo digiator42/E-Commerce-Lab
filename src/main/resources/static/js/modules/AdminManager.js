@@ -98,35 +98,57 @@ export class AdminManager {
         }
     }
 
-    async saveProduct(formData) {
-        try {
-            const res = await fetch('/api/admin/products', {
-                method: 'POST',
-                body: formData
-            });
+    async saveProduct(event) {
+        event.preventDefault();
+        const form = event.target;
+        const formData = new FormData();
 
-            if (res.ok) {
-                const product = await res.json();
-                this.uiManager.showToast('Product created successfully!');
-                window.history.pushState({}, '', '/admin');
-                window.router.route();
-            }
-        } catch (error) {
-            this.uiManager.showToast('Error saving product: ' + error.message, 'error');
+        const productData = {
+            name: form.name.value,
+            price: form.price.value,
+            stock: form.stock.value,
+            description: form.description.value,
+            categoryName: form.categoryName.value
+        };
+
+        formData.append("product", new Blob([JSON.stringify(productData)], {
+            type: "application/json"
+        }));
+
+        const fileInput = document.getElementById('product-image-input');
+        if (fileInput.files[0]) {
+            formData.append("file", fileInput.files[0]);
+        }
+
+        const res = await fetch('/api/admin/products', {
+            method: 'POST',
+            body: formData
+        });
+
+        if (res.ok) {
+            const product = await res.json();
+            console.log("Saved everything in one go:", product);
+            await this.router.navigate("/admin");
         }
     }
 
-    async updateProduct(productId, data) {
+    async updateProduct(event, id) {
+        event.preventDefault();
+        const formData = new FormData(event.target);
+        const data = Object.fromEntries(formData.entries());
+
         try {
-            await this.apiClient.fetch(`/api/admin/products/${productId}`, {
+            const res = await this.apiClient.fetch(`/api/admin/products/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
             });
-            this.uiManager.showToast('Product updated successfully!');
-            window.location.href = '/admin';
-        } catch (error) {
-            this.uiManager.showToast('Error updating product: ' + error.message, 'error');
+
+            this.uiManager.showToast("Product updated successfully!", "success", 2000);
+            await this.router.navigate("/admin");
+
+        } catch (err) {
+            console.error("Update Error:", err);
         }
     }
 

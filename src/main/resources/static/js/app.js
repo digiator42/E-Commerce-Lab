@@ -7,6 +7,7 @@ import { OrderManager } from './modules/OrderManager.js';
 import { AdminManager } from './modules/AdminManager.js';
 import { UIManager } from './modules/UIManager.js';
 import { ComponentStore } from './core/ComponentStore.js';
+import { Utils } from './core/Utils.js';
 
 class App {
     constructor() {
@@ -57,7 +58,8 @@ class App {
         window.authManager = this.authManager;
         window.adminManager = this.adminManager;
         window.orderManager = this.orderManager;
-        window.UIManager = this.uiManager;
+        window.uIManager = this.uiManager;
+        window.utils = Utils;
 
         console.log('App constructor completed');
     }

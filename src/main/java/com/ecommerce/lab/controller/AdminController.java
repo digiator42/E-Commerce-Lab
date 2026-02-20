@@ -150,6 +150,7 @@ public class AdminController {
             product.setName(dto.name());
             product.setPrice(dto.price());
             product.setDescription(dto.description());
+            product.setStock(dto.stock());
             product.setCategory(category);
 
             productRepository.save(product);
