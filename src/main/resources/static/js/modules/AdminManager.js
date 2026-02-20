@@ -13,6 +13,7 @@ export class AdminManager {
         this.router = null;
         this.allOrdersCache = [];
         this.statusColors = Constants.STATUS_COLORS;
+        this.allOrdersCache = [];
     }
 
     static getInstance(apiClient) {
@@ -129,13 +130,20 @@ export class AdminManager {
         }
     }
 
-    filterOrders(searchTerm, statusFilter) {
+    filterOrders() {
+        const searchTerm = document.getElementById('admin-order-search').value.toLowerCase();
+        const statusFilter = document.getElementById('admin-order-filter').value;
+
         const filteredOrders = this.allOrdersCache.filter(order => {
             const matchesSearch = order.user.email.toLowerCase().includes(searchTerm) ||
                 `#ORD-${order.id}`.toLowerCase().includes(searchTerm);
             const matchesStatus = statusFilter === 'ALL' || order.status === statusFilter;
+
             return matchesSearch && matchesStatus;
         });
+
+        this.uiManager.showLoading('admin-orders-table');
+
         this.renderOrders(filteredOrders);
     }
 
@@ -215,8 +223,8 @@ export class AdminManager {
         });
 
         if (tab === 'orders') {
-            const orders = await this.getAllOrders();
-            this.renderOrders(orders);
+            this.allOrdersCache = await this.getAllOrders();
+            this.renderOrders(this.allOrdersCache);
         }
 
         if (tab === 'users') {
