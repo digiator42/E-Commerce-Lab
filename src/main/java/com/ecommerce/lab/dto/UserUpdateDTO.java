@@ -4,5 +4,6 @@ public record UserUpdateDTO(
         String name,
         String userName,
         String currentPassword,
-        String newPassword) {
+        String newPassword,
+        String address) {
 }

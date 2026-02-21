@@ -95,6 +95,8 @@ public class UserService {
             user.setName(dto.name());
         if (dto.userName() != null)
             user.setUserName(dto.userName());
+        if (dto.address() != null)
+            user.setAddress(dto.address());
 
         if (dto.newPassword() != null && !dto.newPassword().isBlank()) {
 
