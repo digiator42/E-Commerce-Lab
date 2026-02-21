@@ -45,8 +45,9 @@ export class CartManager {
         }
     }
 
-    async removeItem(cartItemId) {
+    async removeItem(event, cartItemId) {
         try {
+            this.uiManager.showSpinner(event, cartItemId);
             await this.apiClient.fetch(`/api/cart/remove/${cartItemId}`, { method: 'DELETE' });
             await this.syncWithServer();
         } catch (error) {
@@ -119,6 +120,12 @@ export class CartManager {
                         <img src="${item.imageUrl || 'https://placehold.co/600x400/EEE/31343C'}" 
                             alt="${item.name}" 
                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                        <div class="absolute inset-0 flex items-center justify-center bg-white/70 hidden" id="spinner-${item.id}">
+                            <svg class="animate-spin h-6 w-6 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"> 
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle> 
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path> 
+                            </svg> 
+                        </div>
                     </div>
                     <div class="flex-grow">
                         <h4 class="font-bold text-sm text-gray-800 line-clamp-1">${item.name}</h4>
@@ -129,7 +136,7 @@ export class CartManager {
                     </div>
                     <div class="flex flex-col items-end space-y-2">
                         <span class="font-bold text-sm text-gray-900">$${itemTotal}</span>
-                        <button onclick="window.cartManager.removeItem(${item.id})" class="text-gray-400 hover:text-red-500 transition-colors p-1">
+                        <button onclick="window.cartManager.removeItem(event, ${item.id})" class="text-gray-400 hover:text-red-500 transition-colors p-1">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                             </svg>

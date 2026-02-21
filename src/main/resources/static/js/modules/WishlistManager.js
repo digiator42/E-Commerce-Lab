@@ -151,48 +151,53 @@ export class WishlistManager {
 
         if (!this.items || this.items.length === 0) {
             container.innerHTML = `
-                <div class="text-center py-10">
-                    <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-                    </svg>
-                    <p class="text-gray-500 font-medium">Your wishlist is empty</p>
-                    <p class="text-sm text-gray-400 mt-1">Save items you love ❤️</p>
-                </div>
-            `;
+            <div class="text-center py-10">
+                <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                </svg>
+                <p class="text-gray-500 font-medium">Your wishlist is empty</p>
+                <p class="text-sm text-gray-400 mt-1">Save items you love ❤️</p>
+            </div>
+        `;
             return;
         }
 
         container.innerHTML = this.items.map(item => `
-            <div class="flex items-center space-x-4 border-b border-gray-100 pb-4 group">
-                <div class="flex-shrink-0 w-16 h-16 bg-gray-50 rounded-lg overflow-hidden">
-                    <img src="${item.imageUrl || 'https://placehold.co/600x400/EEE/31343C'}" 
-                        alt="${item.name}" 
-                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                    <div class="absolute inset-0 flex items-center justify-center bg-white/70 hidden" id="spinner-${item.id}"> 
-                        <svg class="animate-spin h-6 w-6 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"> 
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle> 
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path> </svg> 
-                    </div>
-                </div>
-                <div class="flex-grow">
-                    <h4 class="font-bold text-sm text-gray-800 line-clamp-1">${item.name}</h4>
-                    <div class="flex items-center mt-1">
-                        <span class="text-blue-600 font-semibold text-xs">$${item.price.toFixed(2)}</span>
-                    </div>
-                </div>
-                <div class="flex flex-col items-end space-y-2">
-                    <button onclick="window.wishlistManager.removeItem(event, ${item.id})" 
-                        class="text-gray-400 hover:text-red-500 transition-colors p-1">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
-                    <button onclick="window.cartManager.addItem(${item.id})" 
-                        class="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-lg hover:bg-blue-100 transition">
-                        Add to Cart
-                    </button>
+        <div class="flex items-center space-x-4 border-b border-gray-100 pb-4 group relative" id="item-${item.id}">
+
+            <div class="absolute inset-0 flex items-center justify-center bg-white/70 hidden" id="spinner-${item.id}">
+                <svg class="animate-spin h-6 w-6 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"> 
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle> 
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path> 
+                </svg> 
+            </div>
+
+            <div class="flex-shrink-0 w-16 h-16 bg-gray-50 rounded-lg overflow-hidden">
+                <img src="${item.imageUrl || 'https://placehold.co/600x400/EEE/31343C'}" 
+                    alt="${item.name}" 
+                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+            </div>
+            <div class="flex-grow">
+                <h4 class="font-bold text-sm text-gray-800 line-clamp-1">${item.name}</h4>
+                <div class="flex items-center mt-1">
+                    <span class="text-blue-600 font-semibold text-xs">$${item.price.toFixed(2)}</span>
                 </div>
             </div>
-        `).join('');
+            <div class="flex flex-col items-end space-y-2">
+                <button onclick="window.wishlistManager.removeItem(event, ${item.id})" 
+                    class="text-gray-400 hover:text-red-500 transition-colors p-1">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                              d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+                <button onclick="window.cartManager.addItem(${item.id})" 
+                    class="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-lg hover:bg-blue-100 transition">
+                    Add to Cart
+                </button>
+            </div>
+        </div>
+    `).join('');
     }
 }
