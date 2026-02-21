@@ -9,8 +9,10 @@ import com.ecommerce.lab.model.CartItem;
 import com.ecommerce.lab.model.Order;
 import com.ecommerce.lab.model.OrderItem;
 import com.ecommerce.lab.model.OrderStatus;
+import com.ecommerce.lab.model.User;
 import com.ecommerce.lab.repository.CartRepository;
 import com.ecommerce.lab.repository.OrderRepository;
+import com.ecommerce.lab.repository.UserRepository;
 
 import org.springframework.transaction.annotation.Transactional;;
 
@@ -19,14 +21,19 @@ public class OrderService {
 
     private final CartRepository cartRepository;
     private final OrderRepository orderRepository;
+    private final UserRepository userRepository;
 
-    public OrderService(CartRepository cartRepository, OrderRepository orderRepository) {
+    public OrderService(CartRepository cartRepository, OrderRepository orderRepository, UserRepository userRepository) {
         this.cartRepository = cartRepository;
         this.orderRepository = orderRepository;
+        this.userRepository = userRepository;
     }
 
     @Transactional
     public void placeOrder(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
         List<CartItem> cartItems = cartRepository.findAllByUserEmail(email);
         if (cartItems.isEmpty())
             throw new RuntimeException("Cart is empty");
@@ -36,6 +43,11 @@ public class OrderService {
         Order order = new Order();
         order.setUser(cartItems.get(0).getUser());
         order.setOrderDate(LocalDateTime.now());
+
+        if (user.getAddress() == null || user.getAddress().isBlank()) {
+            throw new RuntimeException("Please set a shipping address in your profile before checkout.");
+        }
+        order.setShippingAddress(user.getAddress());
 
         double total = 0;
         for (CartItem ci : cartItems) {

@@ -28,4 +28,6 @@ public class Order {
 
     private String paymentTransactionId;
     private String paymentStatus;
+
+    private String shippingAddress;
 }
