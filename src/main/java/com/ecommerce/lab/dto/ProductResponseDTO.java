@@ -13,11 +13,16 @@ public record ProductResponseDTO(
                 Integer stock,
                 String category,
                 String imageUrl,
+                String reviewStatus,
                 Double averageRating,
                 Integer totalReviews,
                 List<ReviewDTO> reviews) {
 
         public static ProductResponseDTO fromEntity(Product product) {
+                return fromEntity(product, null);
+        }
+
+        public static ProductResponseDTO fromEntity(Product product, String reviewStatus) {
                 double average = product.getReviews().isEmpty() ? 0.0
                                 : product.getReviews().stream()
                                                 .mapToInt(Review::getRating)
@@ -40,6 +45,7 @@ public record ProductResponseDTO(
                                 product.getStock(),
                                 product.getCategory().getName(),
                                 product.getImageUrl(),
+                                reviewStatus,
                                 average,
                                 product.getReviews().size(),
                                 reviews);

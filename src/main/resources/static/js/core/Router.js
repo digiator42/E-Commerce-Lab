@@ -279,8 +279,15 @@ export class Router {
             },
 
             '/product/:id': async (params) => {
-                const template = await this.componentStore.load('product-detail');
+                let template = await this.componentStore.load('product-detail');
                 const p = await this.apiClient.fetch(`/api/products/${params.id}`);
+
+                const canReview = p.reviewStatus === "CAN_REVIEW" ? true : false;
+
+                if (!canReview) {
+                    // Hide review form if user cannot review (either not purchased or already reviewed)
+                    template = template.replace('can-review-container mt-16 border-t pt-10', 'can-review-container hidden');
+                }
 
                 const reviewsHtml = p.reviews.length > 0 ? p.reviews.map(rev => `
                     <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">

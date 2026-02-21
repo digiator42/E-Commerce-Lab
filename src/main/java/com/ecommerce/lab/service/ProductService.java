@@ -10,7 +10,9 @@ import com.ecommerce.lab.dto.ProductRequestDTO;
 import com.ecommerce.lab.dto.ProductResponseDTO;
 import com.ecommerce.lab.exception.ProductNotFoundException;
 import com.ecommerce.lab.model.Product;
+import com.ecommerce.lab.repository.OrderRepository;
 import com.ecommerce.lab.repository.ProductRepository;
+import com.ecommerce.lab.repository.ReviewRepository;
 
 import org.springframework.transaction.annotation.Transactional;
 import jakarta.validation.Valid;
@@ -19,9 +21,14 @@ import jakarta.validation.Valid;
 @Transactional
 public class ProductService {
     private final ProductRepository productRepository;
+    private final OrderRepository orderRepository;
+    private final ReviewRepository reviewRepository;
 
-    public ProductService(ProductRepository productRepository) {
+    public ProductService(ProductRepository productRepository, OrderRepository orderRepository,
+            ReviewRepository reviewRepository) {
         this.productRepository = productRepository;
+        this.orderRepository = orderRepository;
+        this.reviewRepository = reviewRepository;
     }
 
     public Product findProductById(Long id) {
@@ -58,6 +65,23 @@ public class ProductService {
         product.setStock(dto.stock());
 
         return productRepository.save(product);
+    }
+
+    public String canReview(String email, Long id) {
+        boolean purchased = orderRepository.existsByUserEmailAndItemsProductId(email, id);
+        boolean reviewed = reviewRepository.existsByUserEmailAndProductId(email, id);
+
+        String status = "GUEST";
+
+        if (reviewed) {
+            status = "ALREADY_REVIEWED";
+        } else if (purchased) {
+            status = "CAN_REVIEW";
+        } else {
+            status = "MUST_PURCHASE";
+        }
+
+        return status;
     }
 
     public void deleteProduct(Long id) {

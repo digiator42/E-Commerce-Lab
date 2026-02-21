@@ -1,9 +1,13 @@
 package com.ecommerce.lab.controller;
 
+import java.security.Principal;
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
@@ -40,11 +44,22 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ProductResponseDTO> getProductById(@PathVariable Long id) {
-        return productRepository.findById(id)
-                .map(ProductResponseDTO::fromEntity)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<ProductResponseDTO> getProductById(@PathVariable Long id, Principal principal) {
+        Optional<Product> productOpt = productRepository.findById(id);
+
+        if (productOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Product product = productOpt.get();
+        String status = null;
+
+        if (principal != null) {
+            String email = principal.getName();
+            status = service.canReview(email, id);
+        }
+
+        return ResponseEntity.ok(ProductResponseDTO.fromEntity(product, status));
     }
 
     @GetMapping
