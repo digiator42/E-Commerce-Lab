@@ -7,6 +7,7 @@ import { OrderManager } from './modules/OrderManager.js';
 import { AdminManager } from './modules/AdminManager.js';
 import { UserManager } from './modules/UserManager.js';
 import { UIManager } from './modules/UIManager.js';
+import { WishlistManager } from './modules/WishlistManager.js';
 import { ComponentStore } from './core/ComponentStore.js';
 import { Utils } from './core/Utils.js';
 
@@ -19,7 +20,7 @@ class App {
         this.authManager = AuthManager.getInstance();
         this.uiManager = UIManager.getInstance();
         this.componentStore = ComponentStore.getInstance();
-        
+
         console.log('Core services initialized');
 
         // ApiClient (depends on authManager and router)
@@ -31,6 +32,7 @@ class App {
         this.orderManager = OrderManager.getInstance(this.apiClient);
         this.adminManager = AdminManager.getInstance(this.apiClient);
         this.userManager = UserManager.getInstance(this.apiClient);
+        this.wishlistManager = WishlistManager.getInstance(this.apiClient);
 
         console.log('Managers initialized with apiClient');
 
@@ -42,6 +44,7 @@ class App {
         this.router.setCartManager(this.cartManager);
         this.router.setApiClient(this.apiClient);
         this.router.setUserManager(this.userManager);
+        this.router.setWishlistManager(this.wishlistManager);
         this.adminManager.setRouter(this.router);
 
         // Initialize routes
@@ -64,6 +67,8 @@ class App {
         window.uIManager = this.uiManager;
         window.userManager = this.userManager;
         window.utils = Utils;
+        window.wishlistManager = this.wishlistManager;
+
 
         console.log('App constructor completed');
     }

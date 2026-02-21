@@ -54,6 +54,10 @@ export class Router {
         this.userManager = userManager;
     }
 
+    setWishlistManager(wishlistManager) {
+        this.wishlistManager = wishlistManager;
+    }
+
     initRoutes() {
 
         if (!this.authManager) {
@@ -376,8 +380,9 @@ export class Router {
         // Show loading
         this.uiManager.showLoading('content');
 
-        // Sync cart
+        // Sync cart & wishlist
         await this.cartManager.syncWithServer();
+        await this.wishlistManager.syncWithServer();
 
         // Find route
         let routeAction = this.routes[path];

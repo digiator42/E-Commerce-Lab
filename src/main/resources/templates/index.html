@@ -26,6 +26,34 @@
                 transform: rotate(360deg);
             }
         }
+
+        @keyframes heartBeat {
+            0% {
+                transform: scale(1);
+            }
+
+            25% {
+                transform: scale(1.2);
+            }
+
+            50% {
+                transform: scale(1);
+            }
+
+            75% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .wishlist-heart.active {
+            animation: heartBeat 0.5s ease-in-out;
+            color: #ef4444;
+            fill: #ef4444;
+        }
     </style>
 </head>
 
@@ -63,6 +91,16 @@
                 </a>
                 <a href="/login" id="login-btn" onclick="window.router.route(event)"
                     class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium">Login</a>
+                <div class="relative cursor-pointer ml-4" onclick="window.wishlistManager.toggleDrawer()">
+                    <svg class="w-7 h-7 text-gray-700 hover:text-red-500 transition-colors" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
+                        </path>
+                    </svg>
+                    <span id="wishlist-count"
+                        class="hidden absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">0</span>
+                </div>
                 <div class="relative cursor-pointer" onclick="window.cartManager.toggle()">
                     <svg class="w-7 h-7 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -88,6 +126,16 @@
                 class="text-gray-600 hover:text-blue-600 font-medium">
                 Profile
             </a>
+            <div class="relative cursor-pointer ml-4" onclick="window.wishlistManager.toggleDrawer()">
+                <svg class="w-7 h-7 text-gray-700 hover:text-red-500 transition-colors" fill="none"
+                    stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
+                    </path>
+                </svg>
+                <span id="wishlist-count"
+                    class="hidden absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">0</span>
+            </div>
             <a href="/login" id="login-btn-mobile" onclick="window.router.route(event)"
                 class="block bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium">Login</a>
         </div>
@@ -96,9 +144,9 @@
     <main id="content" class="max-w-6xl mx-auto px-4 py-8 min-h-screen"></main>
 
     <div id="cart-overlay" onclick="window.cartManager.toggle()"
-        class="fixed inset-0 bg-black bg-opacity-50 z-41 hidden transition-opacity duration-300 opacity-0"></div>
+        class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden transition-opacity duration-300 opacity-0"></div>
     <div id="cart-drawer"
-        class="fixed top-0 right-0 h-full w-80 md:w-96 bg-white shadow-2xl z-42 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
+        class="fixed top-0 right-0 h-full w-80 md:w-96 bg-white shadow-2xl z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
         <div class="p-6 border-b flex justify-between items-center bg-gray-50">
             <h2 class="text-xl font-bold">Your Cart</h2>
             <button onclick="window.cartManager.toggle()" class="text-gray-500 hover:text-black">
@@ -123,6 +171,50 @@
             <button onclick="window.cartManager.clear()"
                 class="w-full text-gray-400 hover:text-red-500 text-sm font-medium transition py-1">
                 Clear Shopping Cart
+            </button>
+        </div>
+    </div>
+
+    <!-- Wishlist Overlay -->
+    <div id="wishlist-overlay" onclick="window.wishlistManager.toggleDrawer()"
+        class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden transition-opacity duration-300 opacity-0"></div>
+
+    <!-- Wishlist Drawer -->
+    <div id="wishlist-drawer"
+        class="fixed top-0 right-0 h-full w-80 md:w-96 bg-white shadow-2xl z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
+        <div class="p-6 border-b flex justify-between items-center bg-gradient-to-r from-red-50 to-white">
+            <h2 class="text-xl font-bold flex items-center">
+                <svg class="w-6 h-6 text-red-500 mr-2" fill="currentColor" stroke="none" viewBox="0 0 24 24">
+                    <path
+                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
+                    </path>
+                </svg>
+                My Wishlist
+            </h2>
+            <button onclick="window.wishlistManager.toggleDrawer()" class="text-gray-500 hover:text-black">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                    </path>
+                </svg>
+            </button>
+        </div>
+
+        <div id="wishlist-items-list" class="flex-grow overflow-y-auto p-6 space-y-4">
+            <div class="text-center py-10">
+                <svg class="w-16 h-16 text-gray-300 mx-auto mb-4 animate-pulse" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
+                    </path>
+                </svg>
+                <p class="text-gray-500 font-medium">Loading your wishlist...</p>
+            </div>
+        </div>
+
+        <div class="p-6 border-t bg-gray-50">
+            <button onclick="window.wishlistManager.toggleDrawer()"
+                class="w-full bg-red-600 text-white py-3 rounded-xl font-bold hover:bg-red-700 transition shadow-lg">
+                Continue Shopping
             </button>
         </div>
     </div>

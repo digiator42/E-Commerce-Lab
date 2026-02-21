@@ -1,7 +1,5 @@
 package com.ecommerce.lab.model;
 
-import org.springframework.data.annotation.Id;
-
 import jakarta.persistence.*;
 import lombok.Data;
 

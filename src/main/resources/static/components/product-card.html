@@ -1,16 +1,27 @@
 <div
-    class="group bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-2xl transition-all duration-300">
+    class="group bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-2xl transition-all duration-300 relative">
+    <!-- Wishlist Heart Icon -->
+    <button onclick="event.preventDefault(); window.wishlistManager.toggleItem({{id}})"
+        class="absolute top-4 right-4 z-10 bg-white/90 backdrop-blur p-2 rounded-full shadow-md hover:scale-110 transition-transform duration-200 group-hover:opacity-100 wishlist-heart"
+        data-product-id="{{id}}">
+        <svg class="w-5 h-5 wishlist-heart-icon text-gray-400 hover:text-red-500 transition-colors" fill="none"
+            stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
+            </path>
+        </svg>
+    </button>
+
     <div class="h-56 bg-gray-100 relative overflow-hidden">
         <div class="relative overflow-hidden rounded-2xl mb-4 aspect-square bg-gray-50">
             <a href="/product/{{id}}" onclick="window.router.route(event)"
                 class="w-full h-full group-hover:scale-110 transition duration-500">
                 <img src="{{imageSrc}}" alt="{{name}}"
                     class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
-
             </a>
         </div>
         <span
-            class="absolute top-4 right-4 bg-white/80 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-blue-600 shadow-sm">
+            class="absolute top-4 left-4 bg-white/80 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-blue-600 shadow-sm">
             NEW
         </span>
     </div>
