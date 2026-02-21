@@ -5,6 +5,7 @@ import { CartManager } from './modules/CartManager.js';
 import { ProductManager } from './modules/ProductManager.js';
 import { OrderManager } from './modules/OrderManager.js';
 import { AdminManager } from './modules/AdminManager.js';
+import { UserManager } from './modules/UserManager.js';
 import { UIManager } from './modules/UIManager.js';
 import { ComponentStore } from './core/ComponentStore.js';
 import { Utils } from './core/Utils.js';
@@ -12,13 +13,13 @@ import { Utils } from './core/Utils.js';
 class App {
     constructor() {
         console.log('App constructor started');
-        
+
         // Initialize core services (no dependencies)
         this.router = Router.getInstance();
         this.authManager = AuthManager.getInstance();
         this.uiManager = UIManager.getInstance();
         this.componentStore = ComponentStore.getInstance();
-
+        
         console.log('Core services initialized');
 
         // ApiClient (depends on authManager and router)
@@ -29,6 +30,7 @@ class App {
         this.productManager = ProductManager.getInstance(this.apiClient);
         this.orderManager = OrderManager.getInstance(this.apiClient);
         this.adminManager = AdminManager.getInstance(this.apiClient);
+        this.userManager = UserManager.getInstance(this.apiClient);
 
         console.log('Managers initialized with apiClient');
 
@@ -39,8 +41,9 @@ class App {
         this.router.setAdminManager(this.adminManager);
         this.router.setCartManager(this.cartManager);
         this.router.setApiClient(this.apiClient);
+        this.router.setUserManager(this.userManager);
         this.adminManager.setRouter(this.router);
-        
+
         // Initialize routes
         this.router.initRoutes();
 
@@ -59,6 +62,7 @@ class App {
         window.adminManager = this.adminManager;
         window.orderManager = this.orderManager;
         window.uIManager = this.uiManager;
+        window.userManager = this.userManager;
         window.utils = Utils;
 
         console.log('App constructor completed');
@@ -66,21 +70,21 @@ class App {
 
     async init() {
         console.log('App.init started');
-        
+
         // Check authentication status
         await this.authManager.checkAuthStatus();
         console.log('Auth check completed. isAuthenticated:', this.authManager.isAuthenticated);
-        
+
         // Load user data
         const user = JSON.parse(localStorage.getItem('user'));
         this.uiManager.updateUserDisplay(user);
-        
+
         // Initialize router
         await this.router.route();
-        
+
         // Setup popstate listener
         window.addEventListener('popstate', () => this.router.route());
-        
+
         console.log('App.init completed');
     }
 }

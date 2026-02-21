@@ -10,12 +10,12 @@ export class ApiClient {
         if (response.status === 401) {
             await this.authManager.logout();
             await this.router.navigate('/login');
-            return null;
+            throw new Error('Unauthorized');
         }
-
+        
         if (response.status === 403) {
             await this.router.navigate('/orders');
-            return null;
+            throw new Error('Unauthorized');
         }
 
         if (!response.ok) {

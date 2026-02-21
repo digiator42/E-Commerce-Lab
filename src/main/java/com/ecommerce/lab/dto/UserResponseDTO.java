@@ -4,9 +4,10 @@ import com.ecommerce.lab.model.User;
 
 public record UserResponseDTO(
         Long id,
-        String name,
+        String displayName,
         String userName,
         String email,
+        String defaultAddress,
         String role) {
 
     public static UserResponseDTO fromEntity(User user) {
@@ -17,6 +18,7 @@ public record UserResponseDTO(
                 user.getName(),
                 user.getUserName(),
                 user.getEmail(),
+                user.getAddress(),
                 roleName);
     }
 }

@@ -51,12 +51,9 @@ public class AuthController {
 
         User user = userService.findByEmail(principal.getName());
 
-        String role = user.getRole() != null ? user.getRole().name() : Role.ROLE_USER.name();
+        // String role = user.getRole() != null ? user.getRole().name() : Role.ROLE_USER.name();
 
-        return ResponseEntity.ok(Map.of(
-                "message", "Logged in successfully",
-                "email", user.getEmail(),
-                "role", role));
+        return ResponseEntity.ok(UserResponseDTO.fromEntity(user));
 
     }
 

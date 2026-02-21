@@ -1,9 +1,9 @@
 package com.ecommerce.lab.dto;
 
 public record UserUpdateDTO(
-        String name,
+        String displayName,
         String userName,
         String currentPassword,
         String newPassword,
-        String address) {
+        String defaultAddress) {
 }

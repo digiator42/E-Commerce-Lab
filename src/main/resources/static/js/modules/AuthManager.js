@@ -47,35 +47,6 @@ export class AuthManager {
         }
     }
 
-    async login(credentials) {
-        try {
-            const response = await fetch('/api/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(credentials)
-            });
-
-            if (!response.ok) {
-                throw new Error('Login failed');
-            }
-
-            this.user = await response.json();
-            this.uiManager.updateUserDisplay(this.user);
-            this.isAuthenticated = true;
-            this.uiManager.showToast('Login successful!');
-
-            localStorage.setItem('user', JSON.stringify(this.user));
-
-            if (this.router) {
-                await this.router.navigate('/');
-            }
-            return true;
-        } catch (error) {
-            this.uiManager.showToast('Login failed: ' + error.message, 'error');
-            return false;
-        }
-    }
-
     async handleLogin(event) {
         event.preventDefault();
         const formData = new FormData(event.target);
@@ -85,10 +56,10 @@ export class AuthManager {
         loginBtn.innerHTML = '<div class="m-auto w-6 h-6 spinner"></div>';
         loginBtn.disabled = true;
 
-        let user;
+        let userData;
 
         try {
-            user = await this.apiClient.fetch('/api/auth/login', {
+            userData = await this.apiClient.fetch('/api/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
@@ -101,14 +72,18 @@ export class AuthManager {
         this.cartManager.syncWithServer(); // Sync cart after login
 
         this.isAuthenticated = true;
-        this.user = user;
+        this.user = {
+            ...userData,
+            displayName: userData?.displayName || '',
+            defaultAddress: userData?.defaultAddress || null
+        };
         this.uiManager.updateUserDisplay(this.user);
 
         await this.router.navigate('/');
 
-        localStorage.setItem('user', JSON.stringify(user));
+        localStorage.setItem('user', JSON.stringify(this.user));
 
-        document.getElementById('userName').innerText = user.email.split('@')[0];
+        document.getElementById('userName').innerText = this.user?.email.split('@')[0];
         this.uiManager.showToast('Login successful!');
     }
 

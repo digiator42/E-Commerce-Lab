@@ -91,18 +91,25 @@ public class UserService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (dto.name() != null)
-            user.setName(dto.name());
-        if (dto.userName() != null)
-            user.setUserName(dto.userName());
-        if (dto.address() != null)
-            user.setAddress(dto.address());
+        if (dto.displayName() != null)
+            user.setName(dto.displayName());
+        if (dto.defaultAddress() != null)
+            user.setAddress(dto.defaultAddress());
 
         if (dto.newPassword() != null && !dto.newPassword().isBlank()) {
 
-            if (!passwordEncoder.matches(dto.currentPassword(), user.getPassword())) {
-                throw new RuntimeException("Current password does not match");
+            if (dto.currentPassword() == null || dto.currentPassword().isBlank()) {
+                throw new RuntimeException("Current password is required to set a new password");
             }
+
+            if (!passwordEncoder.matches(dto.currentPassword(), user.getPassword())) {
+                throw new RuntimeException("The current password you entered is incorrect");
+            }
+
+            if (dto.newPassword().length() < 8) {
+                throw new RuntimeException("New password must be at least 8 characters long");
+            }
+
             user.setPassword(passwordEncoder.encode(dto.newPassword()));
         }
 

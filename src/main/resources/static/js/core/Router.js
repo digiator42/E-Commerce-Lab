@@ -50,6 +50,10 @@ export class Router {
         this.apiClient = apiClient;
     }
 
+    setUserManager(userManager) {
+        this.userManager = userManager;
+    }
+
     initRoutes() {
 
         if (!this.authManager) {
@@ -96,6 +100,64 @@ export class Router {
                     .replace('{{totalOrders}}', statsRes?.orders || '0')
                     .replace('{{totalProducts}}', statsRes?.products || '0')
                     .replace('{{productRows}}', productRows);
+            },
+
+            '/profile': async () => {
+                const template = await this.componentStore.load('profile');
+
+                setTimeout(async () => {
+                    const user = this.authManager.user;
+                    console.log('Rendering profile for user:', user);
+                    if (user) {
+                        // Set display name
+                        const displayNameInput = document.getElementById('display-name');
+                        if (displayNameInput) {
+                            displayNameInput.value = user.displayName || '';
+                        }
+
+                        // Set email
+                        const emailInput = document.getElementById('profile-email-input');
+                        if (emailInput) {
+                            emailInput.value = user.email || '';
+                        }
+
+                        // Set profile initials
+                        const initials = document.getElementById('profile-initials');
+                        if (initials) {
+                            const name = user.displayName || user.email || 'User';
+                            initials.textContent = name.charAt(0).toUpperCase();
+                        }
+
+                        // Set display name in sidebar
+                        const displayNameEl = document.getElementById('profile-display-name');
+                        if (displayNameEl) {
+                            displayNameEl.textContent = user.displayName || user.email?.split('@')[0] || 'User';
+                        }
+
+                        // Set email in sidebar
+                        const profileEmail = document.getElementById('profile-email');
+                        if (profileEmail) {
+                            profileEmail.textContent = user.email || '';
+                        }
+
+                        // Parse and set address if exists
+                        if (user.defaultAddress) {
+                            try {
+                                const address = JSON.parse(user.defaultAddress);
+                                document.getElementById('address-street').value = address.street || '';
+                                document.getElementById('address-city').value = address.city || '';
+                                document.getElementById('address-state').value = address.state || '';
+                                document.getElementById('address-zip').value = address.zipCode || '';
+                                document.getElementById('address-country').value = address.country || 'USA';
+                            } catch (e) {
+                                // If not JSON, treat as plain string
+                                document.getElementById('address-street').value = user.defaultAddress;
+                            }
+                        }
+                    }
+                }, 0);
+
+                return template;
             },
 
             '/admin/add-product': async () => {

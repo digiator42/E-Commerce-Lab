@@ -17,7 +17,7 @@ export class UIManager {
     showToast(msg, type = 'success', duration = 3000) {
         const toast = document.createElement('div');
         const bgColor = type === 'error' ? 'bg-red-600' : 'bg-gray-900';
-
+        console.log('Creating toast with message:', msg);
         toast.className = `fixed top-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg animate-fade-in z-50`;
         console.log('Showing toast:', msg, msg.substring(0, 100));
         toast.innerText = msg.length > 100 ? msg.substring(0, 100) + '...' : msg;
