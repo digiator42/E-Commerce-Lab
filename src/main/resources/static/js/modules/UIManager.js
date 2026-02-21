@@ -35,6 +35,23 @@ export class UIManager {
         }
     }
 
+    showSpinner(event, id) {
+        event.preventDefault();
+        const spinner = document.getElementById(`spinner-${id}`);
+        console.log('Showing spinner for:', id, spinner);
+        if (spinner) {
+            spinner.classList.remove("hidden");
+        }
+
+        // Example: simulate async removal
+        setTimeout(() => {
+            if (spinner) {
+                spinner.classList.add("hidden");
+            }
+        }, 1500);
+    }
+
+
     updateUserDisplay(user) {
         const userNameElement = document.getElementById('userName');
         if (userNameElement) {

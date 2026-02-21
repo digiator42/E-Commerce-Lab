@@ -38,8 +38,8 @@ export class CartManager {
         try {
             await this.apiClient.fetch(`/api/cart/add/${productId}`, { method: 'POST' });
             await this.syncWithServer();
+            this.wishlistManager.closeDrawer();
             this.open();
-            this.wishlistManager.toggleDrawer();
         } catch (error) {
             this.uiManager.showToast('Error adding item to cart', 'error');
         }

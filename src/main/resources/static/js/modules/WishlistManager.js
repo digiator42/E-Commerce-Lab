@@ -27,7 +27,6 @@ export class WishlistManager {
         }
 
         try {
-            this.uiManager.showLoading('wishlist-items-list');
             this.items = await this.apiClient.fetch('/api/wishlist') || [];
             this.updateBadge();
             this.renderDrawer();
@@ -63,7 +62,7 @@ export class WishlistManager {
         }
     }
 
-    async removeItem(productId) {
+    async removeItem(event, productId) {
         if (!this.authManager.isAuthenticated) return false;
 
         try {
@@ -74,6 +73,7 @@ export class WishlistManager {
             this.items = this.items.filter(item => item.id !== productId);
             this.updateBadge();
             this.uiManager.showToast('Removed from wishlist', 'success');
+            this.uiManager.showSpinner(event, productId);
 
             // Update heart icon if visible
             this.updateHeartIcon(productId, false);
@@ -142,6 +142,10 @@ export class WishlistManager {
         }
     }
 
+    closeDrawer() {
+        if (this.isOpen) this.toggleDrawer();
+    }
+
     renderDrawer() {
         const container = document.getElementById('wishlist-items-list');
 
@@ -164,6 +168,11 @@ export class WishlistManager {
                     <img src="${item.imageUrl || 'https://placehold.co/600x400/EEE/31343C'}" 
                         alt="${item.name}" 
                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                    <div class="absolute inset-0 flex items-center justify-center bg-white/70 hidden" id="spinner-${item.id}"> 
+                        <svg class="animate-spin h-6 w-6 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"> 
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle> 
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path> </svg> 
+                    </div>
                 </div>
                 <div class="flex-grow">
                     <h4 class="font-bold text-sm text-gray-800 line-clamp-1">${item.name}</h4>
@@ -172,7 +181,7 @@ export class WishlistManager {
                     </div>
                 </div>
                 <div class="flex flex-col items-end space-y-2">
-                    <button onclick="window.wishlistManager.removeItem(${item.id})" 
+                    <button onclick="window.wishlistManager.removeItem(event, ${item.id})" 
                         class="text-gray-400 hover:text-red-500 transition-colors p-1">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
