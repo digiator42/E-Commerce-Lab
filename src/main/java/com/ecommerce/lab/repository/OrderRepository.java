@@ -8,4 +8,6 @@ import com.ecommerce.lab.model.Order;
 
 public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findByUserEmailOrderByOrderDateDesc(String email);
+
+    boolean existsByUserEmailAndItemsProductId(String email, Long productId);
 }

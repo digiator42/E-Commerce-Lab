@@ -53,7 +53,7 @@ public class OrderService {
         for (CartItem ci : cartItems) {
 
             OrderItem oi = new OrderItem();
-
+            oi.setProduct(ci.getProduct());
             oi.setProductName(ci.getProduct().getName());
             oi.setPriceAtPurchase(ci.getProduct().getPrice());
             oi.setQuantity(ci.getQuantity());
@@ -74,5 +74,9 @@ public class OrderService {
 
         orderRepository.save(order);
         cartRepository.deleteAll(cartItems);
+    }
+
+    public boolean hasUserPurchasedProduct(String email, Long productId) {
+        return orderRepository.existsByUserEmailAndItemsProductId(email, productId);
     }
 }
