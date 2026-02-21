@@ -2,10 +2,13 @@ package com.ecommerce.lab.service;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.ecommerce.lab.repository.UserRepository;
 import com.ecommerce.lab.dto.LoginRequestDTO;
 import com.ecommerce.lab.dto.RegisterRequestDTO;
 import com.ecommerce.lab.dto.UserResponseDTO;
+import com.ecommerce.lab.dto.UserUpdateDTO;
 import com.ecommerce.lab.exception.AuthenticationException;
 import com.ecommerce.lab.exception.UserAlreadyExistsException;
 import com.ecommerce.lab.exception.UserNotFoundException;
@@ -81,6 +84,27 @@ public class UserService {
         user = userRepository.save(user);
 
         return UserResponseDTO.fromEntity(user);
+    }
+
+    @Transactional
+    public void updateProfile(String email, UserUpdateDTO dto) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (dto.name() != null)
+            user.setName(dto.name());
+        if (dto.userName() != null)
+            user.setUserName(dto.userName());
+
+        if (dto.newPassword() != null && !dto.newPassword().isBlank()) {
+
+            if (!passwordEncoder.matches(dto.currentPassword(), user.getPassword())) {
+                throw new RuntimeException("Current password does not match");
+            }
+            user.setPassword(passwordEncoder.encode(dto.newPassword()));
+        }
+
+        userRepository.save(user);
     }
 
     public void deleteUser(Long id) {

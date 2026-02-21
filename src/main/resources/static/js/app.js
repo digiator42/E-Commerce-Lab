@@ -38,8 +38,8 @@ class App {
         this.router.setOrderManager(this.orderManager);
         this.router.setAdminManager(this.adminManager);
         this.router.setCartManager(this.cartManager);
-        this.adminManager.setRouter(this.router);
         this.router.setApiClient(this.apiClient);
+        this.adminManager.setRouter(this.router);
         
         // Initialize routes
         this.router.initRoutes();
