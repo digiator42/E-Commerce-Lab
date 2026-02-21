@@ -1,5 +1,6 @@
 import { UIManager } from './UIManager.js';
 import { AuthManager } from './AuthManager.js';
+import { WishlistManager } from './WishlistManager.js';
 
 export class CartManager {
     static instance = null;
@@ -10,6 +11,7 @@ export class CartManager {
         this.apiClient = apiClient;
         this.authManager = AuthManager.getInstance();
         this.uiManager = UIManager.getInstance();
+        this.wishlistManager = WishlistManager.getInstance(apiClient);
     }
 
     static getInstance(apiClient) {
@@ -37,6 +39,7 @@ export class CartManager {
             await this.apiClient.fetch(`/api/cart/add/${productId}`, { method: 'POST' });
             await this.syncWithServer();
             this.open();
+            this.wishlistManager.toggleDrawer();
         } catch (error) {
             this.uiManager.showToast('Error adding item to cart', 'error');
         }

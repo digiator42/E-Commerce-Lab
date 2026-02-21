@@ -18,7 +18,6 @@ export class UIManager {
         const toast = document.createElement('div');
         const bgColor = type === 'error' ? 'bg-red-600' : 'bg-gray-900';
         toast.className = `fixed top-12 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg animate-fade-in z-50`;
-        console.log('Showing toast:', msg, msg.substring(0, 100));
         toast.innerText = msg.length > 100 ? msg.substring(0, 100) + '...' : msg;
 
         document.body.appendChild(toast);
