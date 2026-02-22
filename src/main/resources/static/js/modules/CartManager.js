@@ -22,7 +22,12 @@ export class CartManager {
     }
 
     async syncWithServer() {
-        if (!this.authManager.isAuthenticated) return;
+        if (!this.authManager.isAuthenticated) 
+            {
+                this.items = [];
+                this.updateBadge();
+                return;
+            }
 
         try {
             this.items = await this.apiClient.fetch('/api/cart') || [];

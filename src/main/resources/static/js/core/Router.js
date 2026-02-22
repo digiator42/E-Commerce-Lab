@@ -264,7 +264,7 @@ export class Router {
             },
 
             '/products': async () => {
-                // Public route - anyone can view products
+                // Public route
                 window.productManager.loadFiltersFromURL();
                 const template = await this.componentStore.load('products');
                 const categoryRes = await fetch('/api/categories').then(res => res.json());
@@ -348,7 +348,7 @@ export class Router {
             },
 
             '/product/:id': async (params) => {
-                // Public route - anyone can view product details
+                // Public route
                 let template = await this.componentStore.load('product-detail');
                 try {
                     const p = await fetch(`/api/products/${params.id}`).then(res => res.json());

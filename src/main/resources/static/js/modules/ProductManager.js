@@ -59,7 +59,7 @@ export class ProductManager {
         if (this.priceRange.min > 0) params.set('minPrice', this.priceRange.min);
         if (this.priceRange.max < 1000) params.set('maxPrice', this.priceRange.max);
 
-        // In stock filter (client-side only, not in URL)
+        // In stock filter (client-side only for now)
         // if (this.inStockOnly) params.set('inStock', 'true');
 
         if (this.currentPage > 0) params.set('page', this.currentPage);
@@ -71,7 +71,6 @@ export class ProductManager {
         window.history.pushState({}, '', newUrl);
     }
 
-    // Load filters from URL (call this when initializing)
     loadFiltersFromURL() {
         const params = new URLSearchParams(window.location.search);
 
@@ -88,7 +87,7 @@ export class ProductManager {
             max: parseInt(params.get('maxPrice')) || 1000
         };
 
-        // In stock is client-side only, so don't load from URL
+        // In stock is client-side only
         // this.inStockOnly = params.get('inStock') === 'true';
 
         // Parse multiple categories
@@ -167,17 +166,17 @@ export class ProductManager {
             });
         }
 
-        // PRIORITY 3: Min Rating - NOW SENT TO SERVER
+        // PRIORITY 3: Min Rating
         if (this.minRating > 0) {
             url += `&minRating=${this.minRating}`;
         }
 
-        // PRIORITY 4: Max Price - if API supports it
+        // PRIORITY 4: Max Price
         if (this.priceRange.max < 1000) {
             url += `&maxPrice=${this.priceRange.max}`;
         }
 
-        // PRIORITY 5: Min Price - if API supports it
+        // PRIORITY 5: Min Price
         if (this.priceRange.min > 0) {
             url += `&minPrice=${this.priceRange.min}`;
         }
@@ -206,8 +205,7 @@ export class ProductManager {
             // Convert to Product models
             const products = data.content.map(p => new Product(p));
 
-            // Apply ONLY client-side filters that the server DOESN'T handle
-            // In this case, maybe only "inStock" if API doesn't support it
+            // Client side filtering
             const filteredProducts = this.applyClientSideFilters(products);
 
             console.log('Server page info:', {
@@ -254,7 +252,7 @@ export class ProductManager {
         });
 
         return products.filter(product => {
-            // In stock filter (client-side) - assuming API doesn't support this
+
             if (this.inStockOnly) {
                 const inStock = product.stock > 0;
                 if (!inStock) {
@@ -285,7 +283,7 @@ export class ProductManager {
                 stock: product.stock
             });
 
-            // Category filter - FIXED: Handle case sensitivity and null values
+            // Category filter
             if (this.selectedCategories.size > 0) {
                 const productCategory = product.category ? product.category.toLowerCase() : '';
                 const matchesCategory = Array.from(this.selectedCategories).some(cat =>
@@ -297,21 +295,21 @@ export class ProductManager {
                 }
             }
 
-            // Price range filter - FIXED: Handle undefined prices
+            // Price range filter
             const productPrice = product.price || 0;
             if (productPrice < this.priceRange.min || productPrice > this.priceRange.max) {
                 console.log('Failed price filter');
                 return false;
             }
 
-            // Rating filter - FIXED: Handle undefined ratings
+            // Rating filter
             const productRating = product.averageRating || 0;
             if (this.minRating > 0 && productRating < this.minRating) {
                 console.log('Failed rating filter');
                 return false;
             }
 
-            // In stock filter - FIXED: Check stock property correctly
+            // In stock filter
             if (this.inStockOnly) {
                 const inStock = product.stock > 0;
                 if (!inStock) {
@@ -710,7 +708,6 @@ export class ProductManager {
         });
     }
 
-    // Keep existing methods...
     setRating(n) {
         this.selectedRating = n;
         const stars = document.querySelectorAll('#star-rating-input button');

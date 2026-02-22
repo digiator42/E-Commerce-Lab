@@ -23,7 +23,6 @@ class App {
 
         console.log('Core services initialized');
 
-        // ApiClient (depends on authManager and router)
         this.apiClient = new ApiClient(this.authManager, this.router);
 
         // Initialize managers with ApiClient dependency
@@ -46,6 +45,7 @@ class App {
         this.router.setUserManager(this.userManager);
         this.router.setWishlistManager(this.wishlistManager);
         this.adminManager.setRouter(this.router);
+        this.authManager.setWishlistManager(this.wishlistManager);
 
         // Initialize routes
         this.router.initRoutes();

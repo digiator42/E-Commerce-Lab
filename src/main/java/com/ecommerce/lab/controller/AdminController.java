@@ -253,7 +253,7 @@ public class AdminController {
         Resource resource = new UrlResource(path.toUri());
 
         return ResponseEntity.ok()
-                .contentType(MediaType.IMAGE_JPEG) // Or detect based on extension
+                .contentType(MediaType.IMAGE_JPEG)
                 .header(HttpHeaders.CONTENT_DISPOSITION, "inline")
                 .body(resource);
     }

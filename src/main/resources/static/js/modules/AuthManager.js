@@ -10,6 +10,7 @@ export class AuthManager {
 
         this.router = null;
         this.cartManager = null;
+        this.wishlistManager = null;
     }
 
     static getInstance() {
@@ -25,6 +26,10 @@ export class AuthManager {
 
     setCartManager(cartManager) {
         this.cartManager = cartManager;
+    }
+
+    setWishlistManager(wishlistManager) {
+        this.wishlistManager = wishlistManager;
     }
 
     setApiClient(apiClient) {
@@ -94,6 +99,13 @@ export class AuthManager {
                 localStorage.removeItem('user');
                 this.user = null;
                 this.isAuthenticated = false;
+                this.uiManager.updateUserDisplay(null);
+                this.uiManager.toggleAuthButtons(false);
+                // clear cart on logout and wishlist
+                if (this.cartManager) {
+                    await this.cartManager.syncWithServer();
+                    await this.wishlistManager.syncWithServer();
+                }
                 if (this.router) {
                     await this.router.navigate('/login');
                 }

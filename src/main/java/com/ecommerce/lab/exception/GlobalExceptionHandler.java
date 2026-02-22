@@ -41,14 +41,10 @@ public class GlobalExceptionHandler {
                             "message", "The requested API endpoint does not exist."));
         }
 
-        // 2. Prevent infinite loops: If the request is for index.html or a file with an
-        // extension
-        // and it's still failing, don't forward again.
         if (uri.equals("/index.html") || uri.contains(".")) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
 
-        // 3. For all other "fake" routes (like /products), forward to index.html
         return new ModelAndView("forward:/index.html");
     }
 
