@@ -95,7 +95,7 @@ public class ProductController {
             Pageable pageable,
             Principal principal) {
 
-        // 1. Determine Sorting
+        // Sorting
         Sort sortOrder = switch (sort) {
             case "price_asc" -> Sort.by("price").ascending();
             case "price_desc" -> Sort.by("price").descending();
@@ -108,7 +108,6 @@ public class ProductController {
 
         Pageable updatedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sortOrder);
 
-        // 2. Fetch Data
         Page<Product> productPage;
         if ("rating".equals(sort)) {
             // Special case for average rating sorting
@@ -118,7 +117,6 @@ public class ProductController {
             productPage = productRepository.findAll(spec, updatedPageable);
         }
 
-        // 3. Map to DTO (using the convertToDto helper we created earlier)
         return ResponseEntity.ok(productPage.map(product -> convertToDto(product, principal)));
     }
 

@@ -2,6 +2,7 @@ package com.ecommerce.lab.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -25,17 +26,27 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
+                        // Static Resources & Auth
                         .requestMatchers("/", "/index.html", "/static/**", "/js/**", "/css/**", "/components/**")
                         .permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
+
+                        .requestMatchers("/login", "/register", "/product/**", "/cart").permitAll()
+
+                        // Public Browsing (Allow GET only)
+                        .requestMatchers(HttpMethod.GET, "/api/products/**", "/api/categories/**", "/api/reviews/**")
+                        .permitAll()
+
+                        // Admin Only
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/orders/**",
-                                "/api/cart/**",
-                                "/api/products/**",
-                                "/api/reviews/**",
-                                "/api/categories/**")
-                        .authenticated()
-                        .anyRequest().permitAll())
+
+                        // Authenticated Actions
+                        .requestMatchers("/api/orders/**", "/api/cart/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/reviews/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/reviews/**").authenticated()
+
+                        // Catch-all
+                        .anyRequest().authenticated())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .exceptionHandling(exception -> exception

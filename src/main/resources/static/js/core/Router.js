@@ -15,7 +15,6 @@ export class Router {
         this.adminManager = null;
         this.apiClient = null;
         this.routes = null;
-        this.routes = null;
     }
 
     static getInstance() {
@@ -56,6 +55,34 @@ export class Router {
 
     setWishlistManager(wishlistManager) {
         this.wishlistManager = wishlistManager;
+    }
+
+    getPublicPaths() {
+        return [
+            '/',
+            '/login',
+            '/register',
+            '/products',
+            '/product/',
+            '/categories'
+        ];
+    }
+
+    getProtectedPaths() {
+        return [
+            '/orders',
+            '/cart',
+            '/checkout',
+            '/profile',
+            '/wishlist'
+        ];
+    }
+
+    pathMatchesPattern(path, pattern) {
+        if (pattern.endsWith('/')) {
+            return path.startsWith(pattern);
+        }
+        return path === pattern;
     }
 
     initRoutes() {
@@ -107,6 +134,13 @@ export class Router {
             },
 
             '/profile': async () => {
+
+                // Protected route
+                if (!this.authManager?.isAuthenticated) {
+                    window.history.pushState(null, '', '/login');
+                    return await this.route();
+                }
+
                 const template = await this.componentStore.load('profile');
 
                 setTimeout(async () => {
@@ -165,6 +199,10 @@ export class Router {
             },
 
             '/admin/add-product': async () => {
+                if (!this.authManager?.isAdmin()) {
+                    window.history.pushState(null, '', '/products');
+                    return await this.route();
+                }
                 const [template, categories] = await Promise.all([
                     this.componentStore.load('add-product'),
                     this.apiClient.fetch('/api/categories')
@@ -178,6 +216,10 @@ export class Router {
             },
 
             '/admin/routes': async () => {
+                if (!this.authManager?.isAdmin()) {
+                    window.history.pushState(null, '', '/products');
+                    return await this.route();
+                }
                 const template = `
                     <div class="p-6">
                         <h2 class="text-2xl font-bold mb-6">Backend API Explorer</h2>
@@ -222,16 +264,12 @@ export class Router {
             },
 
             '/products': async () => {
-                // Load filters from URL first (updates state only, not UI)
+                // Public route - anyone can view products
                 window.productManager.loadFiltersFromURL();
-
-                // Get the template
                 const template = await this.componentStore.load('products');
+                const categoryRes = await fetch('/api/categories').then(res => res.json());
 
-                // Fetch categories
-                const categoryRes = await this.apiClient.fetch('/api/categories');
-
-                // Build category sidebar HTML with checked state from manager
+                // Build category sidebar HTML
                 const categoryHtml = categoryRes.map(cat => `
                     <label class="flex items-center space-x-3 p-2 rounded-xl hover:bg-gray-50 cursor-pointer transition">
                         <input type="checkbox" 
@@ -243,31 +281,34 @@ export class Router {
                     </label>
                 `).join('');
 
-                // // Add "All Products" checkbox
-                // const allProductsHtml = `
-                //     <label class="flex items-center space-x-3 p-2 rounded-xl hover:bg-gray-50 cursor-pointer transition">
-                //         <input type="checkbox" 
-                //             onchange="window.productManager.toggleCategoryFilter(null)" 
-                //             class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 category-checkbox"
-                //             data-category="all"
-                //             ${window.productManager.selectedCategories.size === 0 ? 'checked' : ''}>
-                //         <span class="text-sm font-medium text-gray-700">All Products</span>
-                //     </label>
-                // `;
+                const allProductsHtml = `
+                    <label class="flex items-center space-x-3 p-2 rounded-xl hover:bg-gray-50 cursor-pointer transition">
+                        <input type="checkbox" 
+                            onchange="window.productManager.toggleCategoryFilter(null)" 
+                            class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 category-checkbox"
+                            data-category="all"
+                            ${window.productManager.selectedCategories.size === 0 ? 'checked' : ''}>
+                        <span class="text-sm font-medium text-gray-700">All Products</span>
+                    </label>
+                `;
 
-                // Insert categories into template
                 let finalHtml = template.replace(
                     '<div id="category-list" class="space-y-2 min-h-60 overflow-y-auto pr-2">',
                     `<div id="category-list" class="space-y-2 min-h-60 overflow-y-auto pr-2">
-            ${categoryHtml}`
+                        ${allProductsHtml}
+                        ${categoryHtml}`
                 );
 
-                // Parse the HTML
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(finalHtml, 'text/html');
 
-                // Set remaining UI elements based on loaded filters
-                // Price inputs
+                // Set UI elements from filters
+                const searchInput = doc.getElementById('product-search');
+                if (searchInput) searchInput.value = window.productManager.currentSearch;
+
+                const sortSelect = doc.getElementById('products-filter');
+                if (sortSelect) sortSelect.value = window.productManager.sortBy;
+
                 const minRange = doc.getElementById('min-price-range');
                 const maxRange = doc.getElementById('max-price-range');
                 const minInput = doc.getElementById('min-price-input');
@@ -278,7 +319,6 @@ export class Router {
                 if (minInput) minInput.value = window.productManager.priceRange.min;
                 if (maxInput) maxInput.value = window.productManager.priceRange.max;
 
-                // Rating radio
                 const ratingRadio = doc.querySelector(`input[name="rating-filter"][value="${window.productManager.minRating}"]`);
                 if (ratingRadio) {
                     ratingRadio.checked = true;
@@ -287,21 +327,10 @@ export class Router {
                     if (allRating) allRating.checked = true;
                 }
 
-                // In-stock checkbox
                 const stockCheckbox = doc.getElementById('in-stock-filter');
                 if (stockCheckbox) stockCheckbox.checked = window.productManager.inStockOnly;
 
-                // Search input
-                const searchInput = doc.getElementById('product-search');
-                if (searchInput) searchInput.value = window.productManager.currentSearch;
-
-                // Sort select
-                const sortSelect = doc.getElementById('products-filter');
-                if (sortSelect) sortSelect.value = window.productManager.sortBy;
-
-                // Return the HTML
                 setTimeout(async () => {
-                    // Now render products
                     await window.productManager.renderProducts();
                     window.productManager.updateRatingCounts();
                     window.productManager.updateActiveFilters();
@@ -319,41 +348,51 @@ export class Router {
             },
 
             '/product/:id': async (params) => {
+                // Public route - anyone can view product details
                 let template = await this.componentStore.load('product-detail');
-                const p = await this.apiClient.fetch(`/api/products/${params.id}`);
+                try {
+                    const p = await fetch(`/api/products/${params.id}`).then(res => res.json());
 
-                const canReview = p.reviewStatus === "CAN_REVIEW" ? true : false;
+                    const canReview = p.reviewStatus === "CAN_REVIEW" ? true : false;
 
-                if (!canReview) {
-                    // Hide review form if user cannot review (either not purchased or already reviewed)
-                    template = template.replace('can-review-container mt-16 border-t pt-10', 'can-review-container hidden');
-                }
+                    if (!canReview) {
+                        // Hide review form if user cannot review (either not purchased or already reviewed)
+                        template = template.replace('can-review-container mt-16 border-t pt-10', 'can-review-container hidden');
+                    }
 
-                const reviewsHtml = p.reviews.length > 0 ? p.reviews.map(rev => `
-                    <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="font-bold text-sm text-gray-900">${rev.userEmail}</span>
-                            <span class="text-yellow-400 font-bold">${'★'.repeat(rev.rating)}</span>
+                    const reviewsHtml = p.reviews.length > 0 ? p.reviews.map(rev => `
+                        <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="font-bold text-sm text-gray-900">${rev.userEmail}</span>
+                                <span class="text-yellow-400 font-bold">${'★'.repeat(rev.rating)}</span>
+                            </div>
+                            <p class="text-gray-600 text-sm">${rev.comment}</p>
+                            <p class="text-[10px] text-gray-400 mt-2">${new Date(rev.date).toLocaleString()}</p>
                         </div>
-                        <p class="text-gray-600 text-sm">${rev.comment}</p>
-                        <p class="text-[10px] text-gray-400 mt-2">${new Date(rev.date).toLocaleString()}</p>
-                    </div>
-                `).join('') : '<p class="text-gray-400 italic">No reviews yet. Be the first!</p>';
+                    `).join('') : '<p class="text-gray-400 italic">No reviews yet. Be the first!</p>';
 
-                const imageSrc = p.imageUrl || 'https://placehold.co/600x400/EEE/31343C';
+                    const imageSrc = p.imageUrl || 'https://placehold.co/600x400/EEE/31343C';
 
-                return template
-                    .replace(/{{name}}/g, p.name)
-                    .replace(/{{stock}}/g, p.stock > 0 ? '<span class="text-green-600 font-bold">' + p.stock + ' in stock</span>' : '<span class="text-red-600 font-bold">Out of stock</span>')
-                    .replace(/{{description}}/g, p.description)
-                    .replace(/{{price}}/g, p.price.toFixed(2))
-                    .replace(/{{category}}/g, p.category)
-                    .replace(/{{imageSrc}}/g, imageSrc)
-                    .replace(/{{id}}/g, p.id)
-                    .replace('{{reviewsHtml}}', reviewsHtml);
+                    return template
+                        .replace(/{{name}}/g, p.name)
+                        .replace(/{{stock}}/g, p.stock > 0 ? '<span class="text-green-600 font-bold">' + p.stock + ' in stock</span>' : '<span class="text-red-600 font-bold">Out of stock</span>')
+                        .replace(/{{description}}/g, p.description)
+                        .replace(/{{price}}/g, p.price.toFixed(2))
+                        .replace(/{{category}}/g, p.category)
+                        .replace(/{{imageSrc}}/g, imageSrc)
+                        .replace(/{{id}}/g, p.id)
+                        .replace('{{reviewsHtml}}', reviewsHtml);
+                } catch (error) {
+                    console.error('Error loading product:', error);
+                    return '<div class="text-center py-10">Product not found</div>';
+                }
             },
 
             '/admin/edit-product/:id': async (params) => {
+                if (!this.authManager?.isAdmin()) {
+                    window.history.pushState(null, '', '/products');
+                    return await this.route();
+                }
                 const [template, product, categories] = await Promise.all([
                     this.componentStore.load('add-product'),
                     this.apiClient.fetch(`/api/products/${params.id}`),
@@ -396,29 +435,44 @@ export class Router {
             window.history.pushState(null, '', href);
         }
 
-        this.uiManager.toggleAuthButtons(this.authManager.isAuthenticated);
+        this.uiManager.toggleAuthButtons(this.authManager?.isAuthenticated || false);
 
         let path = window.location.pathname;
         if (path.endsWith('/') && path.length > 1) {
             path = path.slice(0, -1);
         }
 
+        console.log('Routing to path:', path);
+        console.log('Is authenticated:', this.authManager?.isAuthenticated);
+
+        // Check if path requires authentication
+        const requiresAuth = this.getProtectedPaths().some(protectedPath =>
+            this.pathMatchesPattern(path, protectedPath)
+        );
+
+        // Check if path is public
+        const isPublic = this.getPublicPaths().some(publicPath =>
+            this.pathMatchesPattern(path, publicPath)
+        );
+
         // Admin access check
-        if (path.startsWith('/admin') && !this.authManager.isAdmin()) {
-            console.error('User is not an admin. Diverting...');
-            window.history.pushState(null, '', '/orders');
+        if (path.startsWith('/admin') && !this.authManager?.isAdmin()) {
+            console.error('User is not an admin. Redirecting to products...');
+            window.history.pushState(null, '', '/products');
             return await this.route();
         }
 
-        // Authentication check
-        if (!this.authManager.isAuthenticated && !Constants.PUBLIC_PATHS.includes(path)) {
+        // Authentication check for protected routes
+        if (requiresAuth && !this.authManager?.isAuthenticated) {
             console.log('Access Denied. Redirecting to login...');
+            // Save the attempted URL to redirect back after login
+            sessionStorage.setItem('redirectAfterLogin', path);
             window.history.pushState(null, '', '/login');
             return await this.route();
         }
 
         // Redirect authenticated users away from login/register
-        if (this.authManager.isAuthenticated && (path === '/login' || path === '/register')) {
+        if (this.authManager?.isAuthenticated && (path === '/login' || path === '/register')) {
             console.log('Already logged in. Redirecting to home...');
             window.history.pushState(null, '', '/');
             return await this.route();
@@ -427,9 +481,16 @@ export class Router {
         // Show loading
         this.uiManager.showLoading('content');
 
-        // Sync cart & wishlist
-        await this.cartManager.syncWithServer();
-        await this.wishlistManager.syncWithServer();
+        // Only sync cart & wishlist if authenticated (since APIs require auth)
+        if (this.authManager?.isAuthenticated) {
+            try {
+                await this.cartManager?.syncWithServer();
+                await this.wishlistManager?.syncWithServer();
+            } catch (error) {
+                console.log('Error syncing user data:', error);
+                // Don't block rendering if sync fails
+            }
+        }
 
         // Find route
         let routeAction = this.routes[path];
