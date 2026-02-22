@@ -10,6 +10,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
+import jakarta.servlet.DispatcherType;
 import jakarta.servlet.http.HttpServletResponse;
 
 @Configuration
@@ -26,32 +27,36 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        // Static Resources & Auth
-                        .requestMatchers("/", "/index.html", "/static/**", "/js/**", "/css/**", "/components/**")
+                        // 1. MUST allow FORWARD dispatchers for the ExceptionHandler to work
+                        .dispatcherTypeMatchers(DispatcherType.FORWARD).permitAll()
+
+                        // 2. Static Resources
+                        .requestMatchers("/", "/index.html", "/static/**", "/js/**", "/css/**", "/components/**",
+                                "/favicon.ico")
                         .permitAll()
+
+                        // 3. Frontend Routes & Error Path
+                        .requestMatchers("/login", "/register", "/product/**", "/cart", "/error").permitAll()
+
+                        // 4. API Rules
                         .requestMatchers("/api/auth/**").permitAll()
-
-                        .requestMatchers("/login", "/register", "/product/**", "/cart").permitAll()
-
-                        // Public Browsing (Allow GET only)
                         .requestMatchers(HttpMethod.GET, "/api/products/**", "/api/categories/**", "/api/reviews/**")
                         .permitAll()
-
-                        // Admin Only
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
-                        // Authenticated Actions
-                        .requestMatchers("/api/orders/**", "/api/cart/**").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/reviews/**").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/api/reviews/**").authenticated()
-
-                        // Catch-all
+                        // 5. Catch-all
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint((request, response, authException) -> {
-                            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+                            // API request
+                            if (request.getRequestURI().startsWith("/api")) {
+                                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+                            } else {
+                                // If a browser page fails
+                                request.getRequestDispatcher("/index.html").forward(request, response);
+                            }
                         }));
 
         return http.build();

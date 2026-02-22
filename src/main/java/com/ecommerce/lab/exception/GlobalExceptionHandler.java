@@ -41,11 +41,11 @@ public class GlobalExceptionHandler {
                             "message", "The requested API endpoint does not exist."));
         }
 
-        if (uri.equals("/index.html") || uri.contains(".")) {
+        if (uri.contains(".")) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
 
-        return new ModelAndView("forward:/index.html");
+        return new ModelAndView("index");
     }
 
     @ExceptionHandler(UserAlreadyExistsException.class)
