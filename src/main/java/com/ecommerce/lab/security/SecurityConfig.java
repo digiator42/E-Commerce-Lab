@@ -27,24 +27,24 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        // 1. MUST allow FORWARD dispatchers for the ExceptionHandler to work
+                        // MUST allow FORWARD dispatchers for the ExceptionHandler to work
                         .dispatcherTypeMatchers(DispatcherType.FORWARD).permitAll()
 
-                        // 2. Static Resources
+                        // Static Resources
                         .requestMatchers("/", "/index.html", "/static/**", "/js/**", "/css/**", "/components/**",
                                 "/favicon.ico")
                         .permitAll()
 
-                        // 3. Frontend Routes & Error Path
-                        .requestMatchers("/login", "/register", "/product/**", "/cart", "/error").permitAll()
+                        // Frontend Routes & Error Path
+                        .requestMatchers("/login", "/register", "/product/**", "/cart").permitAll()
 
-                        // 4. API Rules
+                        // API Rules
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/products/**", "/api/categories/**", "/api/reviews/**")
                         .permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
-                        // 5. Catch-all
+                        // Catch-all
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
