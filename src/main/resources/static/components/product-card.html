@@ -18,12 +18,17 @@
                     class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
             </a>
         </div>
-        {{#if reviewStatus}}
+        <!-- Review Status Badge - Only shown if reviewStatus exists -->
+        <div class="review-status-container" style="display: {{reviewStatusDisplay}};">
+            <span
+                class="absolute top-4 left-4 bg-white/80 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-green-600 shadow-sm">
+                {{reviewStatus}}
+            </span>
+        </div>
         <span
-            class="absolute top-4 left-4 bg-white/80 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-green-600 shadow-sm">
-            {{reviewStatus}}
+            class="absolute top-4 right-4 bg-white/80 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-blue-600 shadow-sm">
+            NEW
         </span>
-        {{/if}}
     </div>
     <div class="p-6">
         <div class="flex items-center justify-between mb-2">

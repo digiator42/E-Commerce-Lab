@@ -382,9 +382,11 @@ export class ProductManager {
 
         const cardTemplate = await this.componentStore.load('product-card');
 
+
         container.innerHTML = data.content.map(p => {
             const imageSrc = p.imageUrl || 'https://placehold.co/600x400/EEE/31343C';
             const isInWishlist = this.wishlistManager?.isInWishlist(p.id) || false;
+            const hasReviewStatus = p.reviewStatus && p.reviewStatus !== '';
 
             return cardTemplate
                 .replace(/{{imageSrc}}/g, imageSrc)
@@ -395,6 +397,8 @@ export class ProductManager {
                 .replace(/{{category}}/g, p.category)
                 .replace(/{{rating}}/g, p.getRatingStars())
                 .replace(/{{reviewCount}}/g, p.totalReviews)
+                .replace(/{{reviewStatus}}/g, p.reviewStatus || '')
+                .replace(/{{reviewStatusDisplay}}/g, hasReviewStatus ? 'block' : 'none')
                 .replace(/{{wishlistClass}}/g, isInWishlist ? 'text-red-500 fill-current' : 'text-gray-400')
                 .replace(/{{wishlistFill}}/g, isInWishlist ? 'currentColor' : 'none');
         }).join('');
