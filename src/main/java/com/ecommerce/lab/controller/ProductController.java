@@ -90,6 +90,7 @@ public class ProductController {
             @RequestParam(required = false) List<String> category, // Handles multiple checkboxes
             @RequestParam(required = false) Double minPrice,
             @RequestParam(required = false) Double maxPrice,
+            @RequestParam(required = false) Double minRating,
             @RequestParam(defaultValue = "newest") String sort, // newest, price_asc, price_desc, rating
             Pageable pageable,
             Principal principal) {
@@ -113,7 +114,7 @@ public class ProductController {
             // Special case for average rating sorting
             productPage = productRepository.findAllOrderByAverageRating(updatedPageable);
         } else {
-            Specification<Product> spec = service.filterBy(search, category, minPrice, maxPrice);
+            Specification<Product> spec = service.filterBy(search, category, minPrice, maxPrice, minRating);
             productPage = productRepository.findAll(spec, updatedPageable);
         }
 

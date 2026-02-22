@@ -44,20 +44,24 @@ export class ProductManager {
         if (this.currentSearch) params.set('search', this.currentSearch);
         if (this.sortBy) params.set('sort', this.sortBy);
 
-        // Handle multiple categories - add each as separate param
+        // Handle multiple categories
         if (this.selectedCategories.size > 0) {
-            // Clear any existing category params
             params.delete('category');
-            // Add each category as a separate parameter
             Array.from(this.selectedCategories).forEach(category => {
                 params.append('category', category);
             });
         }
 
+        // Add minRating if > 0
+        if (this.minRating > 0) params.set('minRating', this.minRating);
+
+        // Add price range if API supports it
         if (this.priceRange.min > 0) params.set('minPrice', this.priceRange.min);
         if (this.priceRange.max < 1000) params.set('maxPrice', this.priceRange.max);
-        if (this.minRating > 0) params.set('minRating', this.minRating);
-        if (this.inStockOnly) params.set('inStock', 'true');
+
+        // In stock filter (client-side only, not in URL)
+        // if (this.inStockOnly) params.set('inStock', 'true');
+
         if (this.currentPage > 0) params.set('page', this.currentPage);
 
         const queryString = params.toString();
@@ -74,23 +78,26 @@ export class ProductManager {
         this.currentSearch = params.get('search') || '';
         this.sortBy = params.get('sort') || '';
         this.currentPage = parseInt(params.get('page')) || 0;
+
+        // Load minRating from URL
         this.minRating = parseInt(params.get('minRating')) || 0;
-        this.inStockOnly = params.get('inStock') === 'true';
 
-        // Parse multiple categories - getAll() returns all values for 'category' param
-        const categories = params.getAll('category');
-        if (categories.length > 0) {
-            this.selectedCategories = new Set(categories);
-            console.log('Loaded categories from URL:', Array.from(this.selectedCategories));
-        } else {
-            this.selectedCategories.clear();
-        }
-
-        // Parse price range
+        // Load price range if present
         this.priceRange = {
             min: parseInt(params.get('minPrice')) || 0,
             max: parseInt(params.get('maxPrice')) || 1000
         };
+
+        // In stock is client-side only, so don't load from URL
+        // this.inStockOnly = params.get('inStock') === 'true';
+
+        // Parse multiple categories
+        const categories = params.getAll('category');
+        if (categories.length > 0) {
+            this.selectedCategories = new Set(categories);
+        } else {
+            this.selectedCategories.clear();
+        }
 
         console.log('Filters loaded from URL:', {
             search: this.currentSearch,
@@ -98,7 +105,6 @@ export class ProductManager {
             categories: Array.from(this.selectedCategories),
             priceRange: this.priceRange,
             minRating: this.minRating,
-            inStock: this.inStockOnly,
             page: this.currentPage
         });
     }
@@ -161,7 +167,22 @@ export class ProductManager {
             });
         }
 
-        // PRIORITY 3: Sorting
+        // PRIORITY 3: Min Rating - NOW SENT TO SERVER
+        if (this.minRating > 0) {
+            url += `&minRating=${this.minRating}`;
+        }
+
+        // PRIORITY 4: Max Price - if API supports it
+        if (this.priceRange.max < 1000) {
+            url += `&maxPrice=${this.priceRange.max}`;
+        }
+
+        // PRIORITY 5: Min Price - if API supports it
+        if (this.priceRange.min > 0) {
+            url += `&minPrice=${this.priceRange.min}`;
+        }
+
+        // PRIORITY 6: Sorting
         if (this.sortBy) {
             url += `&sort=${this.sortBy}`;
         }
@@ -185,7 +206,8 @@ export class ProductManager {
             // Convert to Product models
             const products = data.content.map(p => new Product(p));
 
-            // Apply client-side filters (price, rating, stock) to the CURRENT PAGE only
+            // Apply ONLY client-side filters that the server DOESN'T handle
+            // In this case, maybe only "inStock" if API doesn't support it
             const filteredProducts = this.applyClientSideFilters(products);
 
             console.log('Server page info:', {
@@ -198,11 +220,11 @@ export class ProductManager {
 
             console.log('Client-side filtered on current page:', filteredProducts.length, 'of', products.length);
 
-            // Return with server's pagination info - IMPORTANT: use server's totalPages/totalElements
+            // Return with server's pagination info
             return {
                 content: filteredProducts,
-                totalPages: data.totalPages,        // Use server's total pages
-                totalElements: data.totalElements,   // Use server's total elements
+                totalPages: data.totalPages,
+                totalElements: data.totalElements,
                 number: data.number,
                 first: data.first,
                 last: data.last,
@@ -227,26 +249,12 @@ export class ProductManager {
 
     applyClientSideFilters(products) {
         console.log('Applying client-side filters:', {
-            priceRange: this.priceRange,
-            minRating: this.minRating,
             inStockOnly: this.inStockOnly,
             totalProducts: products.length
         });
 
         return products.filter(product => {
-            // Price range filter (client-side)
-            const productPrice = product.price || 0;
-            if (productPrice < this.priceRange.min || productPrice > this.priceRange.max) {
-                return false;
-            }
-
-            // Rating filter (client-side)
-            const productRating = product.averageRating || 0;
-            if (this.minRating > 0 && productRating < this.minRating) {
-                return false;
-            }
-
-            // In stock filter (client-side)
+            // In stock filter (client-side) - assuming API doesn't support this
             if (this.inStockOnly) {
                 const inStock = product.stock > 0;
                 if (!inStock) {
@@ -544,14 +552,6 @@ export class ProductManager {
         console.log('Changing to page:', this.currentPage);
         this.renderProducts();
     }
-
-    // Remove the old filterProducts method that conflicts
-    filterProducts() {
-        // This method is replaced by applySorting
-        console.warn('filterProducts is deprecated, use applySorting instead');
-    }
-
-    // Keep other methods (setRating, submitReview, etc.) as they are...
 
     updateActiveFilters() {
         const container = document.getElementById('active-filters-container');

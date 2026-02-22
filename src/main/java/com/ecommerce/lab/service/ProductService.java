@@ -12,13 +12,18 @@ import com.ecommerce.lab.dto.ProductRequestDTO;
 import com.ecommerce.lab.dto.ProductResponseDTO;
 import com.ecommerce.lab.exception.ProductNotFoundException;
 import com.ecommerce.lab.model.Product;
+import com.ecommerce.lab.model.Review;
 import com.ecommerce.lab.repository.OrderRepository;
 import com.ecommerce.lab.repository.ProductRepository;
 import com.ecommerce.lab.repository.ReviewRepository;
 
 import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Subquery;
 import jakarta.validation.Valid;
 
 @Service
@@ -89,7 +94,7 @@ public class ProductService {
     }
 
     public Specification<Product> filterBy(String search, List<String> categories, Double minPrice,
-            Double maxPrice) {
+            Double maxPrice, Double minRating) {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
@@ -107,6 +112,21 @@ public class ProductService {
 
             if (maxPrice != null) {
                 predicates.add(cb.lessThanOrEqualTo(root.get("price"), maxPrice));
+            }
+
+            if (minRating != null && minRating > 0) {
+                // Join with reviews to calculate the average
+                Join<Product, Review> reviewsJoin = root.join("reviews", JoinType.LEFT);
+
+                // We need to group by product ID to calculate the average correctly
+                query.groupBy(root.get("id"));
+
+                Subquery<Double> subquery = query.subquery(Double.class);
+                Root<Review> subRoot = subquery.from(Review.class);
+                subquery.select(cb.avg(subRoot.get("rating")))
+                        .where(cb.equal(subRoot.get("product"), root));
+
+                predicates.add(cb.greaterThanOrEqualTo(subquery, minRating));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));

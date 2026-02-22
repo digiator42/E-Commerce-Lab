@@ -257,8 +257,8 @@ export class Router {
 
                 // Insert categories into template
                 let finalHtml = template.replace(
-                    '<div id="category-list" class="space-y-2 max-h-60 overflow-y-auto pr-2">',
-                    `<div id="category-list" class="space-y-2 max-h-60 overflow-y-auto pr-2">
+                    '<div id="category-list" class="space-y-2 min-h-60 overflow-y-auto pr-2">',
+                    `<div id="category-list" class="space-y-2 min-h-60 overflow-y-auto pr-2">
             ${categoryHtml}`
                 );
 
