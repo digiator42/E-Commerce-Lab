@@ -1,9 +1,11 @@
 package com.ecommerce.lab.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.ecommerce.lab.dto.ProductRequestDTO;
@@ -15,6 +17,8 @@ import com.ecommerce.lab.repository.ProductRepository;
 import com.ecommerce.lab.repository.ReviewRepository;
 
 import org.springframework.transaction.annotation.Transactional;
+
+import jakarta.persistence.criteria.Predicate;
 import jakarta.validation.Valid;
 
 @Service
@@ -82,6 +86,31 @@ public class ProductService {
         }
 
         return status;
+    }
+
+    public Specification<Product> filterBy(String search, List<String> categories, Double minPrice,
+            Double maxPrice) {
+        return (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            if (search != null && !search.isEmpty()) {
+                predicates.add(cb.like(cb.lower(root.get("name")), "%" + search.toLowerCase() + "%"));
+            }
+
+            if (categories != null && !categories.isEmpty()) {
+                predicates.add(root.get("category").get("name").in(categories));
+            }
+
+            if (minPrice != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("price"), minPrice));
+            }
+
+            if (maxPrice != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("price"), maxPrice));
+            }
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
     }
 
     public void deleteProduct(Long id) {

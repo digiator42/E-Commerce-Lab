@@ -6,12 +6,14 @@ import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.ecommerce.lab.model.Product;
 
 @Repository
-public interface ProductRepository extends JpaRepository<Product, Long> {
+public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
 
     boolean existsByName(String name);
 
@@ -26,5 +28,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Page<Product> findByCategoryNameAndNameContainingIgnoreCase(String category, String name, Pageable pageable);
 
     Page<Product> findByCategoryName(String category, Pageable pageable);
+
+    @Query("SELECT p FROM Product p LEFT JOIN p.reviews r GROUP BY p.id ORDER BY AVG(r.rating) DESC")
+    Page<Product> findAllOrderByAverageRating(Pageable pageable);
 
 }

@@ -222,50 +222,90 @@ export class Router {
             },
 
             '/products': async () => {
-                const categoryParams = this.productManager.currentCategory ? `&category=${encodeURIComponent(this.productManager.currentCategory)}` : '';
-                const searchParams = encodeURIComponent(this.productManager.currentSearch);
-                const productsUrl = `/api/products?page=${this.productManager.currentPage}&size=6&search=${searchParams}${categoryParams}`;
+                // Load filters from URL first (updates state only, not UI)
+                window.productManager.loadFiltersFromURL();
 
-                const [template, cardTemplate, productRes, categoryRes] = await Promise.all([
-                    this.componentStore.load('products'),
-                    this.componentStore.load('product-card'),
-                    this.apiClient.fetch(productsUrl),
-                    this.apiClient.fetch('/api/categories')
-                ]);
+                // Get the template
+                const template = await this.componentStore.load('products');
 
-                const productListHtml = productRes?.content.map(p => {
-                    const imageSrc = p.imageUrl || 'https://placehold.co/600x400/EEE/31343C';
-                    return cardTemplate
-                        .replace(/{{name}}/g, p.name)
-                        .replace(/{{description}}/g, p.description)
-                        .replace(/{{price}}/g, (p?.price ?? 0).toFixed(2))
-                        .replace(/{{id}}/g, p.id)
-                        .replace(/{{category}}/g, p.category)
-                        .replace(/{{imageSrc}}/g, imageSrc);
-                }).join('');
+                // Fetch categories
+                const categoryRes = await this.apiClient.fetch('/api/categories');
 
-                const categoryHtml = `
-                    <button onclick="window.productManager.filterCategory(null)" 
-                        class="w-full text-left px-4 py-2 rounded-xl transition ${!this.productManager.currentCategory ? 'bg-blue-50 text-blue-600 font-bold' : 'text-gray-500 hover:bg-gray-50'}">
-                        All Products
-                    </button>
-                ` + categoryRes.map(cat => `
-                    <button onclick="window.productManager.filterCategory('${cat.name}')" 
-                        class="w-full text-left px-4 py-2 rounded-xl transition ${this.productManager.currentCategory === cat.name ? 'bg-blue-50 text-blue-600 font-bold' : 'text-gray-500 hover:bg-gray-50'}">
-                        ${cat.icon} ${cat.name}
-                    </button>
+                // Build category sidebar HTML with checked state from manager
+                const categoryHtml = categoryRes.map(cat => `
+                    <label class="flex items-center space-x-3 p-2 rounded-xl hover:bg-gray-50 cursor-pointer transition">
+                        <input type="checkbox" 
+                            onchange="window.productManager.toggleCategoryFilter('${cat.name.trim()}')" 
+                            class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 category-checkbox"
+                            data-category="${cat.name.trim()}"
+                            ${window.productManager.selectedCategories.has(cat.name.trim()) ? 'checked' : ''}>
+                        <span class="text-sm font-medium text-gray-700">${cat.icon || ''} ${cat.name}</span>
+                    </label>
                 `).join('');
 
-                let finalHtml = template.replace('{{productList}}', productListHtml);
+                // // Add "All Products" checkbox
+                // const allProductsHtml = `
+                //     <label class="flex items-center space-x-3 p-2 rounded-xl hover:bg-gray-50 cursor-pointer transition">
+                //         <input type="checkbox" 
+                //             onchange="window.productManager.toggleCategoryFilter(null)" 
+                //             class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 category-checkbox"
+                //             data-category="all"
+                //             ${window.productManager.selectedCategories.size === 0 ? 'checked' : ''}>
+                //         <span class="text-sm font-medium text-gray-700">All Products</span>
+                //     </label>
+                // `;
+
+                // Insert categories into template
+                let finalHtml = template.replace(
+                    '<div id="category-list" class="space-y-2 max-h-60 overflow-y-auto pr-2">',
+                    `<div id="category-list" class="space-y-2 max-h-60 overflow-y-auto pr-2">
+            ${categoryHtml}`
+                );
+
+                // Parse the HTML
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(finalHtml, 'text/html');
-                const catContainer = doc.getElementById('category-list');
-                if (catContainer) catContainer.innerHTML = categoryHtml;
 
-                this.productManager.totalPages = productRes.totalPages;
-                doc.getElementById('prev-btn').disabled = productRes.first;
-                doc.getElementById('next-btn').disabled = productRes.last;
-                doc.getElementById('page-info').innerText = `Page ${productRes.number + 1} of ${productRes.totalPages}`;
+                // Set remaining UI elements based on loaded filters
+                // Price inputs
+                const minRange = doc.getElementById('min-price-range');
+                const maxRange = doc.getElementById('max-price-range');
+                const minInput = doc.getElementById('min-price-input');
+                const maxInput = doc.getElementById('max-price-input');
+
+                if (minRange) minRange.value = window.productManager.priceRange.min;
+                if (maxRange) maxRange.value = window.productManager.priceRange.max;
+                if (minInput) minInput.value = window.productManager.priceRange.min;
+                if (maxInput) maxInput.value = window.productManager.priceRange.max;
+
+                // Rating radio
+                const ratingRadio = doc.querySelector(`input[name="rating-filter"][value="${window.productManager.minRating}"]`);
+                if (ratingRadio) {
+                    ratingRadio.checked = true;
+                } else {
+                    const allRating = doc.querySelector('input[name="rating-filter"][value="0"]');
+                    if (allRating) allRating.checked = true;
+                }
+
+                // In-stock checkbox
+                const stockCheckbox = doc.getElementById('in-stock-filter');
+                if (stockCheckbox) stockCheckbox.checked = window.productManager.inStockOnly;
+
+                // Search input
+                const searchInput = doc.getElementById('product-search');
+                if (searchInput) searchInput.value = window.productManager.currentSearch;
+
+                // Sort select
+                const sortSelect = doc.getElementById('products-filter');
+                if (sortSelect) sortSelect.value = window.productManager.sortBy;
+
+                // Return the HTML
+                setTimeout(async () => {
+                    // Now render products
+                    await window.productManager.renderProducts();
+                    window.productManager.updateRatingCounts();
+                    window.productManager.updateActiveFilters();
+                }, 0);
 
                 return doc.body.innerHTML;
             },

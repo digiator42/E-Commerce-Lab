@@ -1,13 +1,14 @@
 package com.ecommerce.lab.controller;
 
 import java.security.Principal;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
@@ -81,5 +82,47 @@ public class ProductController {
         }
 
         return ResponseEntity.ok(productPage.map(ProductResponseDTO::fromEntity));
+    }
+
+    @GetMapping("/custome")
+    public ResponseEntity<Page<ProductResponseDTO>> getAllProducts(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) List<String> category, // Handles multiple checkboxes
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice,
+            @RequestParam(defaultValue = "newest") String sort, // newest, price_asc, price_desc, rating
+            Pageable pageable,
+            Principal principal) {
+
+        // 1. Determine Sorting
+        Sort sortOrder = switch (sort) {
+            case "price_asc" -> Sort.by("price").ascending();
+            case "price_desc" -> Sort.by("price").descending();
+            case "name_asc" -> Sort.by("name").ascending();
+            case "name_desc" -> Sort.by("name").descending();
+            case "stock" -> Sort.by("stock").ascending();
+            case "newest" -> Sort.by("id").descending();
+            default -> Sort.unsorted();
+        };
+
+        Pageable updatedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sortOrder);
+
+        // 2. Fetch Data
+        Page<Product> productPage;
+        if ("rating".equals(sort)) {
+            // Special case for average rating sorting
+            productPage = productRepository.findAllOrderByAverageRating(updatedPageable);
+        } else {
+            Specification<Product> spec = service.filterBy(search, category, minPrice, maxPrice);
+            productPage = productRepository.findAll(spec, updatedPageable);
+        }
+
+        // 3. Map to DTO (using the convertToDto helper we created earlier)
+        return ResponseEntity.ok(productPage.map(product -> convertToDto(product, principal)));
+    }
+
+    private ProductResponseDTO convertToDto(Product product, Principal principal) {
+        String status = (principal == null) ? "GUEST" : service.canReview(principal.getName(), product.getId());
+        return ProductResponseDTO.fromEntity(product, status);
     }
 }
