@@ -747,4 +747,47 @@ export class ProductManager {
 
         this.renderProducts('product-list-container');
     }
+
+    async loadCategoryProducts(category, containerId) {
+        try {
+            const response = await fetch(`/api/products/custome?category=${category}&page=0&size=4`);
+            const data = await response.json();
+
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            if (!data.content || data.content.length === 0) {
+                container.innerHTML = '<p class="col-span-full text-center text-gray-500">No products found</p>';
+                return;
+            }
+
+            const cardTemplate = await ComponentStore.getInstance().load('product-card');
+
+            container.innerHTML = data.content.map(p => {
+                const imageSrc = p.imageUrl || 'https://placehold.co/600x400/EEE/31343C';
+                const isInWishlist = window.wishlistManager?.isInWishlist(p.id) || false;
+
+                return cardTemplate
+                    .replace(/{{imageSrc}}/g, imageSrc)
+                    .replace(/{{name}}/g, p.name)
+                    .replace(/{{description}}/g, p.description.substring(0, 60) + '...')
+                    .replace(/{{price}}/g, p.price.toFixed(2))
+                    .replace(/{{id}}/g, p.id)
+                    .replace(/{{category}}/g, p.category)
+                    .replace(/{{rating}}/g, '★★★★☆') // You can add actual rating
+                    .replace(/{{reviewCount}}/g, p.reviews?.length || 0)
+                    .replace(/{{reviewStatus}}/g, '')
+                    .replace(/{{reviewStatusTag}}/g, '')
+                    .replace(/{{wishlistClass}}/g, isInWishlist ? 'text-red-500 fill-current' : 'text-gray-400')
+                    .replace(/{{wishlistFill}}/g, isInWishlist ? 'currentColor' : 'none');
+            }).join('');
+
+        } catch (error) {
+            console.error(`Error loading ${category} products:`, error);
+            const container = document.getElementById(containerId);
+            if (container) {
+                container.innerHTML = '<p class="col-span-full text-center text-red-500">Failed to load products</p>';
+            }
+        }
+    }
 }
