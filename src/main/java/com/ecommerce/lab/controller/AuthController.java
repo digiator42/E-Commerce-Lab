@@ -78,10 +78,7 @@ public class AuthController {
         HttpSession session = request.getSession(true);
         session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
 
-        return ResponseEntity.ok(Map.of(
-                "message", "Logged in successfully",
-                "email", user.getEmail(),
-                "role", role));
+        return ResponseEntity.ok(UserResponseDTO.fromEntity(user));
     }
 
     @PostMapping("/register")
