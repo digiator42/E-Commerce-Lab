@@ -134,6 +134,15 @@ export class OrderManager {
         }
     }
 
+    parseAddress(addressStr) {
+        if (!addressStr) return {};
+        try {
+            return JSON.parse(addressStr);
+        } catch (err) {
+            return { street: addressStr || 'N/A' };
+        }
+    };
+
     async renderOrders() {
         const orders = await this.getMyOrders();
         const template = await this.componentStore.load('orders');
@@ -142,32 +151,161 @@ export class OrderManager {
             return template.replace('{{orderList}}', '<p class="text-center py-10 text-gray-500">No orders found yet.</p>');
         }
 
-        const ordersHtml = orders.map(order => `
-            <div class="bg-white border rounded-2xl p-6 shadow-sm mb-6">
-                <div class="flex justify-between items-center border-b pb-4 mb-4">
-                    <div>
-                        <p class="text-xs text-gray-400 uppercase font-bold">Order ID</p>
-                        <p class="font-mono text-sm">#ORD-${order.id}</p>
+
+        const ordersHtml = orders.map(order => {
+            const shippingAddress = this.parseAddress(order.shippingAddress);
+            const paymentStatusColor = order.paymentStatus === 'PAID' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700';
+
+            return `
+            <div class="bg-white border rounded-2xl p-6 shadow-sm mb-6 hover:shadow-md transition">
+                <!-- Order Header -->
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b pb-4 mb-4">
+                    <div class="space-y-1">
+                        <div class="flex items-center space-x-3">
+                            <p class="text-xs text-gray-400 uppercase font-bold">Order ID</p>
+                            <span class="px-2 py-0.5 rounded-full text-xs font-bold uppercase ${paymentStatusColor}">
+                                ${order.paymentStatus}
+                            </span>
+                        </div>
+                        <p class="font-mono text-sm flex items-center">
+                            #ORD-${order.id}
+                            ${order.paymentTransactionId ? `
+                                <span class="ml-2 text-xs text-gray-400 font-mono">
+                                    TX: ${order.paymentTransactionId}
+                                </span>
+                            ` : ''}
+                        </p>
                     </div>
-                    <div class="text-right">
-                        <p class="text-xs text-gray-400 uppercase font-bold">Date</p>
-                        <p class="text-sm">${new Date(order.orderDate).toLocaleDateString()}</p>
+                    <div class="flex items-center space-x-4 mt-2 sm:mt-0">
+                        <div class="text-right">
+                            <p class="text-xs text-gray-400 uppercase font-bold">Date</p>
+                            <p class="text-sm">${new Date(order.orderDate).toLocaleDateString()}</p>
+                            <p class="text-[10px] text-gray-400">${new Date(order.orderDate).toLocaleTimeString()}</p>
+                        </div>
+                        <!-- Invoice Download Button -->
+                        <a href="/api/orders/${order.id}/download-invoice" 
+                           target="_blank"
+                           class="inline-flex items-center px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition group"
+                           title="Download Invoice">
+                            <svg class="w-4 h-4 mr-1 group-hover:scale-110 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            <span class="text-xs font-medium">Invoice</span>
+                        </a>
                     </div>
                 </div>
-                <div class="space-y-3">
+
+                <!-- Customer Info (if available) -->
+                ${order.user ? `
+                <div class="mb-4 p-3 bg-gray-50 rounded-xl text-sm">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-xs text-gray-400 uppercase font-bold mb-1">Customer</p>
+                            <p class="font-medium text-gray-900">${order.user.name || order.user.userName || order.user.email}</p>
+                            <p class="text-xs text-gray-500">${order.user.email}</p>
+                        </div>
+                        ${order.user.age ? `<span class="text-xs text-gray-400">Age: ${order.user.age}</span>` : ''}
+                    </div>
+                </div>
+                ` : ''}
+
+                <!-- Order Items with Product Details -->
+                <div class="space-y-4">
+                    <p class="text-xs text-gray-400 uppercase font-bold mb-2">Items</p>
                     ${order.items.map(item => `
-                        <div class="flex justify-between text-sm">
-                            <span class="text-gray-600">${item.productName} (x${item.quantity})</span>
-                            <span class="font-medium">$${(item.priceAtPurchase * item.quantity).toFixed(2)}</span>
+                        <div class="flex justify-between items-start border-b border-gray-50 pb-3 last:border-0">
+                            <div class="flex-1">
+                                <div class="flex items-center">
+                                    <span class="font-medium text-gray-900">${item.productName}</span>
+                                    ${item.product?.category ? `
+                                        <span class="ml-2 text-xs bg-gray-100 px-2 py-0.5 rounded-full">
+                                            ${item.product.category.icon || ''} ${item.product.category.name}
+                                        </span>
+                                    ` : ''}
+                                </div>
+                                <div class="flex items-center mt-1 text-xs text-gray-500">
+                                    <span>Qty: ${item.quantity}</span>
+                                    <span class="mx-2">•</span>
+                                    <span>Unit Price: $${item.priceAtPurchase.toFixed(2)}</span>
+                                    ${item.product?.brand ? `<span class="mx-2">•</span><span>Brand: ${item.product.brand}</span>` : ''}
+                                </div>
+                                ${item.product?.description ? `
+                                    <p class="text-xs text-gray-400 mt-1 line-clamp-1">${item.product.description}</p>
+                                ` : ''}
+                            </div>
+                            <div class="text-right">
+                                <span class="font-bold text-gray-900">$${(item.priceAtPurchase * item.quantity).toFixed(2)}</span>
+                            </div>
                         </div>
                     `).join('')}
                 </div>
-                <div class="border-t mt-4 pt-4 flex justify-between items-center">
-                    <span class="font-bold text-lg text-gray-900">Total Amount</span>
-                    <span class="text-2xl font-black text-blue-600">$${order.totalAmount.toFixed(2)}</span>
+
+                <!-- Shipping Address -->
+                <div class="mt-4 p-3 bg-gray-50 rounded-xl">
+                    <p class="text-xs text-gray-400 uppercase font-bold mb-2">Shipping Address</p>
+                    <div class="text-sm">
+                        <p class="font-medium text-gray-900">${shippingAddress.street || 'N/A'}</p>
+                        <p class="text-xs text-gray-600">
+                            ${shippingAddress.city || ''}${shippingAddress.city && shippingAddress.state ? ', ' : ''}${shippingAddress.state || ''} ${shippingAddress.zipCode || ''}
+                        </p>
+                        <p class="text-xs text-gray-600">${shippingAddress.country || ''}</p>
+                    </div>
+                </div>
+
+                <!-- Order Summary -->
+                <div class="border-t mt-4 pt-4">
+                    <div class="flex justify-end">
+                        <div class="w-full sm:w-64 space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-500">Subtotal:</span>
+                                <span class="font-medium">$${order.totalAmount.toFixed(2)}</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-500">Shipping:</span>
+                                <span class="font-medium text-green-600">Free</span>
+                            </div>
+                            <div class="flex justify-between text-lg font-bold border-t pt-2">
+                                <span>Total:</span>
+                                <span class="text-blue-600">$${order.totalAmount.toFixed(2)}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Footer with Status and Actions -->
+                <div class="border-t mt-4 pt-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <div class="flex items-center space-x-3">
+                        <!-- Status Badge -->
+                        <span class="px-3 py-1.5 rounded-full text-xs font-bold uppercase ${this.statusColors[order.status] || 'bg-gray-100 text-gray-600'}">
+                            ${order.status || 'PENDING'}
+                        </span>
+                        <!-- Payment Status -->
+                        <span class="text-xs ${order.paymentStatus === 'PAID' ? 'text-green-600' : 'text-yellow-600'}">
+                            ${order.paymentStatus === 'PAID' ? '✓ Paid' : '⏳ Pending'}
+                        </span>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <!-- Download again link -->
+                        <a href="/api/orders/${order.id}/download-invoice" 
+                           target="_blank"
+                           class="text-xs text-gray-400 hover:text-blue-600 flex items-center">
+                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                            </svg>
+                            Download PDF
+                        </a>
+                        <!-- Track Order (placeholder) -->
+                        <button class="text-xs text-gray-400 hover:text-blue-600 flex items-center">
+                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
+                            </svg>
+                            Track Order
+                        </button>
+                    </div>
                 </div>
             </div>
-        `).join('');
+        `;
+        }).join('');
 
         return template.replace('{{orderList}}', ordersHtml);
     }

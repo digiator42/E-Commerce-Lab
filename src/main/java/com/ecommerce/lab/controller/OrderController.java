@@ -1,5 +1,6 @@
 package com.ecommerce.lab.controller;
 
+import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
 import java.util.Map;
@@ -8,13 +9,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ecommerce.lab.model.Order;
 import com.ecommerce.lab.repository.OrderRepository;
+import com.ecommerce.lab.service.InvoiceService;
 import com.ecommerce.lab.service.OrderService;
+
+import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -22,10 +27,12 @@ public class OrderController {
 
     private final OrderService orderService;
     private final OrderRepository orderRepository;
+    private final InvoiceService invoiceService;
 
-    public OrderController(OrderService orderService, OrderRepository orderRepository) {
+    public OrderController(OrderService orderService, OrderRepository orderRepository, InvoiceService invoiceService) {
         this.orderService = orderService;
         this.orderRepository = orderRepository;
+        this.invoiceService = invoiceService;
     }
 
     @PostMapping("/place")
@@ -50,5 +57,17 @@ public class OrderController {
 
         List<Order> orders = orderRepository.findByUserEmailOrderByOrderDateDesc(principal.getName());
         return ResponseEntity.ok(orders);
+    }
+
+    @GetMapping("/{orderId}/download-invoice")
+    public void downloadInvoice(@PathVariable Long orderId, HttpServletResponse response) throws IOException {
+        Order order = orderRepository.getOrderById(orderId);
+
+        response.setContentType("application/pdf");
+        String headerKey = "Content-Disposition";
+        String headerValue = "attachment; filename=invoice_order_" + orderId + ".pdf";
+        response.setHeader(headerKey, headerValue);
+
+        invoiceService.generateInvoice(order, response);
     }
 }
