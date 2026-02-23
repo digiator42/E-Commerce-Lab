@@ -352,6 +352,15 @@ export class Router {
                 return await this.componentStore.load('login');
             },
 
+            '/register': async () => {
+                // If already authenticated, redirect to home
+                if (this.authManager?.isAuthenticated) {
+                    window.history.pushState(null, '', '/');
+                    return await this.route();
+                }
+                return await this.componentStore.load('register');
+            },
+
             '/orders': async () => {
                 return await this.orderManager.renderOrders();
             },
