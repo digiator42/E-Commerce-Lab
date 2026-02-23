@@ -16,9 +16,9 @@ class App {
         console.log('App constructor started');
 
         // Initialize core services (no dependencies)
+        this.uiManager = UIManager.getInstance();
         this.router = Router.getInstance();
         this.authManager = AuthManager.getInstance();
-        this.uiManager = UIManager.getInstance();
         this.componentStore = ComponentStore.getInstance();
 
         console.log('Core services initialized');
@@ -75,9 +75,6 @@ class App {
 
     async init() {
         console.log('App.init started');
-
-        this.uiManager.initializeAuthUI();
-        this.uiManager.setupClickOutside();
 
         // Check authentication status
         await this.authManager.checkAuthStatus();

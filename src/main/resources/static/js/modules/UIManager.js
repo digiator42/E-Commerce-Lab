@@ -6,6 +6,8 @@ export class UIManager {
     constructor() {
         this.toastTimeout = null;
         this.userMenuOpen = false;
+        this.initializeAuthUI();
+        this.setupClickOutside();
     }
 
     static getInstance() {
@@ -76,6 +78,7 @@ export class UIManager {
     }
 
     initializeAuthUI() {
+        console.log('Initializing authentication UI');
         const user = JSON.parse(localStorage.getItem('user'));
         const isAuthenticated = !!user;
 
