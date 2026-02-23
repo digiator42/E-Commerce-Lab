@@ -228,6 +228,8 @@ export class AuthManager {
             const response = await fetch('/api/auth/logout', { method: 'POST' });
             if (response.ok) {
                 localStorage.removeItem('user');
+                localStorage.removeItem('cartCount');
+                localStorage.removeItem('wishlistCount');
                 this.user = null;
                 this.isAuthenticated = false;
                 this.uiManager.updateUserDisplay(null);

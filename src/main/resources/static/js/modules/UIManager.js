@@ -5,6 +5,7 @@ export class UIManager {
 
     constructor() {
         this.toastTimeout = null;
+        this.userMenuOpen = false;
     }
 
     static getInstance() {
@@ -51,30 +52,133 @@ export class UIManager {
 
 
     updateUserDisplay(user) {
-        const userNameElement = document.getElementById('userName');
-        if (userNameElement) {
-            userNameElement.innerText = Utils.getUserNameFromEmail(user?.email);
+        if (!user) return;
+
+        // Desktop user info
+        const userNameDisplay = document.getElementById('user-name-display');
+        const userInitials = document.getElementById('user-initials');
+
+        if (userNameDisplay) {
+            const displayName = user.displayName || user.email?.split('@')[0] || 'User';
+            userNameDisplay.textContent = displayName;
+        }
+
+        if (userInitials) {
+            const initial = (user.displayName || user.email || 'U').charAt(0).toUpperCase();
+            userInitials.textContent = initial;
+        }
+
+        // Mobile user info
+        const mobileUserName = document.getElementById('mobile-user-name');
+        if (mobileUserName) {
+            mobileUserName.textContent = user.displayName || user.email?.split('@')[0] || 'User';
         }
     }
 
+    initializeAuthUI() {
+        const user = JSON.parse(localStorage.getItem('user'));
+        const isAuthenticated = !!user;
+
+        // Update UI immediately from localStorage
+        this.toggleAuthButtons(isAuthenticated);
+        this.updateUserDisplay(user);
+
+        // Initialize counts from localStorage
+        this.initializeCounts();
+    }
+
+    initializeCounts() {
+        // You can store cart/wishlist counts in localStorage
+        const cartCount = localStorage.getItem('cartCount') || 0;
+        const wishlistCount = localStorage.getItem('wishlistCount') || 0;
+
+        this.updateCartBadge(cartCount);
+        this.updateWishlistBadge(wishlistCount);
+    }
+
     toggleAuthButtons(isAuthenticated) {
-        const loginBtn = document.getElementById('login-btn');
-        const logoutBtn = document.getElementById('logout-btn');
+        // Desktop elements
+        const desktopAuthButtons = document.getElementById('desktop-auth-buttons');
+        const desktopUserMenu = document.getElementById('desktop-user-menu');
+
+        // Mobile elements
+        const mobileAuthButtons = document.getElementById('mobile-auth-buttons');
+        const mobileUserMenu = document.getElementById('mobile-user-menu');
 
         if (isAuthenticated) {
-            loginBtn?.classList.add('hidden');
-            logoutBtn?.classList.remove('hidden');
+            // Hide auth buttons, show user menu
+            desktopAuthButtons?.classList.add('hidden');
+            desktopUserMenu?.classList.remove('hidden');
+
+            mobileAuthButtons?.classList.add('hidden');
+            mobileUserMenu?.classList.remove('hidden');
         } else {
-            loginBtn?.classList.remove('hidden');
-            logoutBtn?.classList.add('hidden');
+            // Show auth buttons, hide user menu
+            desktopAuthButtons?.classList.remove('hidden');
+            desktopUserMenu?.classList.add('hidden');
+
+            mobileAuthButtons?.classList.remove('hidden');
+            mobileUserMenu?.classList.add('hidden');
         }
     }
 
     updateCartBadge(count) {
-        const badge = document.getElementById('cart-count');
-        if (badge) {
-            badge.innerText = count;
-            count > 0 ? badge.classList.remove('hidden') : badge.classList.add('hidden');
+        const desktopBadge = document.getElementById('cart-count-desktop');
+        const mobileBadge = document.getElementById('cart-count-mobile');
+        const countNum = parseInt(count) || 0;
+
+        [desktopBadge, mobileBadge].forEach(badge => {
+            if (badge) {
+                badge.textContent = countNum;
+                badge.classList.toggle('hidden', countNum === 0);
+            }
+        });
+
+        // Store in localStorage for immediate display on next page load
+        localStorage.setItem('cartCount', countNum);
+    }
+
+    updateWishlistBadge(count) {
+        const desktopBadge = document.getElementById('wishlist-count-desktop');
+        const mobileBadge = document.getElementById('wishlist-count-mobile');
+
+        const countNum = parseInt(count) || 0;
+
+        [desktopBadge, mobileBadge].forEach(badge => {
+            if (badge) {
+                badge.textContent = countNum;
+                badge.classList.toggle('hidden', countNum === 0);
+            }
+        });
+
+        localStorage.setItem('wishlistCount', countNum);
+    }
+
+    toggleUserDropdown() {
+        const dropdown = document.getElementById('user-dropdown');
+        if (dropdown) {
+            this.userMenuOpen = !this.userMenuOpen;
+            dropdown.classList.toggle('hidden', !this.userMenuOpen);
+        }
+    }
+
+    setupClickOutside() {
+        document.addEventListener('click', (e) => {
+            const button = document.getElementById('user-menu-button');
+            const dropdown = document.getElementById('user-dropdown');
+
+            if (this.userMenuOpen && button && !button.contains(e.target) && dropdown && !dropdown.contains(e.target)) {
+                this.userMenuOpen = false;
+                dropdown.classList.add('hidden');
+            }
+        });
+    }
+
+    // Mobile menu toggle
+    toggleMobileMenu() {
+        const mobileMenu = document.getElementById('mobile-menu');
+        if (mobileMenu) {
+            mobileMenu.classList.toggle('hidden');
         }
     }
 

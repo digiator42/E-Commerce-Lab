@@ -31,6 +31,7 @@ export class CartManager {
 
         try {
             this.items = await this.apiClient.fetch('/api/cart') || [];
+            localStorage.setItem('cartCount', JSON.stringify(this.items.length));
             this.render();
             this.updateBadge();
         } catch (error) {

@@ -76,8 +76,12 @@ class App {
     async init() {
         console.log('App.init started');
 
+        this.uiManager.initializeAuthUI();
+        this.uiManager.setupClickOutside();
+
         // Check authentication status
         await this.authManager.checkAuthStatus();
+
         console.log('Auth check completed. isAuthenticated:', this.authManager.isAuthenticated);
 
         // Load user data
@@ -89,6 +93,17 @@ class App {
 
         // Setup popstate listener
         window.addEventListener('popstate', () => this.router.route());
+
+        // Mobile menu button
+        document.getElementById('mobile-menu-btn')?.addEventListener('click', () => {
+            this.uiManager.toggleMobileMenu();
+        });
+
+        // User menu dropdown
+        document.getElementById('user-menu-button')?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.uiManager.toggleUserDropdown();
+        });
 
         console.log('App.init completed');
     }

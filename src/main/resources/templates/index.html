@@ -67,88 +67,193 @@
 </head>
 
 <body class="bg-gray-50 text-gray-900 font-sans">
-    <nav class="bg-white shadow-md sticky top-0 z-40">
-        <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-            <!-- Logo -->
-            <h1 class="text-2xl font-bold text-blue-600">
-                MASTER<span class="text-gray-700">SHOP</span>
-            </h1>
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <div class="flex-shrink-0">
+                    <h1 class="text-2xl font-bold text-blue-600">
+                        MASTER<span class="text-gray-700">SHOP</span>
+                    </h1>
+                </div>
 
-            <!-- Hamburger button (visible on small screens) -->
-            <button id="menu-btn" class="md:hidden text-gray-700 focus:outline-none">
-                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16">
-                    </path>
-                </svg>
-            </button>
+                <!-- Desktop Navigation -->
+                <div class="hidden md:flex md:items-center md:space-x-6">
+                    <!-- Main Nav Links -->
+                    <a href="/" onclick="window.router.route(event)"
+                        class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                        Home
+                    </a>
+                    <a href="/products" onclick="window.router.route(event)"
+                        class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                        Store
+                    </a>
 
-            <!-- Menu items -->
-            <div id="menu" class="hidden md:flex space-x-6 items-center">
-                <a href="/" onclick="window.router.route(event)" class="hover:text-blue-500 font-medium">Home</a>
-                <a href="/products" onclick="window.router.route(event)"
-                    class="hover:text-blue-500 font-medium">Store</a>
-                <div class="flex items-center space-x-4">
-                    <a href="/orders" onclick="window.router.route(event)"
-                        class="text-gray-600 hover:text-blue-600 font-medium">My Orders</a>
-                    <span class="text-gray-300">|</span>
-                    <button id="logout-btn" onclick="window.authManager.logout()"
-                        class="text-red-500 hover:text-red-700 font-medium">Logout</button>
+                    <!-- Wishlist Icon -->
+                    <div class="relative">
+                        <button onclick="window.wishlistManager.toggleDrawer()"
+                            class="p-2 text-gray-600 hover:text-red-500 transition-colors relative group">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
+                                </path>
+                            </svg>
+                            <span id="wishlist-count-desktop"
+                                class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+                                0
+                            </span>
+                        </button>
+                    </div>
+
+                    <!-- Cart Icon -->
+                    <div class="relative">
+                        <button onclick="window.cartManager.toggle()"
+                            class="p-2 text-gray-600 hover:text-blue-600 transition-colors relative group">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                            </svg>
+                            <span id="cart-count-desktop"
+                                class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+                                0
+                            </span>
+                        </button>
+                    </div>
+
+                    <!-- Auth Buttons (shown when NOT authenticated) -->
+                    <div id="desktop-auth-buttons" class="flex items-center space-x-3">
+                        <a href="/login" onclick="window.router.route(event)"
+                            class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm">
+                            Login
+                        </a>
+                        <a href="/register" onclick="window.router.route(event)"
+                            class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">
+                            Register
+                        </a>
+                    </div>
+
+                    <!-- User Menu (shown when authenticated) -->
+                    <div id="desktop-user-menu" class="hidden relative">
+                        <button id="user-menu-button" class="flex items-center space-x-2 focus:outline-none group">
+                            <div
+                                class="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md group-hover:shadow-lg transition-shadow">
+                                <span id="user-initials">U</span>
+                            </div>
+                            <span id="user-name-display"
+                                class="text-sm font-medium text-gray-700 max-w-[100px] truncate">User</span>
+                            <svg class="w-4 h-4 text-gray-500 group-hover:text-gray-700 transition-colors" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+
+                        <!-- Dropdown Menu -->
+                        <div id="user-dropdown"
+                            class="hidden absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50">
+                            <a href="/profile" onclick="window.router.route(event)"
+                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                                <span class="flex items-center">
+                                    <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z">
+                                        </path>
+                                    </svg>
+                                    My Profile
+                                </span>
+                            </a>
+                            <a href="/orders" onclick="window.router.route(event)"
+                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                                <span class="flex items-center">
+                                    <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                                    </svg>
+                                    My Orders
+                                </span>
+                            </a>
+                            <div class="border-t border-gray-100 my-2"></div>
+                            <button onclick="window.authManager.logout()"
+                                class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                                <span class="flex items-center">
+                                    <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                                        </path>
+                                    </svg>
+                                    Sign Out
+                                </span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                <a href="/profile" onclick="window.router.route(event)"
-                    class="text-gray-600 hover:text-blue-600 font-medium">
-                    Profile
-                </a>
-                <a href="/login" id="login-btn" onclick="window.router.route(event)"
-                    class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium">Login</a>
-                <a href="/register" id="register-btn" onclick="window.router.route(event)"
-                    class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium">Register</a>
-                <div class="relative cursor-pointer ml-4" onclick="window.wishlistManager.toggleDrawer()">
-                    <svg class="w-7 h-7 text-gray-700 hover:text-red-500 transition-colors" fill="none"
-                        stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
-                        </path>
-                    </svg>
-                    <span id="wishlist-count"
-                        class="hidden absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">0</span>
+
+                <!-- Mobile menu button -->
+                <div class="flex items-center space-x-4 md:hidden">
+                    <!-- Cart Icon (Mobile) -->
+                    <div class="relative">
+                        <button onclick="window.wishlistManager.toggleDrawer()"
+                            class="p-2 text-gray-600 hover:text-red-500 transition-colors relative group">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
+                                </path>
+                            </svg>
+                            <span id="wishlist-count-mobile"
+                                class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+                                0
+                            </span>
+                        </button>
+                        <button onclick="window.cartManager.toggle()" class="p-2 text-gray-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                            </svg>
+                            <span id="cart-count-mobile"
+                                class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">0</span>
+                        </button>
+                    </div>
+
+                    <!-- Hamburger -->
+                    <button id="mobile-menu-btn" class="text-gray-700 focus:outline-none p-2">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
                 </div>
-                <div class="relative cursor-pointer" onclick="window.cartManager.toggle()">
-                    <svg class="w-7 h-7 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
-                    </svg>
-                    <span id="cart-count"
-                        class="hidden absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">0</span>
-                </div>
-                <div id="user-area">...</div>
             </div>
         </div>
 
-        <!-- Mobile dropdown -->
-        <div id="mobile-menu" class="hidden md:hidden px-4 pb-4 space-y-4 ease-in-out transition">
-            <a href="/" onclick="window.router.route(event)" class="block hover:text-blue-500 font-medium">Home</a>
+        <!-- Mobile Menu Dropdown -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-gray-100 px-4 py-4 space-y-3">
+            <a href="/" onclick="window.router.route(event)"
+                class="block py-2 text-gray-700 hover:text-blue-600 font-medium">Home</a>
             <a href="/products" onclick="window.router.route(event)"
-                class="block hover:text-blue-500 font-medium">Store</a>
-            <a href="/orders" onclick="window.router.route(event)"
-                class="block text-gray-600 hover:text-blue-600 font-medium">My Orders</a>
-            <button id="logout-btn-mobile" onclick="window.authManager.logout()"
-                class="block text-red-500 hover:text-red-700 font-medium">Logout</button>
-            <a href="/profile" onclick="window.router.route(event)"
-                class="text-gray-600 hover:text-blue-600 font-medium">
-                Profile
-            </a>
-            <div class="relative cursor-pointer ml-4" onclick="window.wishlistManager.toggleDrawer()">
-                <svg class="w-7 h-7 text-gray-700 hover:text-red-500 transition-colors" fill="none"
-                    stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
-                    </path>
-                </svg>
-                <span id="wishlist-count"
-                    class="hidden absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">0</span>
+                class="block py-2 text-gray-700 hover:text-blue-600 font-medium">Store</a>
+
+            <!-- Mobile Auth Section -->
+            <div id="mobile-auth-buttons">
+                <a href="/login" onclick="window.router.route(event)"
+                    class="block py-2 text-gray-700 hover:text-blue-600 font-medium">Login</a>
+                <a href="/register" onclick="window.router.route(event)"
+                    class="block py-2 text-gray-700 hover:text-blue-600 font-medium">Register</a>
             </div>
-            <a href="/login" id="login-btn-mobile" onclick="window.router.route(event)"
-                class="block bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium">Login</a>
+
+            <!-- Mobile User Menu -->
+            <div id="mobile-user-menu" class="hidden">
+                <div class="py-2 text-gray-700 font-medium border-b border-gray-100 pb-2">Hello, <span
+                        id="mobile-user-name"></span></div>
+                <a href="/profile" onclick="window.router.route(event)"
+                    class="block py-2 text-gray-600 hover:text-blue-600 pl-4">👤 My Profile</a>
+                <a href="/orders" onclick="window.router.route(event)"
+                    class="block py-2 text-gray-600 hover:text-blue-600 pl-4">📦 My Orders</a>
+                <a href="#" onclick="window.wishlistManager.toggleDrawer()"
+                    class="block py-2 text-gray-600 hover:text-blue-600 pl-4">❤️ Wishlist</a>
+                <button onclick="window.authManager.logout()"
+                    class="block w-full text-left py-2 text-red-600 hover:text-red-800 font-medium pl-4">🚪 Sign
+                    Out</button>
+            </div>
         </div>
     </nav>
 
@@ -235,14 +340,6 @@
     </footer>
 
     <script type="module" src="/js/app.js"></script>
-    <script>
-        const menuBtn = document.getElementById('menu-btn');
-        const mobileMenu = document.getElementById('mobile-menu');
-
-        menuBtn.addEventListener('click', () => {
-            mobileMenu.classList.toggle('hidden');
-        });
-    </script>
 </body>
 
 </html>

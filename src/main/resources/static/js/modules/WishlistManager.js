@@ -28,6 +28,7 @@ export class WishlistManager {
 
         try {
             this.items = await this.apiClient.fetch('/api/wishlist') || [];
+            localStorage.setItem('wishlistCount', JSON.stringify(this.items.length));
             this.updateBadge();
             this.renderDrawer();
             return this.items;
@@ -113,12 +114,16 @@ export class WishlistManager {
     }
 
     updateBadge() {
-        const badge = document.getElementById('wishlist-count');
-        if (badge) {
-            const count = this.items.length;
-            badge.innerText = count;
-            count > 0 ? badge.classList.remove('hidden') : badge.classList.add('hidden');
-        }
+        const badge = document.getElementById('wishlist-count-desktop');
+        const mobileBadge = document.getElementById('wishlist-count-mobile');
+
+        [badge, mobileBadge].forEach(b => {
+            if (b) {
+                const count = this.items.length;
+                b.innerText = count;
+                count > 0 ? b.classList.remove('hidden') : b.classList.add('hidden');
+            }
+        });
     }
 
     getItemCount() {
