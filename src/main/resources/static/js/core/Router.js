@@ -99,8 +99,8 @@ export class Router {
                 // Load products for each category after rendering
                 setTimeout(async () => {
                     await this.productManager.loadCategoryProducts('Electronics', 'electronics-products');
-                    await this.productManager.loadCategoryProducts('Fashion', 'fashion-products');
-                    await this.productManager.loadCategoryProducts('Home', 'home-products');
+                    await this.productManager.loadCategoryProducts('Clothing', 'fashion-products');
+                    await this.productManager.loadCategoryProducts('Home %26 Garden', 'home-products');
                 }, 0);
 
                 return template;

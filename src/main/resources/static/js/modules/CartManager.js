@@ -22,16 +22,14 @@ export class CartManager {
     }
 
     async syncWithServer() {
-        if (!this.authManager.isAuthenticated) 
-            {
-                this.items = [];
-                this.updateBadge();
-                return;
-            }
+        if (!this.authManager.isAuthenticated) {
+            this.items = [];
+            this.updateBadge();
+            return;
+        }
 
         try {
             this.items = await this.apiClient.fetch('/api/cart') || [];
-            localStorage.setItem('cartCount', JSON.stringify(this.items.length));
             this.render();
             this.updateBadge();
         } catch (error) {
@@ -157,6 +155,8 @@ export class CartManager {
     }
 
     updateBadge() {
-        this.uiManager.updateCartBadge(this.getItemCount());
+        let count = this.getItemCount();
+        localStorage.setItem('cartCount', JSON.stringify(count));
+        this.uiManager.updateCartBadge(count);
     }
 }

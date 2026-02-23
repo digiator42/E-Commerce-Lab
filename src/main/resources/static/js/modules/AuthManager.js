@@ -48,6 +48,9 @@ export class AuthManager {
         } catch (error) {
             console.error('Auth check failed:', error);
             this.isAuthenticated = false;
+            localStorage.removeItem('user');
+            localStorage.removeItem('cartCount');
+            localStorage.removeItem('wishlistCount');
             return false;
         }
     }

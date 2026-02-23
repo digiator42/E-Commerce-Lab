@@ -28,7 +28,6 @@ export class WishlistManager {
 
         try {
             this.items = await this.apiClient.fetch('/api/wishlist') || [];
-            localStorage.setItem('wishlistCount', JSON.stringify(this.items.length));
             this.updateBadge();
             this.renderDrawer();
             return this.items;
@@ -90,7 +89,7 @@ export class WishlistManager {
 
     async toggleItem(productId) {
         if (this.isInWishlist(productId)) {
-            await this.removeItem(productId);
+            await this.removeItem(event, productId);
         } else {
             await this.addItem(productId);
         }
@@ -117,9 +116,11 @@ export class WishlistManager {
         const badge = document.getElementById('wishlist-count-desktop');
         const mobileBadge = document.getElementById('wishlist-count-mobile');
 
+        localStorage.setItem('wishlistCount', JSON.stringify(this.getItemCount()));
+
         [badge, mobileBadge].forEach(b => {
             if (b) {
-                const count = this.items.length;
+                const count = this.getItemCount();
                 b.innerText = count;
                 count > 0 ? b.classList.remove('hidden') : b.classList.add('hidden');
             }

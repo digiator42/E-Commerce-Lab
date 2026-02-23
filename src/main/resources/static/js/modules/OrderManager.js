@@ -33,8 +33,9 @@ export class OrderManager {
 
     openPaymentModal() {
         const total = this.cartManager.items.reduce((sum, item) => sum + (item.price * item.quantity), 0).toFixed(2);
+        this.cartManager.toggle();
         const modalHtml = `
-        <div id="payment-overlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-43 flex items-center justify-center p-4">
+        <div id="payment-overlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 flex items-center justify-center p-4">
             <div class="bg-white w-full max-w-md rounded-3xl p-8 shadow-2xl scale-in-center">
                 <h3 class="text-2xl font-black mb-6">Fake Secure Payment</h3>
                 <div class="space-y-4">
