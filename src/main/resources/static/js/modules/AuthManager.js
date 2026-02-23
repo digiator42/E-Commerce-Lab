@@ -106,35 +106,9 @@ export class AuthManager {
             }
 
             const user = await response.json();
-
-            // Auto login after registration
-            const loginResponse = await fetch('/api/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    username: registerData.email,
-                    password: registerData.password
-                })
-            });
-
-            if (loginResponse.ok) {
-                const loggedInUser = await loginResponse.json();
-                this.user = loggedInUser;
-                this.isAuthenticated = true;
-                localStorage.setItem('user', JSON.stringify(loggedInUser));
-
-                this.uiManager.updateUserDisplay(loggedInUser);
-                this.uiManager.showToast('Registration successful! Welcome!');
-
-                // Sync cart and wishlist
-                if (this.cartManager) await this.cartManager.syncWithServer();
-                if (this.wishlistManager) await this.wishlistManager.syncWithServer();
-
-                // Redirect to home or previous page
-                const redirect = sessionStorage.getItem('redirectAfterLogin') || '/';
-                sessionStorage.removeItem('redirectAfterLogin');
-                window.location.href = redirect;
-            }
+            this.user = user;
+            this.router.navigate('/login');
+            this.uiManager.showToast('Registration successful! Welcome!');
 
         } catch (error) {
             this.uiManager.showToast(error.message, 'error');
@@ -142,6 +116,37 @@ export class AuthManager {
             // Restore button
             submitBtn.innerHTML = originalText;
             submitBtn.disabled = false;
+        }
+    }
+
+    async autoLogin() {
+        // Auto login after registration, will apply email verfication in the future
+        const loginResponse = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                username: registerData.email,
+                password: registerData.password
+            })
+        });
+
+        if (loginResponse.ok) {
+            const loggedInUser = await loginResponse.json();
+            this.user = loggedInUser;
+            this.isAuthenticated = true;
+            localStorage.setItem('user', JSON.stringify(loggedInUser));
+
+            this.uiManager.updateUserDisplay(loggedInUser);
+            this.uiManager.showToast('Registration successful! Welcome!');
+
+            // Sync cart and wishlist
+            if (this.cartManager) await this.cartManager.syncWithServer();
+            if (this.wishlistManager) await this.wishlistManager.syncWithServer();
+
+            // Redirect to home or previous page
+            const redirect = sessionStorage.getItem('redirectAfterLogin') || '/';
+            sessionStorage.removeItem('redirectAfterLogin');
+            window.location.href = redirect;
         }
     }
 
@@ -202,10 +207,12 @@ export class AuthManager {
             if (this.cartManager) await this.cartManager.syncWithServer();
             if (this.wishlistManager) await this.wishlistManager.syncWithServer();
 
+            this.router.navigate('/');
+
             // Redirect to home or previous page
-            const redirect = sessionStorage.getItem('redirectAfterLogin') || '/';
-            sessionStorage.removeItem('redirectAfterLogin');
-            window.location.href = redirect;
+            // const redirect = sessionStorage.getItem('redirectAfterLogin') || '/';
+            // sessionStorage.removeItem('redirectAfterLogin');
+            // window.location.href = redirect;
 
         } catch (error) {
             this.uiManager.showToast(error.message, 'error');
@@ -215,7 +222,7 @@ export class AuthManager {
             loginBtn.disabled = false;
         }
     }
-    
+
     async logout() {
         try {
             const response = await fetch('/api/auth/logout', { method: 'POST' });
