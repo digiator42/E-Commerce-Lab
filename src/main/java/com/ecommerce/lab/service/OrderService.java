@@ -72,7 +72,7 @@ public class OrderService {
             order.getItems().add(oi);
             total += (ci.getProduct().getPrice() * ci.getQuantity());
         }
-        order.setTotalAmount(total);
+        order.setTotalAmount(Math.round(total * 100.0) / 100.0);
 
         order.setPaymentTransactionId(fakeTransactionId);
         order.setPaymentStatus("PAID");
