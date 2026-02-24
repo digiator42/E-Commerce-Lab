@@ -18,10 +18,12 @@ import java.util.List;
 @Service
 public class UserService {
     private UserRepository userRepository;
+    private EmailService emailService;
     private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, EmailService emailService, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.emailService = emailService;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -84,6 +86,11 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(dto.password()));
 
         user = userRepository.save(user);
+
+        emailService.sendSimpleEmail(
+                user.getEmail(),
+                "Welcome to Commerce Lab!",
+                "Hi " + user.getName() + ",\n\nYour account has been created successfully!");
 
         return UserResponseDTO.fromEntity(user);
     }

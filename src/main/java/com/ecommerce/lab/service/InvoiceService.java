@@ -1,7 +1,7 @@
 package com.ecommerce.lab.service;
 
 import java.io.IOException;
-import java.util.Optional;
+import java.io.OutputStream;
 
 import org.springframework.stereotype.Service;
 
@@ -11,14 +11,13 @@ import com.lowagie.text.*;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 
-import jakarta.servlet.http.HttpServletResponse;
 
 @Service
 public class InvoiceService {
 
-    public void generateInvoice(Order order, HttpServletResponse response) throws IOException {
+    public void generateInvoice(Order order, OutputStream outputStream) throws IOException {
         Document document = new Document(PageSize.A4);
-        PdfWriter.getInstance(document, response.getOutputStream());
+        PdfWriter.getInstance(document, outputStream);
 
         document.open();
 
@@ -50,8 +49,9 @@ public class InvoiceService {
         table.addCell("Price");
 
         for (OrderItem item : order.getItems()) {
-            String categoryName = item.getProduct() != null ? item.getProduct().getCategory().getName().toString() : "Store Item";
-            
+            String categoryName = item.getProduct() != null ? item.getProduct().getCategory().getName().toString()
+                    : "Store Item";
+
             table.addCell(item.getProductName());
             table.addCell(categoryName);
             table.addCell(String.valueOf(item.getQuantity()));

@@ -22,11 +22,17 @@ public class OrderService {
     private final CartRepository cartRepository;
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
+    private final EmailService emailService;
 
-    public OrderService(CartRepository cartRepository, OrderRepository orderRepository, UserRepository userRepository) {
+    public OrderService(CartRepository cartRepository,
+            OrderRepository orderRepository,
+            UserRepository userRepository,
+            EmailService emailService
+        ) {
         this.cartRepository = cartRepository;
         this.orderRepository = orderRepository;
         this.userRepository = userRepository;
+        this.emailService = emailService;
     }
 
     @Transactional
@@ -72,8 +78,17 @@ public class OrderService {
         order.setPaymentStatus("PAID");
         order.setStatus(OrderStatus.COMPLETED);
 
-        orderRepository.save(order);
+        Order savedOrder = orderRepository.save(order);
         cartRepository.deleteAll(cartItems);
+
+        // Notify Customer
+        emailService.sendOrderConfirmationWithInvoice(savedOrder);
+
+        // Notify Admin
+        emailService.sendSimpleEmail(
+                "admin@admin.com",
+                "New Order Received!",
+                "Order #" + order.getId() + " was placed by " + user.getEmail());
     }
 
     public boolean hasUserPurchasedProduct(String email, Long productId) {
