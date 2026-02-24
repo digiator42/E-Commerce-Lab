@@ -13,22 +13,26 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ecommerce.lab.model.User;
 import com.ecommerce.lab.repository.UserRepository;
 import com.ecommerce.lab.service.AuthService;
+import com.ecommerce.lab.service.UserService;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/account/2fa")
+@RequestMapping("/api/2fa")
 @RequiredArgsConstructor
 public class TwoFactorController {
 
     private final AuthService authService;
     private final UserRepository userRepository;
+    private final UserService userService;
 
     // Toggle 2FA status
     @PostMapping("/toggle")
     public ResponseEntity<?> toggle2FA(Principal principal, @RequestParam boolean enable) {
         User user = userRepository.findByEmail(principal.getName()).get();
-        
+
         if (enable) {
             authService.generateAndSend2FACode(user.getEmail());
             return ResponseEntity.ok("Verification code sent to email.");
@@ -42,13 +46,20 @@ public class TwoFactorController {
 
     // Verify the code
     @PostMapping("/verify")
-    public ResponseEntity<?> verify(@RequestBody Map<String, String> request, Principal principal) {
-        String code = request.get("code");
-        boolean isValid = authService.verify2FACode(principal.getName(), code);
+    public ResponseEntity<?> verify2fa(@RequestBody Map<String, String> body, HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        String email = (session != null) ? (String) session.getAttribute("PENDING_2FA_USER") : null;
 
-        if (isValid) {
-            return ResponseEntity.ok("Verification successful.");
+        if (email == null) {
+            return ResponseEntity.status(401).body("No login attempt in progress.");
         }
-        return ResponseEntity.status(401).body("Invalid or expired code.");
+
+        String code = body.get("code");
+        if (authService.verify2FACode(email, code)) {
+            User user = userService.findByEmail(email);
+            return authService.finalizeSession(user, request);
+        }
+
+        return ResponseEntity.status(401).body("Invalid or expired 2FA code.");
     }
 }

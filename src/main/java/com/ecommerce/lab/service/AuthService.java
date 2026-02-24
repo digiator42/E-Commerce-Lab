@@ -1,13 +1,21 @@
 package com.ecommerce.lab.service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Random;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import com.ecommerce.lab.dto.UserResponseDTO;
 import com.ecommerce.lab.model.User;
 import com.ecommerce.lab.repository.UserRepository;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -47,5 +55,20 @@ public class AuthService {
             return true;
         }
         return false;
+    }
+
+    public ResponseEntity<UserResponseDTO> finalizeSession(User user, HttpServletRequest request) {
+        String role = user.getRole() != null ? user.getRole().name() : "ROLE_USER";
+        var authorities = List.of(new SimpleGrantedAuthority(role));
+        var auth = new UsernamePasswordAuthenticationToken(user.getEmail(), null, authorities);
+
+        SecurityContextHolder.getContext().setAuthentication(auth);
+        HttpSession session = request.getSession(true);
+        session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
+
+        // Clear any pending 2FA data
+        session.removeAttribute("PENDING_2FA_USER");
+
+        return ResponseEntity.ok(UserResponseDTO.fromEntity(user));
     }
 }

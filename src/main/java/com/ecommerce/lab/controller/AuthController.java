@@ -27,7 +27,6 @@ import com.ecommerce.lab.dto.LoginRequestDTO;
 import com.ecommerce.lab.dto.RegisterRequestDTO;
 import com.ecommerce.lab.dto.UserResponseDTO;
 import com.ecommerce.lab.exception.AuthenticationException;
-import com.ecommerce.lab.model.Role;
 import com.ecommerce.lab.model.User;
 
 @RestController
@@ -37,7 +36,7 @@ public class AuthController {
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
     private final AuthService authService;
-    
+
     public AuthController(UserService userService, PasswordEncoder passwordEncoder, AuthService authService) {
         this.userService = userService;
         this.passwordEncoder = passwordEncoder;
@@ -72,22 +71,16 @@ public class AuthController {
 
         if (user.is2faEnabled()) {
             authService.generateAndSend2FACode(user.getEmail());
-            return ResponseEntity.ok(Map.of("requires2FA", true));
+
+            HttpSession session = request.getSession(true);
+            session.setAttribute("PENDING_2FA_USER", user.getEmail());
+
+            return ResponseEntity.ok(Map.of(
+                    "requires2FA", true,
+                    "message", "Please enter the code sent to your email"));
         }
 
-        String role = user.getRole() != null ? user.getRole().name() : Role.ROLE_USER.name();
-
-        var authorities = List.of(new SimpleGrantedAuthority(role));
-
-        var auth = new UsernamePasswordAuthenticationToken(
-                user.getEmail(), null, authorities);
-
-        SecurityContextHolder.getContext().setAuthentication(auth);
-
-        HttpSession session = request.getSession(true);
-        session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
-
-        return ResponseEntity.ok(UserResponseDTO.fromEntity(user));
+        return authService.finalizeSession(user, request);
     }
 
     @PostMapping("/register")

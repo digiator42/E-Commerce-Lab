@@ -39,7 +39,8 @@ public class SecurityConfig {
                         .requestMatchers("/login", "/register", "/product/**", "/cart").permitAll()
 
                         // API Rules
-                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/auth/**", "/api/2fa/**").permitAll()
+
                         .requestMatchers(HttpMethod.GET, "/api/products/**", "/api/categories/**", "/api/reviews/**")
                         .permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
