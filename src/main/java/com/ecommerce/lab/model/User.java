@@ -1,5 +1,7 @@
 package com.ecommerce.lab.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -28,6 +30,8 @@ public class User {
 
     private Integer age;
 
+    @Column(nullable = false)
+    @JsonIgnore
     private String password;
 
     private Role role;

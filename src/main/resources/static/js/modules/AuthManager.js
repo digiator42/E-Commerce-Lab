@@ -36,21 +36,30 @@ export class AuthManager {
         this.apiClient = apiClient;
     }
 
+    clearStorage() {
+        this.isAuthenticated = false;
+        localStorage.removeItem('user');
+        localStorage.removeItem('cartCount');
+        localStorage.removeItem('wishlistCount');
+    }
+
     async checkAuthStatus() {
         try {
             const response = await fetch('/api/auth/is-logged-in');
             this.user = await response.json();
             this.isAuthenticated = response.ok;
-            if (this.isAuthenticated) {
-                localStorage.setItem('user', JSON.stringify(this.user));
+
+            if (!this.isAuthenticated) {
+                this.clearStorage();
+                return false;
             }
+            
+            localStorage.setItem('user', JSON.stringify(this.user));
+
             return this.isAuthenticated;
         } catch (error) {
             console.error('Auth check failed:', error);
-            this.isAuthenticated = false;
-            localStorage.removeItem('user');
-            localStorage.removeItem('cartCount');
-            localStorage.removeItem('wishlistCount');
+            this.clearStorage();
             return false;
         }
     }
