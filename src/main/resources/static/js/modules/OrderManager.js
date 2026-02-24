@@ -195,20 +195,6 @@ export class OrderManager {
                     </div>
                 </div>
 
-                <!-- Customer Info (if available) -->
-                ${order.user ? `
-                <div class="mb-4 p-3 bg-gray-50 rounded-xl text-sm">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-xs text-gray-400 uppercase font-bold mb-1">Customer</p>
-                            <p class="font-medium text-gray-900">${order.user.name || order.user.userName || order.user.email}</p>
-                            <p class="text-xs text-gray-500">${order.user.email}</p>
-                        </div>
-                        ${order.user.age ? `<span class="text-xs text-gray-400">Age: ${order.user.age}</span>` : ''}
-                    </div>
-                </div>
-                ` : ''}
-
                 <!-- Order Items with Product Details -->
                 <div class="space-y-4">
                     <p class="text-xs text-gray-400 uppercase font-bold mb-2">Items</p>
@@ -229,9 +215,6 @@ export class OrderManager {
                                     <span>Unit Price: $${item.priceAtPurchase.toFixed(2)}</span>
                                     ${item.product?.brand ? `<span class="mx-2">•</span><span>Brand: ${item.product.brand}</span>` : ''}
                                 </div>
-                                ${item.product?.description ? `
-                                    <p class="text-xs text-gray-400 mt-1 line-clamp-1">${item.product.description}</p>
-                                ` : ''}
                             </div>
                             <div class="text-right">
                                 <span class="font-bold text-gray-900">$${(item.priceAtPurchase * item.quantity).toFixed(2)}</span>

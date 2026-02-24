@@ -1,6 +1,7 @@
 package com.ecommerce.lab.service;
 
 import java.io.IOException;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
@@ -29,12 +30,11 @@ public class InvoiceService {
         document.add(title);
 
         // Add Order Info
+        document.add(new Paragraph("Payment_Transaction_Id: " + order.getPaymentTransactionId().toString()));
         document.add(new Paragraph("Order ID: " + order.getId()));
         document.add(new Paragraph("Customer: " + order.getUser().getEmail()));
         document.add(new Paragraph("Address: " + order.getUser().getAddress().toString()));
         document.add(new Paragraph("Date: " + order.getOrderDate().toString()));
-        document.add(new Paragraph(" ")); // Spacer
-        document.add(new Paragraph("Payment_Transaction_Id: " + order.getPaymentTransactionId().toString()));
         document.add(new Paragraph("Payment_Status: " + order.getPaymentStatus().toString()));
         document.add(new Paragraph("Status: " + order.getStatus().toString()));
         document.add(new Paragraph(" ")); // Spacer
@@ -50,10 +50,12 @@ public class InvoiceService {
         table.addCell("Price");
 
         for (OrderItem item : order.getItems()) {
-            table.addCell(item.getProduct().getName());
-            table.addCell(item.getProduct().getCategory().getName().toString());
+            String categoryName = item.getProduct() != null ? item.getProduct().getCategory().getName().toString() : "Store Item";
+            
+            table.addCell(item.getProductName());
+            table.addCell(categoryName);
             table.addCell(String.valueOf(item.getQuantity()));
-            table.addCell("$" + item.getProduct().getPrice());
+            table.addCell("$" + item.getPriceAtPurchase());
         }
 
         document.add(table);
