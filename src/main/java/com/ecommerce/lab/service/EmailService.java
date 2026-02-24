@@ -12,6 +12,7 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
 import com.ecommerce.lab.model.Order;
+import com.ecommerce.lab.model.User;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -40,16 +41,19 @@ public class EmailService {
         }
     }
 
-    public void sendHtmlEmail(String to, String subject, String htmlBody) throws MessagingException {
-        MimeMessage message = mailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-
-        helper.setFrom("42pongos@gmail.com");
-        helper.setTo(to);
-        helper.setSubject(subject);
-        helper.setText(htmlBody, true);
-
-        mailSender.send(message);
+    private void sendTemplateEmail(String to, String subject, String templateName, Context context) {
+        try {
+            String htmlContent = templateEngine.process(templateName, context);
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setFrom("42pongos@gmail.com");
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(htmlContent, true);
+            mailSender.send(message);
+        } catch (Exception e) {
+            System.err.println("Failed to send " + templateName + " email: " + e.getMessage());
+        }
     }
 
     public void sendOrderConfirmation(Order order) {
@@ -61,13 +65,11 @@ public class EmailService {
             context.setVariable("total", order.getTotalAmount());
             context.setVariable("items", order.getItems());
 
-            // Generate HTML string from template
-            String htmlContent = templateEngine.process("order-confirmation", context);
             String to = order.getUser().getEmail();
             String subject = "Your Order Confirmation #" + order.getId();
 
             // Send the Email
-            this.sendHtmlEmail(to, subject, htmlContent);
+            this.sendTemplateEmail(to, subject, "order-confirmation", context);
 
         } catch (Exception e) {
             System.err.println("Template Email Failed: " + e.getMessage());
@@ -95,7 +97,6 @@ public class EmailService {
 
             // Generate PDF and Attach
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            // You'll need to update your InvoiceService to accept an OutputStream
             invoiceService.generateInvoice(order, outputStream);
 
             byte[] pdfBytes = outputStream.toByteArray();
@@ -107,5 +108,17 @@ public class EmailService {
         } catch (Exception e) {
             System.err.println("Email/PDF Generation Failed: " + e.getMessage());
         }
+    }
+
+    public void sendWelcomeEmail(User user) {
+        Context context = new Context();
+        context.setVariable("name", user.getName());
+        sendTemplateEmail(user.getEmail(), "Welcome to Commerce Lab!", "welcome-email", context);
+    }
+
+    public void send2FACode(String email, String code) {
+        Context context = new Context();
+        context.setVariable("code", code);
+        sendTemplateEmail(email, "Your Verification Code", "2fa-code", context);
     }
 }
