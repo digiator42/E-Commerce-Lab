@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import com.ecommerce.lab.service.AuthService;
 import com.ecommerce.lab.service.UserService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,10 +36,12 @@ public class AuthController {
 
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
-
-    public AuthController(UserService userService, PasswordEncoder passwordEncoder) {
+    private final AuthService authService;
+    
+    public AuthController(UserService userService, PasswordEncoder passwordEncoder, AuthService authService) {
         this.userService = userService;
         this.passwordEncoder = passwordEncoder;
+        this.authService = authService;
     }
 
     @GetMapping("is-logged-in")
@@ -51,7 +54,8 @@ public class AuthController {
 
         User user = userService.findByEmail(principal.getName());
 
-        // String role = user.getRole() != null ? user.getRole().name() : Role.ROLE_USER.name();
+        // String role = user.getRole() != null ? user.getRole().name() :
+        // Role.ROLE_USER.name();
 
         return ResponseEntity.ok(UserResponseDTO.fromEntity(user));
 
@@ -64,6 +68,11 @@ public class AuthController {
 
         if (!passwordEncoder.matches(loginReq.password(), user.getPassword())) {
             throw new AuthenticationException("Wrong password");
+        }
+
+        if (user.is2faEnabled()) {
+            authService.generateAndSend2FACode(user.getEmail());
+            return ResponseEntity.ok(Map.of("requires2FA", true));
         }
 
         String role = user.getRole() != null ? user.getRole().name() : Role.ROLE_USER.name();

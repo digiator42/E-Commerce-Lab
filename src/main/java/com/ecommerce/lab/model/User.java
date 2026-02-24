@@ -1,5 +1,7 @@
 package com.ecommerce.lab.model;
 
+import java.time.LocalDateTime;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
@@ -37,5 +39,9 @@ public class User {
     private Role role;
 
     private String address;
+
+    private boolean is2faEnabled = false;
+    private String twoFactorCode;
+    private LocalDateTime twoFactorCodeExpires;
 
 }
