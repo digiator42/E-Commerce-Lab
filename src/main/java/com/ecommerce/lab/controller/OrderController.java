@@ -68,6 +68,6 @@ public class OrderController {
         String headerValue = "attachment; filename=invoice_order_" + orderId + ".pdf";
         response.setHeader(headerKey, headerValue);
 
-        invoiceService.generateInvoice(order, response);
+        invoiceService.generateInvoice(order, response.getOutputStream());
     }
 }
