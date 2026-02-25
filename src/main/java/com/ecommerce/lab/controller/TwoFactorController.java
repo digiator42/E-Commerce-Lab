@@ -36,8 +36,10 @@ public class TwoFactorController {
         User user = userRepository.findByEmail(principal.getName()).get();
 
         if (enabled.get("enabled").equals("true")) {
-            authService.generateAndSend2FACode(user.getEmail());
-            return ResponseEntity.ok("Verification code sent to email.");
+            // authService.generateAndSend2FACode(user.getEmail());
+            user.set2faEnabled(true);
+            userRepository.save(user);
+            return ResponseEntity.ok("2FA is enabled.");
         } else {
             user.set2faEnabled(false);
             user.setTwoFactorCode(null);
