@@ -1,5 +1,6 @@
 package com.ecommerce.lab.controller;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -60,6 +61,7 @@ public class OAuth2Controller {
         // Update profile info every login to refresh
         user.setName(name);
         user.setProfilePicture(picture);
+        user.setLastLogin(LocalDateTime.now());
         userRepository.save(user);
 
         // Establish Session (Manually since we want a unified session)

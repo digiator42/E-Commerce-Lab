@@ -51,6 +51,7 @@ public class AuthService {
             // Clear code after successful verification
             user.setTwoFactorCode(null);
             user.setTwoFactorCodeExpires(null);
+            user.setLastLogin(LocalDateTime.now());
             userRepository.save(user);
             return true;
         }
@@ -68,6 +69,9 @@ public class AuthService {
 
         // Clear any pending 2FA data
         session.removeAttribute("PENDING_2FA_USER");
+        
+        user.setLastLogin(LocalDateTime.now());
+        userRepository.save(user);
 
         return ResponseEntity.ok(UserResponseDTO.fromEntity(user));
     }

@@ -15,6 +15,17 @@
                     </div>
                     <h2 class="text-xl font-bold text-gray-900" id="profile-display-name">User</h2>
                     <p class="text-sm text-gray-500 mt-1" id="profile-email">user@example.com</p>
+                    <div class="relative group inline-block mt-2">
+                        <p id="last-login-time" class="text-sm text-gray-500 mt-1 cursor-pointer">
+                            Loading...
+                        </p>
+                        <!-- Tooltip -->
+                        <span id="last-login-time-tooltip"
+                            class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover:block bg-gray-800 text-white text-xs rounded px-2 py-1 whitespace-nowrap">
+                            Last login
+                        </span>
+                    </div>
+
                 </div>
 
                 <div class="border-t border-gray-100 mt-6 pt-6">

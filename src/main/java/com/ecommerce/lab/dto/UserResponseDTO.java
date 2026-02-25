@@ -9,6 +9,7 @@ public record UserResponseDTO(
         String email,
         String profilePicture,
         String defaultAddress,
+        String lastLogin,
         String role) {
 
     public static UserResponseDTO fromEntity(User user) {
@@ -21,6 +22,7 @@ public record UserResponseDTO(
                 user.getEmail(),
                 user.getProfilePicture(),
                 user.getAddress(),
+                user.getLastLogin().toString(),
                 roleName);
     }
 }

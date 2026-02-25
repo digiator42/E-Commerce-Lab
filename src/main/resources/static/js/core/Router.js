@@ -171,8 +171,14 @@ export class Router {
 
                         // Set Picture
                         const profilePic = document.getElementById('profile-pic');
-                        if (profilePic) {
-                            profilePic.innerHTML = user.profilePicture ? `<img class="rounded-full" src=${user.profilePicture}>` : '';
+                        if (profilePic && user.profilePicture) {
+                            profilePic.innerHTML = `<img class="rounded-full" src=${user.profilePicture}>`;
+                        }
+
+                        // set last login
+                        const lastLogin = document.getElementById('last-login-time');
+                        if (lastLogin) {
+                            lastLogin.textContent = new Date(user.lastLogin);
                         }
 
                         // Set profile initials

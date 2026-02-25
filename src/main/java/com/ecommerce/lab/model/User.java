@@ -52,4 +52,6 @@ public class User {
     private String twoFactorCode;
     private LocalDateTime twoFactorCodeExpires;
 
+    private LocalDateTime lastLogin;
+
 }

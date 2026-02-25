@@ -175,15 +175,7 @@ public class AdminController {
     public ResponseEntity<List<UserResponseDTO>> getAllUsers() {
         return ResponseEntity.ok(userRepository.findAll().stream()
                 .map(u -> {
-                    String role = u.getRole() != null ? u.getRole().name() : "ROLE_USER";
-                    return new UserResponseDTO(
-                            u.getId(),
-                            u.getName(),
-                            u.getUserName(),
-                            u.getEmail(),
-                            u.getProfilePicture(),
-                            u.getAddress(),
-                            role);
+                    return UserResponseDTO.fromEntity(u);
                 })
                 .toList());
     }
