@@ -49,6 +49,11 @@ export class AuthManager {
             this.user = await response.json();
             this.isAuthenticated = response.ok;
 
+            // Need to be set in localstoarge to be active on refresh
+            if (this.pending2FAEmail) {
+                return await this.router.navigate("/2fa/verify")
+            }
+
             if (!this.isAuthenticated) {
                 this.clearStorage();
                 return false;

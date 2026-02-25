@@ -370,7 +370,7 @@ export class Router {
                 setTimeout(() => {
                     const emailInput = document.getElementById('2fa-email');
                     const emailDisplay = document.getElementById('user-email-display');
-                    
+
                     if (emailInput && this.authManager.pending2FAEmail) {
                         emailInput.value = this.authManager.pending2FAEmail;
                         // Mask email for display
@@ -564,6 +564,7 @@ export class Router {
 
     async navigate(path) {
         window.history.pushState(null, '', path);
+        document.title = "MASTER SHOP | " + path.toLocaleUpperCase();
         await this.route();
     }
 
@@ -571,12 +572,14 @@ export class Router {
         if (event) {
             event.preventDefault();
             const href = event.target.closest('a').getAttribute('href');
+            console.log("Pushing => ", href);
             window.history.pushState(null, '', href);
         }
 
         this.uiManager.toggleAuthButtons(this.authManager?.isAuthenticated || false);
 
         let path = window.location.pathname;
+        document.title = "MASTER SHOP | " + path.slice(1, path.length).toLocaleUpperCase();
         if (path.endsWith('/') && path.length > 1) {
             path = path.slice(0, -1);
         }

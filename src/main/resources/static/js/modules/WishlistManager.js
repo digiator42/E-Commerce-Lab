@@ -64,7 +64,9 @@ export class WishlistManager {
 
     async removeItem(event, productId) {
         if (!this.authManager.isAuthenticated) return false;
-
+        
+        this.uiManager.showSpinner(event, productId);
+        
         try {
             await this.apiClient.fetch(`/api/wishlist/${productId}`, {
                 method: 'DELETE'
@@ -73,7 +75,6 @@ export class WishlistManager {
             this.items = this.items.filter(item => item.id !== productId);
             this.updateBadge();
             this.uiManager.showToast('Removed from wishlist', 'success');
-            this.uiManager.showSpinner(event, productId);
 
             // Update heart icon if visible
             this.updateHeartIcon(productId, false);
