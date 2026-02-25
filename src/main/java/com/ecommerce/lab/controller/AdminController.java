@@ -181,6 +181,7 @@ public class AdminController {
                             u.getName(),
                             u.getUserName(),
                             u.getEmail(),
+                            u.getProfilePicture(),
                             u.getAddress(),
                             role);
                 })

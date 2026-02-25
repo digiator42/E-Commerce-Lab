@@ -169,6 +169,12 @@ export class Router {
                             emailInput.value = user.email || '';
                         }
 
+                        // Set Picture
+                        const profilePic = document.getElementById('profile-pic');
+                        if (profilePic) {
+                            profilePic.innerHTML = user.profilePicture ? `<img class="rounded-full" src=${user.profilePicture}>` : '';
+                        }
+
                         // Set profile initials
                         const initials = document.getElementById('profile-initials');
                         if (initials) {

@@ -7,6 +7,7 @@ public record UserResponseDTO(
         String displayName,
         String userName,
         String email,
+        String profilePicture,
         String defaultAddress,
         String role) {
 
@@ -18,6 +19,7 @@ public record UserResponseDTO(
                 user.getName(),
                 user.getUserName(),
                 user.getEmail(),
+                user.getProfilePicture(),
                 user.getAddress(),
                 roleName);
     }

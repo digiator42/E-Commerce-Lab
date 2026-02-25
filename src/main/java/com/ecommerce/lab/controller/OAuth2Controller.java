@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ecommerce.lab.model.AuthProvider;
 import com.ecommerce.lab.model.Role;
 import com.ecommerce.lab.model.User;
 import com.ecommerce.lab.repository.UserRepository;
@@ -47,16 +48,19 @@ public class OAuth2Controller {
             // Register new user
             user = new User();
             user.setEmail(email);
-            user.setName(name);
             user.setUserName(name);
-            user.setProfilePicture(picture);
+            user.setProvider(AuthProvider.GOOGLE);
             String randomPassword = UUID.randomUUID().toString();
             user.setPassword(passwordEncoder.encode(randomPassword));
             user.setRole(Role.ROLE_USER);
-            userRepository.save(user);
         } else {
             user = userOptional.get();
         }
+        
+        // Update profile info every login to refresh
+        user.setName(name);
+        user.setProfilePicture(picture);
+        userRepository.save(user);
 
         // Establish Session (Manually since we want a unified session)
         var auth = new UsernamePasswordAuthenticationToken(email, null,
