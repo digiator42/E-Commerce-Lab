@@ -32,6 +32,8 @@ public class User {
 
     private Integer age;
 
+    private String profilePicture;
+
     @Column(nullable = false)
     @JsonIgnore
     private String password;
