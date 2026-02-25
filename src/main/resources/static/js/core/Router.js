@@ -64,7 +64,8 @@ export class Router {
             '/register',
             '/products',
             '/product/',
-            '/categories'
+            '/categories',
+            '/2fa/verify'
         ];
     }
 
@@ -201,6 +202,8 @@ export class Router {
                                 document.getElementById('address-street').value = user.defaultAddress;
                             }
                         }
+                        // Handle 2fa status
+                        await window.authManager.check2FAStatus();
                     }
                 }, 0);
 
@@ -346,6 +349,89 @@ export class Router {
                 }, 0);
 
                 return doc.body.innerHTML;
+            },
+
+            '/2fa/verify': async () => {
+                // If already authenticated, redirect to home
+                if (this.authManager?.isAuthenticated) {
+                    window.history.pushState(null, '', '/');
+                    return await this.route();
+                }
+
+                // If no pending 2FA email, redirect to login
+                if (!this.authManager.pending2FAEmail) {
+                    window.history.pushState(null, '', '/login');
+                    return await this.route();
+                }
+
+                const template = await this.componentStore.load('2fa-verify');
+
+                // Set email in the form after rendering
+                setTimeout(() => {
+                    const emailInput = document.getElementById('2fa-email');
+                    const emailDisplay = document.getElementById('user-email-display');
+                    
+                    if (emailInput && this.authManager.pending2FAEmail) {
+                        emailInput.value = this.authManager.pending2FAEmail;
+                        // Mask email for display
+                        const email = this.authManager.pending2FAEmail;
+                        const [localPart, domain] = email.split('@');
+                        const maskedLocal = localPart.length > 3
+                            ? localPart.slice(0, 3) + '***'
+                            : localPart + '***';
+                        emailDisplay.textContent = `Code sent to ${maskedLocal}@${domain}`;
+                    }
+
+                    // Auto-focus and move between inputs
+                    document.querySelectorAll('.code-input').forEach((input, index, inputs) => {
+                        input.addEventListener('input', (e) => {
+                            // Only allow numbers
+                            e.target.value = e.target.value.replace(/[^0-9]/g, '');
+
+                            // Auto move to next input
+                            if (e.target.value && index < inputs.length - 1) {
+                                inputs[index + 1].focus();
+                            }
+
+                            // Update hidden field with complete code
+                            const code = Array.from(inputs).map(i => i.value).join('');
+                            document.getElementById('2fa-code').value = code;
+                        });
+
+                        input.addEventListener('keydown', (e) => {
+                            // Handle backspace
+                            if (e.key === 'Backspace' && !e.target.value && index > 0) {
+                                inputs[index - 1].focus();
+                            }
+                        });
+
+                        input.addEventListener('paste', (e) => {
+                            e.preventDefault();
+                            const paste = (e.clipboardData || window.clipboardData).getData('text');
+                            const numbers = paste.replace(/[^0-9]/g, '').split('');
+
+                            numbers.forEach((num, i) => {
+                                if (inputs[i]) {
+                                    inputs[i].value = num;
+                                }
+                            });
+
+                            // Focus on next empty or last input
+                            const nextEmpty = Array.from(inputs).findIndex(i => !i.value);
+                            if (nextEmpty !== -1) {
+                                inputs[nextEmpty].focus();
+                            } else {
+                                inputs[inputs.length - 1].focus();
+                            }
+
+                            // Update hidden field
+                            const code = Array.from(inputs).map(i => i.value).join('');
+                            document.getElementById('2fa-code').value = code;
+                        });
+                    });
+                }, 0);
+
+                return template;
             },
 
             '/login': async () => {

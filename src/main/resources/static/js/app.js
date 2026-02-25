@@ -68,6 +68,7 @@ class App {
         window.userManager = this.userManager;
         window.utils = Utils;
         window.wishlistManager = this.wishlistManager;
+        window.componentStore = this.componentStore;
 
 
         console.log('App constructor completed');

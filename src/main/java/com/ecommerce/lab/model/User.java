@@ -40,6 +40,7 @@ public class User {
 
     private String address;
 
+    @Column(nullable = false, columnDefinition = "boolean default false")
     private boolean is2faEnabled = false;
     private String twoFactorCode;
     private LocalDateTime twoFactorCodeExpires;
