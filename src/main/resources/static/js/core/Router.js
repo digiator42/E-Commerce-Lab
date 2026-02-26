@@ -66,7 +66,9 @@ export class Router {
             '/products',
             '/product/',
             '/categories',
-            '/2fa/verify'
+            '/2fa/verify',
+            '/forgot-password',
+            '/reset-password'
         ];
     }
 
@@ -445,6 +447,99 @@ export class Router {
                 }, 0);
 
                 return template;
+            },
+
+            '/forgot-password': async () => {
+                // If already authenticated, redirect to home
+                if (this.authManager?.isAuthenticated) {
+                    window.history.pushState(null, '', '/');
+                    return await this.route();
+                }
+                return await this.componentStore.load('forgot-password');
+            },
+
+            '/reset-password': async () => {
+                // If already authenticated, redirect to home
+                if (this.authManager?.isAuthenticated) {
+                    window.history.pushState(null, '', '/');
+                    return await this.route();
+                }
+
+                // Get token from URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const token = urlParams.get('token');
+
+                if (!token) {
+                    // No token, redirect to forgot password
+                    window.history.pushState(null, '', '/forgot-password');
+                    return await this.route();
+                }
+
+                const template = await this.componentStore.load('reset-password');
+
+
+                setTimeout(() => {
+                    // Password strength checker
+                    document.getElementById('new-password')?.addEventListener('input', function (e) {
+                        const password = e.target.value;
+                        const btn = document.getElementById('reset-password-btn');
+
+                        // Check requirements
+                        const hasLength = password.length >= 8;
+                        const hasNumber = /\d/.test(password);
+                        const hasUppercase = /[A-Z]/.test(password);
+
+                        // Update requirement indicators
+                        document.getElementById('req-length').className = hasLength ? 'text-green-600' : 'text-gray-500';
+                        document.getElementById('req-length').innerHTML = `<span class="inline-block w-4">${hasLength ? '✓' : '○'}</span> At least 8 characters`;
+
+                        document.getElementById('req-number').className = hasNumber ? 'text-green-600' : 'text-gray-500';
+                        document.getElementById('req-number').innerHTML = `<span class="inline-block w-4">${hasNumber ? '✓' : '○'}</span> At least one number`;
+
+                        document.getElementById('req-uppercase').className = hasUppercase ? 'text-green-600' : 'text-gray-500';
+                        document.getElementById('req-uppercase').innerHTML = `<span class="inline-block w-4">${hasUppercase ? '✓' : '○'}</span> At least one uppercase letter`;
+
+                        // Calculate strength
+                        const strength = [hasLength, hasNumber, hasUppercase].filter(Boolean).length;
+
+                        // Update strength bars
+                        const bars = ['strength-bar-1', 'strength-bar-2', 'strength-bar-3', 'strength-bar-4'];
+                        const colors = ['', 'bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-green-500'];
+                        const texts = ['', 'Weak', 'Fair', 'Good', 'Strong'];
+
+                        bars.forEach((bar, index) => {
+                            const el = document.getElementById(bar);
+                            if (index < strength) {
+                                el.className = `h-1 w-1/4 ${colors[strength]} rounded-full transition`;
+                            } else {
+                                el.className = 'h-1 w-1/4 bg-gray-200 rounded-full transition';
+                            }
+                        });
+
+                        document.getElementById('strength-text').textContent = strength > 0 ? texts[strength] : 'Enter a password';
+                        document.getElementById('strength-text').className = strength > 0 ? `text-xs ${colors[strength].replace('bg-', 'text-')}` : 'text-xs text-gray-500';
+
+                        // Enable/disable submit button
+                        btn.disabled = !(hasLength && hasNumber && hasUppercase);
+                    });
+
+                    // Confirm password match
+                    document.getElementById('confirm-password')?.addEventListener('input', function (e) {
+                        const password = document.getElementById('new-password').value;
+                        const confirm = e.target.value;
+
+                        if (confirm && password !== confirm) {
+                            e.target.classList.add('border-red-500', 'focus:ring-red-500');
+                            e.target.classList.remove('border-gray-200', 'focus:ring-blue-500');
+                        } else {
+                            e.target.classList.remove('border-red-500', 'focus:ring-red-500');
+                            e.target.classList.add('border-gray-200', 'focus:ring-blue-500');
+                        }
+                    });
+                }, 0);
+
+                // Inject token into the template
+                return template.replace('{{token}}', token);
             },
 
             '/login': async () => {

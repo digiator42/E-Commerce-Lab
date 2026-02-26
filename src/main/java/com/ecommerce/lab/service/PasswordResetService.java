@@ -6,6 +6,8 @@ import java.util.UUID;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
 import com.ecommerce.lab.model.User;
 import com.ecommerce.lab.repository.UserRepository;
 
@@ -29,7 +31,10 @@ public class PasswordResetService {
         user.setResetTokenExpires(LocalDateTime.now().plusMinutes(30));
         userRepository.save(user);
 
-        String resetLink = "http://localhost:8080/reset-password?token=" + token;
+        String resetLink = ServletUriComponentsBuilder
+                .fromCurrentContextPath()
+                .path("/reset-password")
+                .queryParam("token", token).toUriString();
         emailService.sendPasswordResetEmail(user.getEmail(), resetLink);
     }
 

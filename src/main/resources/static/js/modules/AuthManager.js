@@ -253,6 +253,82 @@ export class AuthManager {
         }
     }
 
+    async handleForgotPassword(event) {
+        event.preventDefault();
+
+        const formData = new FormData(event.target);
+        const email = formData.get('email');
+
+        const submitBtn = document.getElementById('forgot-password-btn');
+        const originalText = submitBtn.innerText;
+        submitBtn.innerHTML = '<div class="spinner-small mx-auto"></div>';
+        submitBtn.disabled = true;
+
+        try {
+            const response = await fetch(`/api/auth/forgot-password?email=${encodeURIComponent(email)}`, {
+                method: 'POST'
+            });
+
+            // Hide form, show success message
+            event.target.classList.add('hidden');
+            const successMsg = document.getElementById('forgot-success-message');
+            document.getElementById('sent-email').textContent = email;
+            successMsg.classList.remove('hidden');
+
+        } catch (error) {
+            this.uiManager.showToast('An error occurred. Please try again.', 'error');
+        } finally {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }
+    }
+
+    async handleResetPassword(event) {
+        event.preventDefault();
+
+        const formData = new FormData(event.target);
+        const token = formData.get('token');
+        const newPassword = formData.get('newPassword');
+        const confirmPassword = document.getElementById('confirm-password').value;
+
+        // Validate passwords match
+        if (newPassword !== confirmPassword) {
+            this.uiManager.showToast('Passwords do not match', 'error');
+            return;
+        }
+
+        const submitBtn = document.getElementById('reset-password-btn');
+        const originalText = submitBtn.innerText;
+        submitBtn.innerHTML = '<div class="spinner-small mx-auto"></div>';
+        submitBtn.disabled = true;
+
+        try {
+            const response = await fetch('/api/auth/reset-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token, newPassword })
+            });
+
+            if (!response.ok) {
+                const error = await response.text();
+                throw new Error(error);
+            }
+
+            // Hide form, show success message
+            document.getElementById('reset-password-form').classList.add('hidden');
+            document.getElementById('reset-success-message').classList.remove('hidden');
+
+        } catch (error) {
+            // Show error message
+            document.getElementById('reset-password-form').classList.add('hidden');
+            document.getElementById('reset-error-message').classList.remove('hidden');
+            document.getElementById('error-message-text').textContent = error.message;
+        } finally {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }
+    }
+
     async handle2FAVerification(event) {
         event.preventDefault();
 
