@@ -1,0 +1,27 @@
+<div class="relative" id="language-switcher">
+    <button id="current-language-btn" 
+        class="flex items-center space-x-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path>
+        </svg>
+        <span>🇬🇧 English</span>
+    </button>
+    
+    <div id="language-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50">
+        <button data-lang="en" 
+            class="lang-option w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center space-x-3">
+            <span>🇬🇧</span>
+            <span>English</span>
+        </button>
+        <button data-lang="de" 
+            class="lang-option w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center space-x-3">
+            <span>🇩🇪</span>
+            <span>Deutsch</span>
+        </button>
+        <button data-lang="ar" 
+            class="lang-option w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center space-x-3">
+            <span>🇸🇦</span>
+            <span>العربية</span>
+        </button>
+    </div>
+</div>

@@ -665,6 +665,18 @@ export class Router {
             try {
                 const html = await routeAction();
                 document.getElementById('content').innerHTML = html;
+                // Auto-translate new content if not English
+                const currentLang = window.translationService?.getCurrentLanguage();
+                if (currentLang && currentLang !== 'en') {
+                    // Small delay to ensure DOM is ready
+                    setTimeout(() => {
+                        window.translationService.translateContainer(
+                            document.getElementById('content'),
+                            currentLang
+                        );
+                    }, 0);
+                }
+
                 window.scrollTo(0, 0);
             } catch (error) {
                 console.error('Routing error:', error);

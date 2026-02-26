@@ -10,6 +10,7 @@ import { UIManager } from './modules/UIManager.js';
 import { WishlistManager } from './modules/WishlistManager.js';
 import { ComponentStore } from './core/ComponentStore.js';
 import { Utils } from './core/Utils.js';
+import { TranslationService } from './modules/TranslationService.js';
 
 class App {
     constructor() {
@@ -69,6 +70,8 @@ class App {
         window.utils = Utils;
         window.wishlistManager = this.wishlistManager;
         window.componentStore = this.componentStore;
+        this.translationService = TranslationService.getInstance();
+        window.translationService = this.translationService;
 
 
         console.log('App constructor completed');
@@ -76,6 +79,8 @@ class App {
 
     async init() {
         console.log('App.init started');
+
+        await this.translationService.init();
 
         // Check authentication status
         await this.authManager.checkAuthStatus();
@@ -86,8 +91,10 @@ class App {
         const user = JSON.parse(localStorage.getItem('user'));
         this.uiManager.updateUserDisplay(user);
 
+
         // Initialize router
         await this.router.route();
+        await this.loadLanguageSwitcher();
 
         // Setup popstate listener
         window.addEventListener('popstate', () => this.router.route());
@@ -103,7 +110,57 @@ class App {
             this.uiManager.toggleUserDropdown();
         });
 
+        this.setupLanguageSwitcher();
+
         console.log('App.init completed');
+    }
+
+    async loadLanguageSwitcher() {
+        const container = document.getElementById('language-switcher-container');
+        if (container) {
+            const html = await window.componentStore.load('language-switcher');
+            container.innerHTML = html;
+
+            // Update button text based on current language
+            window.translationService?.updateSwitcherButton();
+        }
+    }
+
+    setupLanguageSwitcher() {
+        // Use event delegation for language switcher
+        document.addEventListener('click', async (e) => {
+            // Toggle dropdown
+            if (e.target.closest('#current-language-btn')) {
+                e.stopPropagation();
+                const dropdown = document.getElementById('language-dropdown');
+                if (dropdown) {
+                    dropdown.classList.toggle('hidden');
+                }
+                return;
+            }
+
+            // Handle language selection
+            const langOption = e.target.closest('.lang-option');
+            if (langOption) {
+                const lang = langOption.dataset.lang;
+                await this.translationService.translatePage(lang);
+
+                // Hide dropdown
+                const dropdown = document.getElementById('language-dropdown');
+                if (dropdown) {
+                    dropdown.classList.add('hidden');
+                }
+                return;
+            }
+
+            // Close dropdown when clicking outside
+            if (!e.target.closest('#language-switcher')) {
+                const dropdown = document.getElementById('language-dropdown');
+                if (dropdown) {
+                    dropdown.classList.add('hidden');
+                }
+            }
+        });
     }
 }
 
