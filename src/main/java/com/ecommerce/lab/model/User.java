@@ -43,6 +43,9 @@ public class User {
     @JsonIgnore
     private String password;
 
+    private String resetToken;
+    private LocalDateTime resetTokenExpires;
+
     private Role role;
 
     private String address;

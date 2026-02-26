@@ -115,6 +115,13 @@ public class EmailService {
         context.setVariable("name", user.getName());
         sendTemplateEmail(user.getEmail(), "Welcome to Commerce Lab!", "welcome-email", context);
     }
+    
+    public void sendPasswordResetEmail(String email, String resetLink) {
+        Context context = new Context();
+        context.setVariable("resetLink", resetLink);
+        sendTemplateEmail(email, "Reset your password through this link", "password-reset", context);
+
+    }
 
     public void send2FACode(String email, String code) {
         Context context = new Context();
