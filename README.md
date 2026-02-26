@@ -1,7 +1,7 @@
 # E-Commerce-Lab
 
 ## Overview
-E-Commerce-Lab serves as both a development playground and a testing lab, integrating automation and JUnit for robust validation.
+E-Commerce-Lab serves as both a development playground and a testing lab.
 
 ## Features
 - Product catalog management
@@ -14,7 +14,7 @@ E-Commerce-Lab serves as both a development playground and a testing lab, integr
 
 ## Tech Stack
 - **Backend:** Java, Spring Boot
-- **Build Tool:** Maven/Gradle
+- **Build Tool:** Maven
 - **Testing:** Selenium, JUnit, Automation scripts
 - **Database:** PostgreSQL
 - **Version Control:** GitHub
