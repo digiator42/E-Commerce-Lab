@@ -1,13 +1,10 @@
 spring:
   datasource:
-    name: commerce-lab
-    url: jdbc:${DATABASE_URL}
+    url: ${DATABASE_URL}
     username: ${DB_USER}
     password: ${DB_PASS}
     driver-class-name: org.postgresql.Driver
 
-
-  
   jpa:
     hibernate:
       ddl-auto: create-drop
@@ -38,7 +35,7 @@ spring:
             scope:
               - email
               - profile
-              
+
 server:
   port: ${PORT:8080}
   tomcat:

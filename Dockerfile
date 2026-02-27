@@ -19,4 +19,4 @@ COPY --from=build /app/target/*.jar app.jar
 
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-Dserver.port=${PORT}", "-Dspring.datasource.url=jdbc:${DATABASE_URL}", "-jar","app.jar"]
+ENTRYPOINT ["java", "-Dserver.port=${PORT}", "-jar","app.jar"]
