@@ -17,6 +17,8 @@ VOLUME /tmp
 
 COPY --from=build /app/target/*.jar app.jar
 
+COPY application.yml /app/application.yml
+
 EXPOSE 8080
 
 ENTRYPOINT ["java", "-Dspring.config.location=file:/app/application.yml", "-Dserver.port=${PORT}", "-jar","app.jar"]
