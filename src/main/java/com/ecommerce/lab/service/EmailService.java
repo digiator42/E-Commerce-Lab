@@ -14,18 +14,24 @@ import org.thymeleaf.context.Context;
 import com.ecommerce.lab.model.Order;
 import com.ecommerce.lab.model.User;
 
-import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
-import lombok.RequiredArgsConstructor;
 
 @Service
-@RequiredArgsConstructor
 @Async
 public class EmailService {
 
     private final JavaMailSender mailSender;
     private final TemplateEngine templateEngine;
     private final InvoiceService invoiceService;
+
+    public EmailService(
+            JavaMailSender mailSender,
+            TemplateEngine templateEngine,
+            InvoiceService invoiceService) {
+        this.mailSender = mailSender;
+        this.templateEngine = templateEngine;
+        this.invoiceService = invoiceService;
+    }
 
     public void sendSimpleEmail(String to, String subject, String text) {
         try {
@@ -115,7 +121,7 @@ public class EmailService {
         context.setVariable("name", user.getName());
         sendTemplateEmail(user.getEmail(), "Welcome to Commerce Lab!", "welcome-email", context);
     }
-    
+
     public void sendPasswordResetEmail(String email, String resetLink) {
         Context context = new Context();
         context.setVariable("resetLink", resetLink);
