@@ -6,6 +6,7 @@ export class UIManager {
     constructor() {
         this.toastTimeout = null;
         this.userMenuOpen = false;
+        this.activeToasts = [];
         this.initializeAuthUI();
         this.setupClickOutside();
     }
@@ -17,18 +18,166 @@ export class UIManager {
         return UIManager.instance;
     }
 
-    showToast(msg, type = 'success', duration = 3000) {
+
+    showToast(msg, type = 'success', duration = 3000, position = 'top-right') {
         const toast = document.createElement('div');
-        const bgColor = type === 'error' ? 'bg-red-600' : 'bg-gray-900';
-        toast.className = `fixed top-16 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg animate-fade-in z-50`;
-        toast.innerText = msg.length > 100 ? msg.substring(0, 100) + '...' : msg;
+
+        // Color mapping
+        const colors = {
+            success: 'bg-green-600',
+            error: 'bg-red-600',
+            warning: 'bg-yellow-600',
+            info: 'bg-blue-600',
+            default: 'bg-gray-900'
+        };
+
+        // Position mapping
+        const positions = {
+            'top-right': 'top-16 right-4',
+            'top-left': 'top-16 left-4',
+            'bottom-right': 'bottom-4 right-4',
+            'bottom-left': 'bottom-4 left-4',
+            'top-center': 'top-16 left-1/2 -translate-x-1/2',
+            'bottom-center': 'bottom-4 left-1/2 -translate-x-1/2'
+        };
+
+        const bgColor = colors[type] || colors.default;
+        const positionClass = positions[position] || positions['top-right'];
+
+        // Calculate offset for stacked toasts
+        const existingToasts = this.activeToasts.filter(t => t.position === position);
+        const offset = existingToasts.length * 70; // 70px offset per toast
+
+        // Create toast container
+        toast.className = `fixed ${positionClass} ${bgColor} text-white rounded-lg shadow-lg animate-fade-in z-50 overflow-hidden`;
+        toast.style.minWidth = '320px';
+        toast.style.marginTop = `${offset}px`;
+        toast.style.transition = 'margin-top 0.3s ease';
+
+        // Store toast data
+        const toastData = {
+            element: toast,
+            position: position,
+            timeoutId: null
+        };
+
+        // Create content container with icon
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'flex items-center px-6 py-3';
+
+        // Add icon based on type
+        const iconSpan = document.createElement('span');
+        iconSpan.className = 'mr-3 text-lg';
+
+        const icons = {
+            success: '✓',
+            error: '✗',
+            warning: '⚠',
+            info: 'ℹ',
+            default: '•'
+        };
+        iconSpan.textContent = icons[type] || icons.default;
+
+        // Add message
+        const messageSpan = document.createElement('span');
+        messageSpan.className = 'flex-1';
+        messageSpan.innerText = msg.length > 100 ? msg.substring(0, 100) + '...' : msg;
+
+        // Add close button
+        const closeBtn = document.createElement('button');
+        closeBtn.className = 'ml-3 text-white/80 hover:text-white focus:outline-none';
+        closeBtn.innerHTML = '✕';
+        closeBtn.onclick = () => this.removeToast(toast, toastData);
+
+        contentDiv.appendChild(iconSpan);
+        contentDiv.appendChild(messageSpan);
+        contentDiv.appendChild(closeBtn);
+
+        // Create progress bar container
+        const progressContainer = document.createElement('div');
+        progressContainer.className = 'h-1 bg-white/30 w-full';
+
+        // Create progress bar
+        const progressBar = document.createElement('div');
+        progressBar.className = 'h-full bg-white/90 transition-all duration-100 ease-linear';
+        progressBar.style.width = '100%';
+        progressBar.style.transition = `width ${duration}ms linear`;
+
+        // Assemble toast
+        progressContainer.appendChild(progressBar);
+        toast.appendChild(contentDiv);
+        toast.appendChild(progressContainer);
 
         document.body.appendChild(toast);
+        this.activeToasts.push(toastData);
 
+        // Trigger progress bar animation
         setTimeout(() => {
-            toast.classList.add('opacity-0', 'transition-opacity', 'duration-300');
-            setTimeout(() => toast.remove(), 300);
+            progressBar.style.width = '0%';
+        }, 10);
+
+        // Set timeout for auto-removal
+        const timeoutId = setTimeout(() => {
+            this.removeToast(toast, toastData);
         }, duration);
+
+        toastData.timeoutId = timeoutId;
+
+        // Pause progress bar on hover
+        toast.addEventListener('mouseenter', () => {
+            progressBar.style.transition = 'none';
+            progressBar.style.width = progressBar.style.width;
+            clearTimeout(timeoutId);
+        });
+
+        toast.addEventListener('mouseleave', () => {
+            const remainingWidth = parseFloat(progressBar.style.width);
+            const remainingTime = (remainingWidth / 100) * duration;
+
+            progressBar.style.transition = `width ${remainingTime}ms linear`;
+            progressBar.style.width = '0%';
+
+            const newTimeoutId = setTimeout(() => {
+                this.removeToast(toast, toastData);
+            }, remainingTime);
+
+            toastData.timeoutId = newTimeoutId;
+        });
+    }
+
+    removeToast(toast, toastData) {
+        // Clear timeout
+        if (toastData.timeoutId) {
+            clearTimeout(toastData.timeoutId);
+        }
+
+        // Remove from active toasts
+        const index = this.activeToasts.indexOf(toastData);
+        if (index > -1) {
+            this.activeToasts.splice(index, 1);
+        }
+
+        // Animate out
+        toast.classList.add('opacity-0', 'transition-opacity', 'duration-300');
+
+        // Update positions of remaining toasts
+        setTimeout(() => {
+            toast.remove();
+            this.updateToastPositions(toastData.position);
+        }, 300);
+    }
+
+    updateToastPositions(position) {
+        const positionToasts = this.activeToasts
+            .filter(t => t.position === position)
+            .sort((a, b) => {
+                // Sort by creation time (assuming they're in order)
+                return this.activeToasts.indexOf(a) - this.activeToasts.indexOf(b);
+            });
+
+        positionToasts.forEach((toastData, index) => {
+            toastData.element.style.marginTop = `${index * 70}px`;
+        });
     }
 
     showLoading(containerId) {
