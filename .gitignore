@@ -32,5 +32,5 @@ build/
 ### VS Code ###
 .vscode/
 .env
-application_dev.yml
+application-dev.yml
 /uploads
