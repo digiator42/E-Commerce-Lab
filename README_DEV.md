@@ -16,21 +16,43 @@ This lab documents the core business logic and architectural patterns used to bu
 
 - [✓] **User Management**
   - Features:  
+    - [✓] Login / Register (Form / OAuth Google)
+    - [✓] Update display name  
+    - [✓] Update display name  
     - [✓] Update display name  
     - [✓] Update shipping address  
-    - [✓] Change password  
+    - [✓] Change/Forget, Reset password
     - [✓] Enable 2FA  
+
+- [✓] **Admin Management**
+    - Admin Features
+      - [✓] Inventory requests
+      - [✓] Add/Edit/Delete products
+      - [✓] Customer Orders requests
+      - [✓] Users Access management (ROLE_ADMIN & ROLE_USER)
+      - [✓] Self downgrade protection
 
 - [✓] **Image & Asset Management**  
   - Pattern: Virtual Path Mapping, Files are saved to `uploads/`.  
 
 - [✓] **Cart Persistence & Sync**  
 
+- [✓] **Wishlist Persistence & Sync**  
+
 - [✓] **Transactional Checkout (Snapshot Pattern)**  
   - Pattern: Order Snapshots, copies product name and price into `OrderItem`.  
 
 - [✓] **Payment Gateway Simulation**  
-- [x] Offers / Discounts / Gift Cards Logic
+
+- [✓] **Email Service**
+    - Features:  
+    - [✓] Pass changes requests
+    - [✓] 2FA
+
+- [✓] **Invoice Service**
+
+
+- [❎] **Offers / Discounts / Gift Cards Logic**
 
 
 
