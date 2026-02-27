@@ -18,8 +18,6 @@ This lab documents the core business logic and architectural patterns used to bu
   - Features:  
     - [✓] Login / Register (Form / OAuth Google)
     - [✓] Update display name  
-    - [✓] Update display name  
-    - [✓] Update display name  
     - [✓] Update shipping address  
     - [✓] Change/Forget, Reset password
     - [✓] Enable 2FA  
@@ -31,6 +29,11 @@ This lab documents the core business logic and architectural patterns used to bu
       - [✓] Customer Orders requests
       - [✓] Users Access management (ROLE_ADMIN & ROLE_USER)
       - [✓] Self downgrade protection
+
+
+- [✓] Role-Based Access Control (RBAC)
+  > Admin routes (/api/admin/**) are guarded by hasRole('ADMIN').
+
 
 - [✓] **Image & Asset Management**  
   - Pattern: Virtual Path Mapping, Files are saved to `uploads/`.  
