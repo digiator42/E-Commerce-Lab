@@ -16,10 +16,12 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class PasswordResetService {
-
+    
     private final UserRepository userRepository;
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
+    private static final String PASSWORD_PATTERN = 
+        "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!])(?=\\S+$).{8,}$";
 
     public void createPasswordResetToken(String email) {
         User user = userRepository.findByEmail(email)
@@ -39,6 +41,9 @@ public class PasswordResetService {
     }
 
     public void updatePassword(String token, String newPassword) {
+        
+        PasswordResetService.validate(newPassword);
+
         User user = userRepository.findByResetToken(token)
                 .orElseThrow(() -> new RuntimeException("Invalid or expired token"));
 
@@ -50,5 +55,12 @@ public class PasswordResetService {
         user.setResetToken(null); // Clear the token so it can't be used again
         user.setResetTokenExpires(null);
         userRepository.save(user);
+    }
+
+    public static void validate(String password) {
+        if (password == null || !password.matches(PASSWORD_PATTERN)) {
+            throw new RuntimeException("Password must be at least 8 characters long, " +
+                "include an uppercase letter, a lowercase letter, a digit, and a special character.");
+        }
     }
 }
