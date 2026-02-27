@@ -1,7 +1,9 @@
 package com.ecommerce.lab.config;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.stream.IntStream;
+import java.util.Map;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
@@ -33,7 +35,7 @@ public class DataSeeder {
             if (productRepo.count() > 0)
                 return;
 
-            // 1. Create and Save Categories
+            // 1. Create and Save Categories with more realistic names
             List<Category> categories = List.of(
                     createCat("Electronics", "🔌"),
                     createCat("Clothing", "👕"),
@@ -42,25 +44,103 @@ public class DataSeeder {
                     createCat("Sports", "⚽"));
             categoryRepo.saveAll(categories);
 
-            // 2. Generate Products
-            List<Product> products = IntStream.rangeClosed(1, 50)
-                    .mapToObj(i -> {
-                        Product p = new Product();
-                        p.setName("Product " + i);
-                        p.setDescription("Description for " + i);
-                        p.setPrice(Math.round((10.0 + Math.random() * 90) * 100.0) / 100.0);
-                        p.setStock(10);
+            // Generate 50 products
+            List<Product> products = new ArrayList<>();
 
-                        // Assign a category from our saved list using modulo
-                        p.setCategory(categories.get(i % categories.size()));
+            for (int i = 1; i <= 200; i++) {
+                Product p = new Product();
 
-                        return p;
-                    }).toList();
+                // Get category based on index
+                Category category = categories.get(i % categories.size());
+                String categoryName = category.getName();
+
+                // Get product name from the category's list
+                List<String> namesForCategory = ProductDetails.productNames.get(categoryName);
+                String baseProductName = namesForCategory.get(i % namesForCategory.size());
+
+                // Add version number for products beyond the base list
+                String productName = baseProductName;
+                if (i > namesForCategory.size()) {
+                    int version = (i / namesForCategory.size()) + 1;
+                    productName = baseProductName + " v" + version;
+                }
+                p.setName(productName);
+
+                // Set realistic description
+                List<String> descForCategory = ProductDetails.descriptions.get(categoryName);
+                String description = descForCategory.get(i % descForCategory.size());
+                description += ". Perfect for everyday use. " + (i % 2 == 0 ? "Limited edition." : "Best seller.");
+                p.setDescription(description);
+
+                // Set realistic price based on category
+                double price = generatePriceByCategory(categoryName, i);
+                p.setPrice(Math.round(price * 100.0) / 100.0);
+
+                // Set realistic stock
+                p.setStock(generateStockByCategory(categoryName, i));
+
+                // Set image URL from our mappings
+                Map<String, String> categoryImages = CategoryImages.categoryImageUrls.get(categoryName);
+                if (categoryImages != null && categoryImages.containsKey(baseProductName)) {
+                    p.setImageUrl(categoryImages.get(baseProductName));
+                } else {
+                    // Fallback image if not found
+                    p.setImageUrl(CategoryImages.getFallbackImageUrl(categoryName));
+                }
+
+                // Assign category
+                p.setCategory(category);
+
+                products.add(p);
+            }
 
             productRepo.saveAll(products);
-            System.out.println("✅ Seeded categories and products successfully.");
+            System.out.println("✅ Seeded " +
+                    products.size() +
+                    " products with realistic data and images successfully.");
 
         };
+    }
+
+    private Category createCat(String name, String icon) {
+        Category cat = new Category();
+        cat.setName(name);
+        cat.setIcon(icon);
+        return cat;
+    }
+
+    private double generatePriceByCategory(String category, int index) {
+        switch (category) {
+            case "Electronics":
+                return 29.99 + (index * 15.5) % 500; // $30 - $530
+            case "Clothing":
+                return 19.99 + (index * 7.3) % 150; // $20 - $170
+            case "Home & Garden":
+                return 24.99 + (index * 12.1) % 300; // $25 - $325
+            case "Books":
+                return 12.99 + (index * 3.7) % 40; // $13 - $53
+            case "Sports":
+                return 15.99 + (index * 9.2) % 200; // $16 - $216
+            default:
+                return 29.99;
+        }
+    }
+
+    private int generateStockByCategory(String category, int index) {
+        switch (category) {
+            case "Electronics":
+                return 5 + (index % 20); // 5-25 items
+            case "Clothing":
+                return 15 + (index % 50); // 15-65 items (more sizes available)
+            case "Home & Garden":
+                return 8 + (index % 30); // 8-38 items
+            case "Books":
+                return 10 + (index % 40); // 10-50 items
+            case "Sports":
+                return 12 + (index % 35); // 12-47 items
+            default:
+                return 10;
+        }
     }
 
     private void createAdminUser(UserRepository userRepo, PasswordEncoder passwordEncoder) {
@@ -74,12 +154,5 @@ public class DataSeeder {
         admin.setRole(Role.ROLE_ADMIN);
         userRepo.save(admin);
         System.out.println("==> Created admin user successfully.");
-    }
-
-    private Category createCat(String name, String icon) {
-        Category c = new Category();
-        c.setName(name);
-        c.setIcon(icon);
-        return c;
     }
 }
