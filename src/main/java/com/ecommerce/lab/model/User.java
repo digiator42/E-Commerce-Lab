@@ -42,19 +42,25 @@ public class User {
     @Column(nullable = false)
     @JsonIgnore
     private String password;
-
+    
+    @JsonIgnore
     private String resetToken;
+    @JsonIgnore
     private LocalDateTime resetTokenExpires;
-
+    
     private Role role;
-
+    
     private String address;
-
+    
     @Column(nullable = false, columnDefinition = "boolean default false")
+    @JsonIgnore
     private boolean is2faEnabled = false;
+    @JsonIgnore
     private String twoFactorCode;
+    @JsonIgnore
     private LocalDateTime twoFactorCodeExpires;
-
+    
+    @JsonIgnore
     private LocalDateTime lastLogin;
 
 }
