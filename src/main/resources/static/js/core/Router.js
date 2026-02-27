@@ -356,11 +356,19 @@ export class Router {
 
                 const stockCheckbox = doc.getElementById('in-stock-filter');
                 if (stockCheckbox) stockCheckbox.checked = window.productManager.inStockOnly;
-
+                
+                
                 setTimeout(async () => {
                     await window.productManager.renderProducts();
                     window.productManager.updateRatingCounts();
                     window.productManager.updateActiveFilters();
+                    const searchBar = document.getElementById("product-search");
+
+                    if (searchBar && window.productManager.currentSearch) {
+                        searchBar.value = window.productManager.currentSearch;
+                        searchBar.focus();
+                        searchBar.setSelectionRange(searchBar.value.length, searchBar.value.length);
+                    }
                 }, 0);
 
                 return doc.body.innerHTML;

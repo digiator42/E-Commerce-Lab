@@ -84,7 +84,7 @@ public class ProductController {
         return ResponseEntity.ok(productPage.map(ProductResponseDTO::fromEntity));
     }
 
-    @GetMapping("/custome")
+    @GetMapping("/custom")
     public ResponseEntity<Page<ProductResponseDTO>> getAllProducts(
             @RequestParam(required = false) String search,
             @RequestParam(required = false) List<String> category, // Handles multiple checkboxes

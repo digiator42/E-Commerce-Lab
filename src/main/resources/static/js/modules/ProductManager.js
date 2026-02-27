@@ -152,7 +152,7 @@ export class ProductManager {
     }
 
     async fetchProducts() {
-        let url = `/api/products/custome?page=${this.currentPage}&size=6`;
+        let url = `/api/products/custom?page=${this.currentPage}&size=12`;
 
         // PRIORITY 1: Search
         if (this.currentSearch) {
@@ -750,7 +750,7 @@ export class ProductManager {
 
     async loadCategoryProducts(category, containerId) {
         try {
-            const response = await fetch(`/api/products/custome?category=${category}&page=0&size=4`);
+            const response = await fetch(`/api/products/custom?category=${category}&page=0&size=4`);
             const data = await response.json();
 
             const container = document.getElementById(containerId);
