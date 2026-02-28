@@ -50,6 +50,8 @@ public class User {
     
     @JsonIgnore
     private String totpSecret;
+
+    @Column(nullable = true)
     @JsonIgnore
     private boolean isTotpEnabled = false;
     

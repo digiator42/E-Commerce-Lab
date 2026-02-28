@@ -232,7 +232,7 @@ export class ProductManager {
             };
 
         } catch (error) {
-            console.error('Error fetching products:', error);
+            console.error('Error fetching products:', error.message);
             return {
                 content: [],
                 totalPages: 0,
