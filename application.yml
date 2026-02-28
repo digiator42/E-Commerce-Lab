@@ -17,15 +17,17 @@ spring:
         
   mail:
     host: smtp.gmail.com
-    port: 587
-    username: ${MAIL_USERNAME:service@gmail.com}
-    password: ${MAIL_PASSWORD:NotaPassword}
+    port: 465
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
     properties:
       mail:
+        debug: true
         smtp:
           auth: true
           starttls:
             enable: true
+            required: true
   
   security:
     oauth2:
