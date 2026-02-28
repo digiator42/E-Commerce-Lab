@@ -22,12 +22,14 @@ spring:
     password: ${MAIL_PASSWORD}
     properties:
       mail:
-        debug: true
         smtp:
           auth: true
-          starttls:
+          ssl:
             enable: true
-            required: true
+          socketFactory:
+            port: 465
+            class: javax.net.ssl.SSLSocketFactory
+            fallback: false
   
   security:
     oauth2:
