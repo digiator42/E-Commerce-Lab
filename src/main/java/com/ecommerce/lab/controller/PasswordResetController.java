@@ -20,7 +20,7 @@ public class PasswordResetController {
 
     private final PasswordResetService resetService;
 
-    // Step 1: User enters email on "Forgot Password" page
+    // User enters email on "Forgot Password" page
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@RequestParam String email) {
         try {
@@ -32,7 +32,7 @@ public class PasswordResetController {
         }
     }
 
-    // Step 2: User submits the new password from the email link
+    // User submits the new password from the email link
     @PostMapping("/reset-password")
     public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> request) {
         String token = request.get("token");

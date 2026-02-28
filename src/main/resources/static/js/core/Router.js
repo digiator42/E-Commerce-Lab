@@ -462,7 +462,55 @@ export class Router {
                     window.history.pushState(null, '', '/');
                     return await this.route();
                 }
-                return await this.componentStore.load('forgot-password');
+                const template = await this.componentStore.load('forgot-password');
+
+                setTimeout(() => {
+                    // Password strength checker for TOTP reset
+                    document.getElementById('new-password-totp')?.addEventListener('input', function (e) {
+                        const password = e.target.value;
+                        const btn = document.getElementById('reset-password-totp-btn');
+
+                        const hasLength = password.length >= 8;
+                        const hasNumber = /\d/.test(password);
+                        const hasUppercase = /[A-Z]/.test(password);
+
+                        const strength = [hasLength, hasNumber, hasUppercase].filter(Boolean).length;
+
+                        const bars = ['strength-bar-1', 'strength-bar-2', 'strength-bar-3', 'strength-bar-4'];
+                        const colors = ['', 'bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-green-500'];
+                        const texts = ['', 'Weak', 'Fair', 'Good', 'Strong'];
+
+                        bars.forEach((bar, index) => {
+                            const el = document.getElementById(bar);
+                            if (index < strength) {
+                                el.className = `h-1 w-1/4 ${colors[strength]} rounded-full transition`;
+                            } else {
+                                el.className = 'h-1 w-1/4 bg-gray-200 rounded-full transition';
+                            }
+                        });
+
+                        document.getElementById('strength-text').textContent = strength > 0 ? texts[strength] : 'Enter a password';
+                        document.getElementById('strength-text').className = strength > 0 ? `text-xs ${colors[strength].replace('bg-', 'text-')}` : 'text-xs text-gray-500';
+
+                        btn.disabled = !(hasLength && hasNumber && hasUppercase);
+                    });
+
+                    // Confirm password match
+                    document.getElementById('confirm-password-totp')?.addEventListener('input', function (e) {
+                        const password = document.getElementById('new-password-totp').value;
+                        const confirm = e.target.value;
+
+                        if (confirm && password !== confirm) {
+                            e.target.classList.add('border-red-500', 'focus:ring-red-500');
+                            e.target.classList.remove('border-gray-200', 'focus:ring-blue-500');
+                        } else {
+                            e.target.classList.remove('border-red-500', 'focus:ring-red-500');
+                            e.target.classList.add('border-gray-200', 'focus:ring-blue-500');
+                        }
+                    });
+                });
+
+                return template;
             },
 
             '/reset-password': async () => {

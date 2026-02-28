@@ -125,6 +125,7 @@ public class EmailService {
     public void sendPasswordResetEmail(String email, String resetLink) {
         Context context = new Context();
         context.setVariable("resetLink", resetLink);
+        System.out.println("======> " + resetLink);
         sendTemplateEmail(email, "Reset your password through this link", "password-reset", context);
 
     }

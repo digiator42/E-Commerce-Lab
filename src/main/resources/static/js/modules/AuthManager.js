@@ -49,6 +49,11 @@ export class AuthManager {
         this.totpSecret = data.totpSecret;
     }
 
+    setResetData(email, totpToken) {
+        this.resetEmail = email;
+        this.resetTOTPToken = totpToken;
+    }
+
     // Switch between authenticator and email tabs
     switch2FATab(tab) {
         // Update tab styles
@@ -213,7 +218,7 @@ export class AuthManager {
 
         const redirect = sessionStorage.getItem('redirectAfterLogin') || '/';
         sessionStorage.removeItem('redirectAfterLogin');
-        window.location.href = redirect;
+        await this.router.navigate(redirect);
     }
 
     async checkAuthStatus() {
@@ -336,7 +341,7 @@ export class AuthManager {
             // Redirect to home or previous page
             const redirect = sessionStorage.getItem('redirectAfterLogin') || '/';
             sessionStorage.removeItem('redirectAfterLogin');
-            window.location.href = redirect;
+            await this.router.navigate(redirect);
         }
     }
 
@@ -412,14 +417,10 @@ export class AuthManager {
             this.uiManager.updateUserDisplay(this.user);
             this.uiManager.showToast('Login successful!');
 
-            // Sync cart and wishlist
-            if (this.cartManager) await this.cartManager.syncWithServer();
-            if (this.wishlistManager) await this.wishlistManager.syncWithServer();
-
             // Redirect
             const redirect = sessionStorage.getItem('redirectAfterLogin') || '/';
             sessionStorage.removeItem('redirectAfterLogin');
-            window.location.href = redirect;
+            await this.router.navigate(redirect);
 
         } catch (error) {
             this.uiManager.showToast(error.message, 'error');
@@ -429,33 +430,21 @@ export class AuthManager {
         }
     }
 
-    async handleForgotPassword(event) {
-        event.preventDefault();
+    // Switch between reset tabs
+    switchResetTab(tab) {
+        document.querySelectorAll('.tab-reset').forEach(el => {
+            el.classList.remove('border-blue-600', 'text-blue-600');
+            el.classList.add('border-transparent', 'text-gray-500');
+        });
 
-        const formData = new FormData(event.target);
-        const email = formData.get('email');
-
-        const submitBtn = document.getElementById('forgot-password-btn');
-        const originalText = submitBtn.innerText;
-        submitBtn.innerHTML = '<div class="spinner-small mx-auto"></div>';
-        submitBtn.disabled = true;
-
-        try {
-            const response = await fetch(`/api/auth/forgot-password?email=${encodeURIComponent(email)}`, {
-                method: 'POST'
-            });
-
-            // Hide form, show success message
-            event.target.classList.add('hidden');
-            const successMsg = document.getElementById('forgot-success-message');
-            document.getElementById('sent-email').textContent = email;
-            successMsg.classList.remove('hidden');
-
-        } catch (error) {
-            this.uiManager.showToast('An error occurred. Please try again.', 'error');
-        } finally {
-            submitBtn.innerHTML = originalText;
-            submitBtn.disabled = false;
+        if (tab === 'email') {
+            document.getElementById('tab-email-reset').classList.add('border-blue-600', 'text-blue-600');
+            document.getElementById('tab-email-reset-content').classList.remove('hidden');
+            document.getElementById('tab-authenticator-reset-content').classList.add('hidden');
+        } else {
+            document.getElementById('tab-authenticator-reset').classList.add('border-blue-600', 'text-blue-600');
+            document.getElementById('tab-authenticator-reset-content').classList.remove('hidden');
+            document.getElementById('tab-email-reset-content').classList.add('hidden');
         }
     }
 
@@ -505,6 +494,64 @@ export class AuthManager {
         }
     }
 
+    // Handle forgot password (email)
+    async handleForgotPassword(event) {
+        event.preventDefault();
+
+        const formData = new FormData(event.target);
+        const email = formData.get('email');
+
+        const submitBtn = document.getElementById('forgot-password-btn');
+        const originalText = submitBtn?.innerText;
+        submitBtn.innerHTML = '<div class="spinner-small mx-auto"></div>';
+        submitBtn.disabled = true;
+
+        try {
+            const response = await fetch(`/api/auth/forgot-password?email=${encodeURIComponent(email)}`, {
+                method: 'POST'
+            });
+
+            // Hide form, show success message
+            document.getElementById('forgot-password-form').classList.add('hidden');
+            document.getElementById('tab-email-reset-content').classList.add('hidden');
+
+            const successMsg = document.getElementById('reset-success-message');
+            if (document.getElementById('sent-email')) {
+                document.getElementById('sent-email').textContent = email;
+            }
+            document.getElementById('success-title').textContent = 'Check Your Email';
+            document.getElementById('success-message').innerHTML =
+                `If an account exists for <span class="font-semibold">${email}</span>, you'll receive a password reset link shortly.`;
+            document.getElementById('success-footer').innerHTML =
+                `Didn't receive it? Check your spam folder or <button onclick="window.authManager.resetForm()" class="text-blue-600 hover:text-blue-800 font-medium">try again</button>`;
+            successMsg.classList.remove('hidden');
+
+        } catch (error) {
+            console.error(error.message);
+            this.uiManager.showToast('An error occurred. Please try again.' + error.message, 'error');
+        } finally {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }
+    }
+
+    // Reset form (try again)
+    resetForm() {
+        document.getElementById('reset-success-message').classList.add('hidden');
+        document.getElementById('tab-email-reset-content').classList.remove('hidden');
+        document.getElementById('forgot-password-form').classList.remove('hidden');
+        document.getElementById('new-password-form').classList.add('hidden');
+
+        // Clear inputs
+        document.getElementById('email').value = '';
+        document.getElementById('auth-email').value = '';
+        document.getElementById('auth-reset-code').value = '';
+        document.getElementById('new-password-totp').value = '';
+        document.getElementById('confirm-password-totp').value = '';
+
+        this.switchResetTab('email');
+    }
+
     async handle2FAVerification(event) {
         event.preventDefault();
 
@@ -552,7 +599,7 @@ export class AuthManager {
             // Redirect
             const redirect = sessionStorage.getItem('redirectAfterLogin') || '/';
             sessionStorage.removeItem('redirectAfterLogin');
-            window.location.href = redirect;
+            await this.router.navigate(redirect);
 
         } catch (error) {
             this.uiManager.showToast(error.message, 'error');

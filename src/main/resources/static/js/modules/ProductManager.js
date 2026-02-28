@@ -730,7 +730,7 @@ export class ProductManager {
                 body: JSON.stringify({ rating: this.selectedRating, comment })
             });
             this.uiManager.showToast('Review submitted!');
-            window.location.href = `/product/${productId}`;
+            await this.router.navigate(`/product/${productId}`);
         } catch (error) {
             console.error('Error submitting review:', error);
         }

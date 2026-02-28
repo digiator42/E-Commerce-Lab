@@ -50,7 +50,7 @@ public class TwoFactorController {
         }
     }
 
-    // Verify the code
+    // Verify TOTP or email code
     @PostMapping("/verify")
     public ResponseEntity<?> verify2fa(@RequestBody Map<String, String> body, HttpServletRequest request) {
         HttpSession session = request.getSession(false);
