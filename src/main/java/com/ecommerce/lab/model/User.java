@@ -48,6 +48,11 @@ public class User {
     @JsonIgnore
     private LocalDateTime resetTokenExpires;
     
+    @JsonIgnore
+    private String totpSecret;
+    @JsonIgnore
+    private boolean isTotpEnabled = false;
+    
     private Role role;
     
     private String address;

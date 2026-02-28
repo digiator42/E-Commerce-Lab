@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import com.ecommerce.lab.service.AuthService;
+import com.ecommerce.lab.service.TotpService;
 import com.ecommerce.lab.service.UserService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,6 +30,7 @@ import com.ecommerce.lab.dto.RegisterRequestDTO;
 import com.ecommerce.lab.dto.UserResponseDTO;
 import com.ecommerce.lab.exception.AuthenticationException;
 import com.ecommerce.lab.model.User;
+import com.ecommerce.lab.repository.UserRepository;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -37,11 +39,19 @@ public class AuthController {
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
     private final AuthService authService;
+    private final TotpService totpService;
+    private final UserRepository userRepository;
 
-    public AuthController(UserService userService, PasswordEncoder passwordEncoder, AuthService authService) {
+    public AuthController(UserService userService,
+            PasswordEncoder passwordEncoder,
+            AuthService authService,
+            TotpService totpService,
+            UserRepository userRepository) {
         this.userService = userService;
         this.passwordEncoder = passwordEncoder;
         this.authService = authService;
+        this.totpService = totpService;
+        this.userRepository = userRepository;
     }
 
     @GetMapping("is-logged-in")
@@ -71,14 +81,26 @@ public class AuthController {
         }
 
         if (user.is2faEnabled()) {
+            // 1. Prepare Email Option (send it immediately or wait for user to click 'Send
+            // Email')
             authService.generateAndSend2FACode(user.getEmail());
 
+            // 2. Prepare TOTP Option
+            // If user doesn't have a secret yet, generate one now so they can scan it
+            if (user.getTotpSecret() == null) {
+                user.setTotpSecret(totpService.generateSecret());
+                userRepository.save(user);
+            }
+            String qrUrl = totpService.getQrCodeUrl(user.getEmail(), user.getTotpSecret());
+
+            // 3. Mark session as pending
             HttpSession session = request.getSession(true);
             session.setAttribute("PENDING_2FA_USER", user.getEmail());
 
             return ResponseEntity.ok(Map.of(
                     "requires2FA", true,
-                    "message", "Please enter the code sent to your email"));
+                    "qrCodeUrl", qrUrl, // Frontend uses this to show the QR code
+                    "message", "Verify using Google Authenticator or check your Email"));
         }
 
         return authService.finalizeSession(user, request);

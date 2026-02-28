@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ecommerce.lab.model.User;
 import com.ecommerce.lab.repository.UserRepository;
 import com.ecommerce.lab.service.AuthService;
+import com.ecommerce.lab.service.TotpService;
 import com.ecommerce.lab.service.UserService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,6 +30,7 @@ public class TwoFactorController {
     private final AuthService authService;
     private final UserRepository userRepository;
     private final UserService userService;
+    private final TotpService totpService;
 
     // Toggle 2FA status
     @PostMapping("/toggle")
@@ -54,17 +56,28 @@ public class TwoFactorController {
         HttpSession session = request.getSession(false);
         String email = (session != null) ? (String) session.getAttribute("PENDING_2FA_USER") : null;
 
-        if (email == null) {
-            return ResponseEntity.status(401).body("No login attempt in progress.");
+        if (email == null)
+            return ResponseEntity.status(401).body("Session expired");
+
+        String inputCode = body.get("code");
+        User user = userService.findByEmail(email);
+
+        // Try Method A: TOTP (Google Authenticator)
+        try {
+            int totpCode = Integer.parseInt(inputCode);
+            if (totpService.verifyCode(user.getTotpSecret(), totpCode)) {
+                return authService.finalizeSession(user, request);
+            }
+        } catch (NumberFormatException e) {
+            // Not a valid number, so it's definitely not a TOTP code
         }
 
-        String code = body.get("code");
-        if (authService.verify2FACode(email, code)) {
-            User user = userService.findByEmail(email);
+        // Try Method B: Email Code
+        if (authService.verify2FACode(email, inputCode)) {
             return authService.finalizeSession(user, request);
         }
 
-        return ResponseEntity.status(401).body("Invalid or expired 2FA code.");
+        return ResponseEntity.status(401).body("Invalid code from both App and Email.");
     }
 
     @PostMapping("/resend")
