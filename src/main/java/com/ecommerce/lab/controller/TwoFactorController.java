@@ -62,7 +62,7 @@ public class TwoFactorController {
         String inputCode = body.get("code");
         User user = userService.findByEmail(email);
 
-        // Try Method A: TOTP (Google Authenticator)
+        // Method A: TOTP (Google Authenticator)
         try {
             int totpCode = Integer.parseInt(inputCode);
             if (totpService.verifyCode(user.getTotpSecret(), totpCode)) {
@@ -72,12 +72,12 @@ public class TwoFactorController {
             // Not a valid number, so it's definitely not a TOTP code
         }
 
-        // Try Method B: Email Code
+        // Method B: Email Code
         if (authService.verify2FACode(email, inputCode)) {
             return authService.finalizeSession(user, request);
         }
 
-        return ResponseEntity.status(401).body("Invalid code from both App and Email.");
+        return ResponseEntity.status(401).body("Invalid code");
     }
 
     @PostMapping("/resend")

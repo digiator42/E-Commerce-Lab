@@ -43,6 +43,179 @@ export class AuthManager {
         localStorage.removeItem('wishlistCount');
     }
 
+    set2FAData(data) {
+        this.pending2FAEmail = data.email;
+        this.qrCodeUrl = data.qrCodeUrl;
+        this.totpSecret = data.totpSecret;
+    }
+
+    // Switch between authenticator and email tabs
+    switch2FATab(tab) {
+        // Update tab styles
+        document.querySelectorAll('.tab-2fa').forEach(el => {
+            el.classList.remove('border-blue-600', 'text-blue-600');
+            el.classList.add('border-transparent', 'text-gray-500');
+        });
+
+        if (tab === 'authenticator') {
+            document.getElementById('tab-authenticator').classList.add('border-blue-600', 'text-blue-600');
+            document.getElementById('tab-authenticator-content').classList.remove('hidden');
+            document.getElementById('tab-email-content').classList.add('hidden');
+
+            // Show QR code if available
+            this.displayQRCode();
+        } else {
+            document.getElementById('tab-email').classList.add('border-blue-600', 'text-blue-600');
+            document.getElementById('tab-email-content').classList.remove('hidden');
+            document.getElementById('tab-authenticator-content').classList.add('hidden');
+
+            // Start email timer
+            this.startEmailTimer();
+        }
+    }
+
+    // Display QR code
+    displayQRCode() {
+        const loadingEl = document.getElementById('qr-code-loading');
+        const qrImage = document.getElementById('qr-code-image');
+
+        if (this.qrCodeUrl) {
+            loadingEl.classList.add('hidden');
+            qrImage.classList.remove('hidden');
+            qrImage.src = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + this.qrCodeUrl;
+        }
+    }
+
+    // Show manual entry
+    showManualCode() {
+        document.getElementById('manual-entry').classList.remove('hidden');
+        const secretEl = document.getElementById('manual-secret');
+        if (this.totpSecret) {
+            secretEl.textContent = this.totpSecret;
+        }
+    }
+
+    // Copy secret to clipboard
+    copySecret() {
+        const secret = document.getElementById('manual-secret').textContent;
+        navigator.clipboard.writeText(secret).then(() => {
+            this.uiManager.showToast('Secret copied to clipboard!', 'success');
+        });
+    }
+
+    async verifyTOTP() {
+        const code = document.getElementById('auth-code').value;
+
+        if (!code || code.length !== 6) {
+            this.uiManager.showToast('Please enter a valid 6-digit code', 'error');
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/2fa/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: this.pending2FAEmail,
+                    code: code
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Invalid verification code');
+            }
+
+            const user = await response.json();
+            await this.complete2FALogin(user);
+
+        } catch (error) {
+            this.uiManager.showToast(error.message, 'error');
+        }
+    }
+
+    // Verify email code
+    async verifyEmailCode() {
+        let code = "";
+
+        Array.from(document.getElementsByClassName("email-code-input")).forEach(el => { code += el.value; });
+
+        if (!code || code.length !== 6) {
+            this.uiManager.showToast('Please enter a valid 6-digit code', 'error');
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/2fa/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: this.pending2FAEmail,
+                    code: code
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Invalid verification code');
+            }
+
+            const user = await response.json();
+            await this.complete2FALogin(user);
+
+        } catch (error) {
+            this.uiManager.showToast(error.message, 'error');
+        }
+    }
+
+    async resendEmailCode() {
+        try {
+            await fetch(`/api/2fa/resend-email-code?email=${encodeURIComponent(this.pending2FAEmail)}`, {
+                method: 'POST'
+            });
+
+            this.uiManager.showToast('New code sent to your email!', 'success');
+            this.startEmailTimer();
+
+        } catch (error) {
+            this.uiManager.showToast('Failed to resend code', 'error');
+        }
+    }
+
+    // Start email timer
+    startEmailTimer() {
+        let timeLeft = 600; // 10 minutes in seconds
+        const timerEl = document.getElementById('email-timer');
+
+        const interval = setInterval(() => {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+            if (timeLeft <= 0) {
+                clearInterval(interval);
+                timerEl.textContent = 'Code expired';
+            }
+            timeLeft--;
+        }, 1000);
+    }
+
+    // Complete 2FA login
+    async complete2FALogin(user) {
+        this.user = user;
+        this.isAuthenticated = true;
+        this.pending2FAEmail = null;
+        localStorage.setItem('user', JSON.stringify(user));
+
+        this.uiManager.updateUserDisplay(user);
+        this.uiManager.showToast('Verification successful!');
+
+        if (this.cartManager) await this.cartManager.syncWithServer();
+        if (this.wishlistManager) await this.wishlistManager.syncWithServer();
+
+        const redirect = sessionStorage.getItem('redirectAfterLogin') || '/';
+        sessionStorage.removeItem('redirectAfterLogin');
+        window.location.href = redirect;
+    }
+
     async checkAuthStatus() {
         try {
             const response = await fetch('/api/auth/is-logged-in');
@@ -215,10 +388,13 @@ export class AuthManager {
 
             // Check if 2FA is required
             if (responseData.requires2FA) {
-                // Store email for verification
-                this.pending2FAEmail = data.email;
+                // Store 2FA data
+                this.set2FAData({
+                    email: data.email,
+                    qrCodeUrl: responseData.qrCodeUrl,
+                    totpSecret: responseData.totpSecret
+                });
 
-                // Show 2FA verification page
                 this.uiManager.showToast(responseData.message, 'info');
                 await this.router.navigate('/2fa/verify');
                 return;

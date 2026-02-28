@@ -356,8 +356,8 @@ export class Router {
 
                 const stockCheckbox = doc.getElementById('in-stock-filter');
                 if (stockCheckbox) stockCheckbox.checked = window.productManager.inStockOnly;
-                
-                
+
+
                 setTimeout(async () => {
                     await window.productManager.renderProducts();
                     window.productManager.updateRatingCounts();
@@ -405,24 +405,24 @@ export class Router {
                         emailDisplay.textContent = `Code sent to ${maskedLocal}@${domain}`;
                     }
 
-                    // Auto-focus and move between inputs
-                    document.querySelectorAll('.code-input').forEach((input, index, inputs) => {
+                    // Display QR code if available
+                    if (window.authManager.displayQRCode) {
+                        window.authManager.displayQRCode();
+                    }
+
+                    document.querySelectorAll('.email-code-input').forEach((input, index, inputs) => {
                         input.addEventListener('input', (e) => {
-                            // Only allow numbers
                             e.target.value = e.target.value.replace(/[^0-9]/g, '');
 
-                            // Auto move to next input
                             if (e.target.value && index < inputs.length - 1) {
                                 inputs[index + 1].focus();
                             }
 
-                            // Update hidden field with complete code
                             const code = Array.from(inputs).map(i => i.value).join('');
-                            document.getElementById('2fa-code').value = code;
+                            document.getElementById('email-code').value = code;
                         });
 
                         input.addEventListener('keydown', (e) => {
-                            // Handle backspace
                             if (e.key === 'Backspace' && !e.target.value && index > 0) {
                                 inputs[index - 1].focus();
                             }
@@ -439,7 +439,6 @@ export class Router {
                                 }
                             });
 
-                            // Focus on next empty or last input
                             const nextEmpty = Array.from(inputs).findIndex(i => !i.value);
                             if (nextEmpty !== -1) {
                                 inputs[nextEmpty].focus();
@@ -447,11 +446,11 @@ export class Router {
                                 inputs[inputs.length - 1].focus();
                             }
 
-                            // Update hidden field
                             const code = Array.from(inputs).map(i => i.value).join('');
-                            document.getElementById('2fa-code').value = code;
+                            document.getElementById('email-code').value = code;
                         });
                     });
+
                 }, 0);
 
                 return template;

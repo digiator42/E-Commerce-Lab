@@ -81,25 +81,21 @@ public class AuthController {
         }
 
         if (user.is2faEnabled()) {
-            // 1. Prepare Email Option (send it immediately or wait for user to click 'Send
-            // Email')
             authService.generateAndSend2FACode(user.getEmail());
 
-            // 2. Prepare TOTP Option
-            // If user doesn't have a secret yet, generate one now so they can scan it
             if (user.getTotpSecret() == null) {
                 user.setTotpSecret(totpService.generateSecret());
                 userRepository.save(user);
             }
+
             String qrUrl = totpService.getQrCodeUrl(user.getEmail(), user.getTotpSecret());
 
-            // 3. Mark session as pending
             HttpSession session = request.getSession(true);
             session.setAttribute("PENDING_2FA_USER", user.getEmail());
 
             return ResponseEntity.ok(Map.of(
                     "requires2FA", true,
-                    "qrCodeUrl", qrUrl, // Frontend uses this to show the QR code
+                    "qrCodeUrl", qrUrl,
                     "message", "Verify using Google Authenticator or check your Email"));
         }
 
