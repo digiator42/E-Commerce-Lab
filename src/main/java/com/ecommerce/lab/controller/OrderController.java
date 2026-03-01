@@ -36,14 +36,14 @@ public class OrderController {
     }
 
     @PostMapping("/place")
-    public ResponseEntity<?> placeOrder(Authentication authentication) {
+    public ResponseEntity<?> placeOrder(Authentication authentication, String coupon) {
 
         if (authentication == null || !authentication.isAuthenticated()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Please login to checkout.");
         }
 
         try {
-            orderService.placeOrder(authentication.getName());
+            orderService.placeOrder(authentication.getName(), coupon);
             return ResponseEntity.ok(Map.of("message", "Order successfully created"));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
