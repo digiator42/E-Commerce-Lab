@@ -242,14 +242,23 @@ export class OrderManager {
                 }
             });
 
-            // Calculate final total for display
-            const subtotal = this.cartManager.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            const finalTotal = this.discountedTotal || subtotal;
-            const savings = this.appliedCoupon ? (subtotal - finalTotal).toFixed(2) : 0;
+        } catch (err) {
+            this.uiManager.showToast("Order Creation Failed: " + err.message, "error", 5000);
+            this.closePaymentModal();
+            await this.cartManager.syncWithServer();
+            checkoutBtn.disabled = false;
+            checkoutBtn.innerText = "Checkout";
+            return;
+        }
 
-            this.cartManager.toggle();
+        // Calculate final total for display
+        const subtotal = this.cartManager.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const finalTotal = this.discountedTotal || subtotal;
+        const savings = this.appliedCoupon ? (subtotal - finalTotal).toFixed(2) : 0;
 
-            document.getElementById('content').innerHTML = `
+        this.cartManager.toggle();
+
+        document.getElementById('content').innerHTML = `
         <div class="text-center py-20 animate-fade-in">
             <div class="bg-green-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
                 <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
@@ -270,22 +279,16 @@ export class OrderManager {
         </div>
     `;
 
-            this.closePaymentModal();
-            await this.cartManager.syncWithServer();
+        this.closePaymentModal();
+        await this.cartManager.syncWithServer();
 
-            // Reset coupon state
-            this.appliedCoupon = null;
-            this.discountedTotal = null;
+        // Reset coupon state
+        this.appliedCoupon = null;
+        this.discountedTotal = null;
 
-            checkoutBtn.disabled = false;
-            checkoutBtn.innerText = "Checkout";
-        } catch (err) {
-            this.uiManager.showToast("Order Creation Failed: " + err.message, "error", 5000);
-            this.closePaymentModal();
-            await this.cartManager.syncWithServer();
-            checkoutBtn.disabled = false;
-            checkoutBtn.innerText = "Checkout";
-        }
+        checkoutBtn.disabled = false;
+        checkoutBtn.innerText = "Checkout";
+
     }
 
     // Add a method to remove applied coupon (optional)

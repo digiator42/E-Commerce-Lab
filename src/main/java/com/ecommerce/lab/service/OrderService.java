@@ -38,8 +38,7 @@ public class OrderService {
         this.couponRepository = couponRepository;
     }
 
-    @Transactional
-    @Async
+    @Transactional(rollbackFor = Exception.class)
     public void placeOrder(String email, String couponCode) throws Exception {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -51,20 +50,20 @@ public class OrderService {
         }
 
         // Core Validation
-        validateShippingAddress(user);
+        this.validateShippingAddress(user);
 
         // Process Items & Stock
-        double subtotal = processItemsAndStock(cartItems);
+        double subtotal = this.processItemsAndStock(cartItems);
 
         // Apply Discount
-        double finalTotal = applyCoupon(subtotal, couponCode);
+        double finalTotal = this.applyCoupon(subtotal, couponCode);
 
         // Persistence
-        Order savedOrder = createAndSaveOrder(user, cartItems, finalTotal);
+        Order savedOrder = this.createAndSaveOrder(user, cartItems, finalTotal);
         cartRepository.deleteAll(cartItems);
 
         // Async/External Tasks (Emails)
-        sendNotifications(savedOrder, user);
+        this.sendNotifications(savedOrder, user);
     }
 
     private void validateShippingAddress(User user) {

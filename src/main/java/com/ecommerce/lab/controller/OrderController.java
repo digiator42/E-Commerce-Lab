@@ -11,6 +11,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -36,17 +37,20 @@ public class OrderController {
     }
 
     @PostMapping("/place")
-    public ResponseEntity<?> placeOrder(Authentication authentication, String coupon) {
+    public ResponseEntity<?> placeOrder(Authentication authentication, @RequestBody Map<String, String> coupon) {
 
         if (authentication == null || !authentication.isAuthenticated()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Please login to checkout.");
         }
 
         try {
-            orderService.placeOrder(authentication.getName(), coupon);
+            orderService.placeOrder(authentication.getName(), coupon.get("couponCode"));
             return ResponseEntity.ok(Map.of("message", "Order successfully created"));
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
+            System.out.println("Order failed: " + e.getMessage());
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "An unexpected error occurred"));
         }
     }
 
