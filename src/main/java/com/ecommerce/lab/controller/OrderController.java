@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ecommerce.lab.dto.GiftCardRequest;
+import com.ecommerce.lab.dto.OrderRequest;
 import com.ecommerce.lab.model.Order;
 import com.ecommerce.lab.repository.OrderRepository;
 import com.ecommerce.lab.service.InvoiceService;
@@ -37,14 +39,16 @@ public class OrderController {
     }
 
     @PostMapping("/place")
-    public ResponseEntity<?> placeOrder(Authentication authentication, @RequestBody Map<String, String> coupon) {
+    public ResponseEntity<?> placeOrder(
+            Authentication authentication,
+            @RequestBody OrderRequest orderRequest) {
 
         if (authentication == null || !authentication.isAuthenticated()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Please login to checkout.");
         }
 
         try {
-            orderService.placeOrder(authentication.getName(), coupon.get("couponCode"));
+            orderService.placeOrder(authentication.getName(), orderRequest.couponCode(), orderRequest.giftCards());
             return ResponseEntity.ok(Map.of("message", "Order successfully created"));
         } catch (RuntimeException e) {
             System.out.println("Order failed: " + e.getMessage());

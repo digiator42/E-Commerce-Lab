@@ -8,6 +8,7 @@ import java.util.UUID;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import com.ecommerce.lab.dto.GiftCardRequest;
 import com.ecommerce.lab.model.CartItem;
 import com.ecommerce.lab.model.Coupon;
 import com.ecommerce.lab.model.Order;
@@ -19,9 +20,12 @@ import com.ecommerce.lab.repository.CouponRepository;
 import com.ecommerce.lab.repository.OrderRepository;
 import com.ecommerce.lab.repository.UserRepository;
 
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.transaction.annotation.Transactional;;
 
 @Service
+@RequiredArgsConstructor
 public class OrderService {
 
     private final CartRepository cartRepository;
@@ -29,18 +33,10 @@ public class OrderService {
     private final UserRepository userRepository;
     private final EmailService emailService;
     private final CouponRepository couponRepository;
-
-    public OrderService(CartRepository cartRepository, OrderRepository orderRepository, UserRepository userRepository,
-            EmailService emailService, CouponRepository couponRepository) {
-        this.cartRepository = cartRepository;
-        this.orderRepository = orderRepository;
-        this.userRepository = userRepository;
-        this.emailService = emailService;
-        this.couponRepository = couponRepository;
-    }
+    private final GiftCardService giftCardService;
 
     @Transactional(rollbackFor = Exception.class)
-    public void placeOrder(String email, String couponCode) throws Exception {
+    public void placeOrder(String email, String couponCode, List<GiftCardRequest> giftCards) throws Exception {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -56,9 +52,13 @@ public class OrderService {
         // Process Items & Stock
         double subtotal = this.processItemsAndStock(cartItems);
 
+        // Process Gift Card pusrchase
+        double giftCardTotal = giftCardService.purchaseMultiGiftCard(giftCards, user);
+        
         // Apply Discount
         double finalTotal = this.applyCoupon(subtotal, couponCode);
 
+        finalTotal += giftCardTotal;
         // Persistence
         Order savedOrder = this.createAndSaveOrder(user, cartItems, finalTotal);
         cartRepository.deleteAll(cartItems);

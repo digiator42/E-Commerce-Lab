@@ -159,4 +159,33 @@ export class CartManager {
         localStorage.setItem('cartCount', JSON.stringify(count));
         this.uiManager.updateCartBadge(count);
     }
+
+    addGiftCard(amount) {
+        // Validate amount
+        amount = parseFloat(amount);
+        if (isNaN(amount) || amount < 10 || amount > 500) {
+            this.uiManager.showToast("Please enter a valid amount between $10 and $500", "error", 4000);
+            return;
+        }
+
+        // Round to nearest 5 if needed
+        amount = Math.round(amount / 5) * 5;
+
+        // Create a special gift card item
+        const giftCardItem = {
+            id: `giftcard-${Date.now()}`,
+            productId: null, // Gift cards aren't regular products
+            name: `Gift Card ($${amount})`,
+            price: amount,
+            quantity: 1,
+            isGiftCard: true, // Flag to identify gift cards
+            recipientEmail: null, // Will be collected at checkout
+            message: null // Optional message
+        };
+
+        this.items.push(giftCardItem);
+        this.render();
+        this.open();
+        this.uiManager.showToast(`$${amount} Gift Card added to cart!`, "success", 3000);
+    }
 }

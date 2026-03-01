@@ -695,6 +695,13 @@ export class Router {
             },
 
             '/gift-cards': async () => {
+                // Check if user is authenticated
+                // const token = localStorage.getItem('token');
+                // if (!token) {
+                //     window.router.navigate('/login?redirect=gift-cards');
+                //     return '<div></div>';
+                // }
+
                 return `
                     <div class="max-w-4xl mx-auto text-center py-16">
                         <h1 class="text-5xl font-black mb-6">🎁 Gift Cards</h1>
@@ -702,11 +709,12 @@ export class Router {
                         
                         <div class="grid md:grid-cols-3 gap-8 mb-12">
                             ${[25, 50, 100].map(amount => `
-                                <div class="bg-white rounded-2xl shadow-lg p-8 border border-gray-100 hover:shadow-2xl transition cursor-pointer" onclick="window.cartManager.addGiftCard(${amount})">
-                                    <div class="text-6xl mb-4">🎫</div>
+                                <div class="bg-white rounded-2xl shadow-lg p-8 border border-gray-100 hover:shadow-2xl transition cursor-pointer group">
+                                    <div class="text-6xl mb-4 group-hover:scale-110 transition-transform">🎫</div>
                                     <h3 class="text-3xl font-bold text-gray-900 mb-2">$${amount}</h3>
                                     <p class="text-gray-500 mb-4">Digital delivery</p>
-                                    <button class="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-700 transition w-full">
+                                    <button onclick="window.cartManager.addGiftCard(${amount})" 
+                                        class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-3 rounded-xl font-bold hover:from-purple-700 hover:to-indigo-700 transition w-full">
                                         Add to Cart
                                     </button>
                                 </div>
@@ -715,15 +723,18 @@ export class Router {
                         
                         <div class="bg-gradient-to-r from-purple-500 to-indigo-600 text-white p-8 rounded-2xl">
                             <h3 class="text-2xl font-bold mb-2">Custom Amount</h3>
-                            <p class="mb-4">Choose your own amount between $10 and $500</p>
-                            <div class="flex justify-center space-x-4">
+                            <p class="mb-4">Choose your own amount between $10 and $500 (increments of $5)</p>
+                            <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
                                 <input type="number" id="custom-amount" min="10" max="500" step="5" 
-                                    class="px-4 py-3 rounded-xl text-gray-900 w-48" placeholder="Enter amount">
+                                    class="px-4 py-3 rounded-xl text-gray-900 w-full sm:w-48" 
+                                    placeholder="Enter amount"
+                                    onkeypress="if(event.key==='Enter') window.cartManager.addGiftCard(this.value)">
                                 <button onclick="window.cartManager.addGiftCard(document.getElementById('custom-amount').value)" 
                                     class="bg-white text-purple-600 px-8 py-3 rounded-xl font-bold hover:bg-purple-50 transition">
                                     Add to Cart
                                 </button>
                             </div>
+                            <p class="text-purple-100 text-sm mt-4">✨ Gift cards never expire and can be used on any product</p>
                         </div>
                     </div>
                 `;

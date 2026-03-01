@@ -23,4 +23,6 @@ public class GiftCard {
 
     // link it to a specific user or (anyone can use)
     private String recipientEmail;
+
+    private String message;
 }
