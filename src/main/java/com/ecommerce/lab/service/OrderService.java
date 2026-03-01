@@ -40,7 +40,7 @@ public class OrderService {
 
     @Transactional
     @Async
-    public void placeOrder(String email, String couponCode) {
+    public void placeOrder(String email, String couponCode) throws Exception {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 

@@ -1,5 +1,6 @@
 package com.ecommerce.lab.config;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -11,10 +12,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.ecommerce.lab.model.Category;
+import com.ecommerce.lab.model.Coupon;
 import com.ecommerce.lab.model.Product;
 import com.ecommerce.lab.model.Role;
 import com.ecommerce.lab.model.User;
 import com.ecommerce.lab.repository.CategoryRepository;
+import com.ecommerce.lab.repository.CouponRepository;
 import com.ecommerce.lab.repository.ProductRepository;
 import com.ecommerce.lab.repository.UserRepository;
 
@@ -26,11 +29,13 @@ public class DataSeeder {
             ProductRepository productRepo,
             CategoryRepository categoryRepo,
             UserRepository userRepo,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder,
+            CouponRepository couponRepository) {
 
         return args -> {
 
             createAdminUser(userRepo, passwordEncoder);
+            createValidCoupons(couponRepository);
 
             if (productRepo.count() > 0)
                 return;
@@ -154,5 +159,30 @@ public class DataSeeder {
         admin.setRole(Role.ROLE_ADMIN);
         userRepo.save(admin);
         System.out.println("==> Created admin user successfully.");
+    }
+
+    private void createValidCoupons(CouponRepository couponRepository) {
+        if (couponRepository.count() > 0) {
+            return;
+        }
+
+        Coupon coupon = new Coupon();
+
+        coupon.setCode("RAMADAN20");
+        coupon.setDiscountPercentage(20);
+        coupon.setUsageLimit(10);
+        coupon.setExpiryDate(LocalDateTime.now().plusDays(20));
+        coupon.setActive(true);
+        couponRepository.save(coupon);
+        
+        Coupon coupon2 = new Coupon();
+        
+        coupon2.setCode("EID2026");
+        coupon2.setDiscountPercentage(30);
+        coupon2.setUsageLimit(10);
+        coupon2.setExpiryDate(LocalDateTime.now().plusDays(24));
+        coupon2.setActive(true);
+        couponRepository.save(coupon2);
+
     }
 }
