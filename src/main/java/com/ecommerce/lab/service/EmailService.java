@@ -122,6 +122,12 @@ public class EmailService {
         sendTemplateEmail(user.getEmail(), "Welcome to Commerce Lab!", "welcome-email", context);
     }
 
+    public void sendGiftCardCode(String email, String code, String name) {
+        Context context = new Context();
+        context.setVariable("name", name);
+        sendTemplateEmail(email, "Thanks for purchasing Gift Card " + code, "welcome-email", context);
+    }
+
     public void sendPasswordResetEmail(String email, String resetLink) {
         Context context = new Context();
         context.setVariable("resetLink", resetLink);
