@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.ecommerce.lab.model.CartItem;
@@ -38,6 +39,7 @@ public class OrderService {
     }
 
     @Transactional
+    @Async
     public void placeOrder(String email, String couponCode) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -138,7 +140,7 @@ public class OrderService {
                 "Order #" + order.getId() + " was placed by " + user.getEmail());
     }
 
-    private void validateCoupon(Coupon coupon) {
+    public void validateCoupon(Coupon coupon) {
         if (!coupon.isActive()) {
             throw new RuntimeException("Coupon is disabled.");
         }
