@@ -1,5 +1,6 @@
 package com.ecommerce.lab.config;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -171,16 +172,16 @@ public class DataSeeder {
         coupon.setCode("RAMADAN20");
         coupon.setDiscountPercentage(20);
         coupon.setUsageLimit(10);
-        coupon.setExpiryDate(LocalDateTime.now().plusDays(20));
+        coupon.setExpiryDate(LocalDate.now().plusDays(20));
         coupon.setActive(true);
         couponRepository.save(coupon);
-        
+
         Coupon coupon2 = new Coupon();
-        
+
         coupon2.setCode("EID2026");
         coupon2.setDiscountPercentage(30);
         coupon2.setUsageLimit(10);
-        coupon2.setExpiryDate(LocalDateTime.now().plusDays(24));
+        coupon2.setExpiryDate(LocalDate.now().plusDays(24));
         coupon2.setActive(true);
         couponRepository.save(coupon2);
 

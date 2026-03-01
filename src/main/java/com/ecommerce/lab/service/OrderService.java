@@ -1,5 +1,6 @@
 package com.ecommerce.lab.service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -143,7 +144,7 @@ public class OrderService {
         if (!coupon.isActive()) {
             throw new RuntimeException("Coupon is disabled.");
         }
-        if (coupon.getExpiryDate().isBefore(LocalDateTime.now())) {
+        if (coupon.getExpiryDate().isBefore(LocalDate.now())) {
             throw new RuntimeException("Coupon has expired.");
         }
         if (coupon.getTimesUsed() >= coupon.getUsageLimit()) {

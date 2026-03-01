@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.Principal;
 import java.util.Base64;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -46,20 +47,24 @@ import com.ecommerce.lab.dto.ProductRequestDTO;
 import com.ecommerce.lab.dto.ProductResponseDTO;
 import com.ecommerce.lab.dto.UserResponseDTO;
 import com.ecommerce.lab.model.Category;
+import com.ecommerce.lab.model.Coupon;
 import com.ecommerce.lab.model.Order;
 import com.ecommerce.lab.model.OrderStatus;
 import com.ecommerce.lab.model.Product;
 import com.ecommerce.lab.model.Role;
 import com.ecommerce.lab.model.User;
 import com.ecommerce.lab.repository.CategoryRepository;
+import com.ecommerce.lab.repository.CouponRepository;
 import com.ecommerce.lab.repository.OrderRepository;
 import com.ecommerce.lab.repository.ProductRepository;
 import com.ecommerce.lab.repository.UserRepository;
 
+import lombok.RequiredArgsConstructor;
 import tools.jackson.databind.ObjectMapper;
 
 @RestController
 @RequestMapping("/api/admin")
+@RequiredArgsConstructor
 public class AdminController {
 
     private final ProductRepository productRepository;
@@ -67,18 +72,7 @@ public class AdminController {
     private final CategoryRepository categoryRepository;
     private final RequestMappingHandlerMapping handlerMapping;
     private final UserRepository userRepository;
-
-    public AdminController(ProductRepository productRepository,
-            OrderRepository orderRepository,
-            CategoryRepository categoryRepository,
-            RequestMappingHandlerMapping handlerMapping,
-            UserRepository userRepository) {
-        this.productRepository = productRepository;
-        this.orderRepository = orderRepository;
-        this.categoryRepository = categoryRepository;
-        this.handlerMapping = handlerMapping;
-        this.userRepository = userRepository;
-    }
+    private final CouponRepository couponRepository;
 
     @GetMapping("/stats")
     public ResponseEntity<?> getDashboardStats() {
@@ -88,10 +82,13 @@ public class AdminController {
         double totalRevenue = orderRepository.findAll().stream()
                 .mapToDouble(Order::getTotalAmount).sum();
 
+        List<Coupon> coupons = couponRepository.findAll();
+
         return ResponseEntity.ok(Map.of(
                 "products", totalProducts,
                 "orders", totalOrders,
-                "revenue", totalRevenue));
+                "revenue", totalRevenue,
+                "coupons", coupons));
     }
 
     @PostMapping(value = "/products", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -282,5 +279,58 @@ public class AdminController {
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(routes);
+    }
+
+    // Get All Coupons
+    @GetMapping("/coupons")
+    public ResponseEntity<List<Coupon>> getAllCoupons() {
+        return ResponseEntity.ok(couponRepository.findAll());
+    }
+
+    // Create a New Coupon
+    @PostMapping("/coupons")
+    public ResponseEntity<?> createCoupon(@RequestBody Coupon coupon) {
+        if (couponRepository.existsByCode(coupon.getCode())) {
+            return ResponseEntity.badRequest().body("Coupon code already exists");
+        }
+        // Ensure initial usage is 0
+        coupon.setTimesUsed(0);
+        Coupon saved = couponRepository.save(coupon);
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+    }
+
+    // Update Existing Coupon
+    @PutMapping("/coupons/{id}")
+    public ResponseEntity<?> updateCoupon(@PathVariable Long id, @RequestBody Coupon couponDetails) {
+        Coupon coupon = couponRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Coupon not found"));
+
+        coupon.setCode(couponDetails.getCode());
+        coupon.setDiscountPercentage(couponDetails.getDiscountPercentage());
+        coupon.setExpiryDate(couponDetails.getExpiryDate());
+        coupon.setUsageLimit(couponDetails.getUsageLimit());
+        coupon.setActive(couponDetails.isActive());
+
+        return ResponseEntity.ok(couponRepository.save(coupon));
+    }
+
+    // Delete a Coupon
+    @DeleteMapping("/coupons/{id}")
+    public ResponseEntity<?> deleteCoupon(@PathVariable Long id) {
+        couponRepository.deleteById(id);
+        return ResponseEntity.ok("Coupon deleted successfully");
+    }
+
+    @GetMapping("/coupons/stats")
+    public ResponseEntity<?> getCouponStats() {
+        List<Coupon> topCoupons = couponRepository.findAll().stream()
+                .sorted(Comparator.comparingInt(Coupon::getTimesUsed).reversed())
+                .limit(5)
+                .collect(Collectors.toList());
+
+        if (topCoupons.size() == 0) {
+            topCoupons = couponRepository.findAll();
+        }
+        return ResponseEntity.ok(topCoupons);
     }
 }

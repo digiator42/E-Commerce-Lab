@@ -1,6 +1,9 @@
 package com.ecommerce.lab.model;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import jakarta.persistence.*;
 import lombok.Data;
@@ -17,7 +20,8 @@ public class Coupon {
 
     private double discountPercentage;
     
-    private LocalDateTime expiryDate;
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate expiryDate;
     
     private boolean isActive = true;
 

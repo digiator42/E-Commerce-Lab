@@ -112,9 +112,12 @@ export class Router {
 
             '/admin': async () => {
                 const template = await this.componentStore.load('admin-dashboard');
-                const [statsRes, productsRes] = await Promise.all([
+
+                // Fetch stats and products
+                const [statsRes, productsRes, couponsRes] = await Promise.all([
                     this.adminManager.getStats(),
-                    this.apiClient.fetch('/api/products?size=100')
+                    this.apiClient.fetch('/api/products?size=100'),
+                    this.apiClient.fetch('/api/admin/coupons')
                 ]);
 
                 const productRows = productsRes.content.map(p => `
@@ -124,7 +127,7 @@ export class Router {
                         <td class="py-4 px-2 font-bold text-blue-600">$${p.price.toFixed(2)}</td>
                         <td class="py-4 px-2">
                             <div class="flex space-x-2">
-                                <button onclick="window.router.navigate('/admin/edit-product/${p.id}')" class="text-gray-400 hover:text-blue-600">
+                                <button onclick="window.adminManager.editProduct(${p.id})" class="text-gray-400 hover:text-blue-600">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
                                     </svg>
@@ -139,10 +142,17 @@ export class Router {
                     </tr>
                 `).join('');
 
+                // Calculate active coupons count for stats card
+                const activeCouponsCount = couponsRes.filter(c => c.active).length;
+
+                setTimeout(() => {
+                    document.getElementById('active-coupons-count').textContent = activeCouponsCount;
+                }, 0);
+
                 return template
-                    .replace('{{totalRevenue}}', statsRes?.revenue?.toFixed(2) || '0.00')
-                    .replace('{{totalOrders}}', statsRes?.orders || '0')
-                    .replace('{{totalProducts}}', statsRes?.products || '0')
+                    .replace('{{totalRevenue}}', statsRes.revenue?.toFixed(2))
+                    .replace('{{totalOrders}}', statsRes.orders)
+                    .replace('{{totalProducts}}', statsRes.products)
                     .replace('{{productRows}}', productRows);
             },
 
