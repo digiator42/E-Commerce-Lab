@@ -38,7 +38,7 @@ public class OrderService {
     private final GiftCardRepository giftCardRepository;
 
     @Transactional(rollbackFor = Exception.class)
-    public void placeOrder(String email, String couponCode) throws Exception {
+    public void placeOrder(String email, String couponCode, boolean useStoreBalance) throws Exception {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -52,10 +52,23 @@ public class OrderService {
         this.validateShippingAddress(user);
 
         // Process Items & Stock
-        double subtotal = this.processItemsAndStock(cartItems, email);
+        OrderBreakdown breakdown = this.processItemsAndStock(cartItems, email);
 
-        // Apply Discount
-        double finalTotal = this.applyCoupon(subtotal, couponCode);
+        // Apply Discount only to physical items
+        double discountedPhysical = this.applyCoupon(breakdown.physicalTotal(), couponCode);
+
+        // Apply Store Balance ONLY to the physical discounted total
+        double remainingPhysical = discountedPhysical;
+        if (useStoreBalance && user.getStoreBalance() > 0) {
+            double amountToDeduct = Math.min(discountedPhysical, user.getStoreBalance());
+            remainingPhysical = discountedPhysical - amountToDeduct;
+
+            // Deduct from user profile
+            user.setStoreBalance(user.getStoreBalance() - amountToDeduct);
+            userRepository.save(user);
+        }
+
+        double finalTotal = remainingPhysical + breakdown.giftCardTotal();
 
         // Persistence
         Order savedOrder = this.createAndSaveOrder(user, cartItems, finalTotal);
@@ -71,23 +84,29 @@ public class OrderService {
         }
     }
 
-    private double processItemsAndStock(List<CartItem> cartItems, String email) {
-        double subtotal = 0;
+    public record OrderBreakdown(double physicalTotal, double giftCardTotal) {
+        public double getGrandTotal() {
+            return physicalTotal + giftCardTotal;
+        }
+    }
+
+    private OrderBreakdown processItemsAndStock(List<CartItem> cartItems, String email) {
+        double physicalTotal = 0;
+        double giftCardTotal = 0;
+
         for (CartItem ci : cartItems) {
             if (ci.isGiftCard()) {
-                subtotal += ci.getGiftCardAmount();
+                giftCardTotal += ci.getGiftCardAmount();
                 this.generateAndEmailGiftCard(ci, email);
             } else {
                 if (ci.getProduct().getStock() < ci.getQuantity()) {
                     throw new RuntimeException("Insufficient stock for " + ci.getProduct().getName());
                 }
-
-                // Reduce stock
                 ci.getProduct().setStock(ci.getProduct().getStock() - ci.getQuantity());
-                subtotal += (ci.getProduct().getPrice() * ci.getQuantity());
+                physicalTotal += (ci.getProduct().getPrice() * ci.getQuantity());
             }
         }
-        return subtotal;
+        return new OrderBreakdown(physicalTotal, giftCardTotal);
     }
 
     private void generateAndEmailGiftCard(CartItem ci, String buyerEmail) {

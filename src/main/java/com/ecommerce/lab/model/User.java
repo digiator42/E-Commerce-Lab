@@ -42,23 +42,25 @@ public class User {
     @Column(nullable = false)
     @JsonIgnore
     private String password;
-    
+
     @JsonIgnore
     private String resetToken;
     @JsonIgnore
     private LocalDateTime resetTokenExpires;
-    
+
     @JsonIgnore
     private String totpSecret;
 
     @Column(nullable = true)
     @JsonIgnore
     private boolean isTotpEnabled = false;
-    
+
     private Role role;
-    
+
     private String address;
-    
+
+    private Double storeBalance = 0.0;
+
     @Column(nullable = false, columnDefinition = "boolean default false")
     @JsonIgnore
     private boolean is2faEnabled = false;
@@ -66,7 +68,7 @@ public class User {
     private String twoFactorCode;
     @JsonIgnore
     private LocalDateTime twoFactorCodeExpires;
-    
+
     @JsonIgnore
     private LocalDateTime lastLogin;
 
