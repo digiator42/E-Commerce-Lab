@@ -38,7 +38,7 @@ public class OrderService {
     private final GiftCardRepository giftCardRepository;
 
     @Transactional(rollbackFor = Exception.class)
-    public void placeOrder(String email, String couponCode, List<GiftCardRequest> giftCards) throws Exception {
+    public void placeOrder(String email, String couponCode) throws Exception {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -54,14 +54,9 @@ public class OrderService {
         // Process Items & Stock
         double subtotal = this.processItemsAndStock(cartItems, email);
 
-        // Process Gift Card pusrchase
-        // double giftCardTotal = giftCardService.purchaseMultiGiftCard(giftCards,
-        // user);
-
         // Apply Discount
         double finalTotal = this.applyCoupon(subtotal, couponCode);
 
-        // finalTotal += giftCardTotal;
         // Persistence
         Order savedOrder = this.createAndSaveOrder(user, cartItems, finalTotal);
         cartRepository.deleteAll(cartItems);
@@ -96,7 +91,7 @@ public class OrderService {
     }
 
     private void generateAndEmailGiftCard(CartItem ci, String buyerEmail) {
-        // 1. Create the Actual Gift Card (The "Money" Object)
+
         GiftCard gc = new GiftCard();
         gc.setCode(UUID.randomUUID().toString().substring(0, 12).toUpperCase());
         gc.setBalance(ci.getGiftCardAmount());
@@ -107,7 +102,6 @@ public class OrderService {
 
         giftCardRepository.save(gc);
 
-        // 2. Notify the Recipient
         emailService.sendGiftCardCode(
                 ci.getRecipientEmail(),
                 gc.getCode(),

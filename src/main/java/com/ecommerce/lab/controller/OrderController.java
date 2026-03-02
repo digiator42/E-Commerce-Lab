@@ -48,7 +48,7 @@ public class OrderController {
         }
 
         try {
-            orderService.placeOrder(authentication.getName(), orderRequest.couponCode(), orderRequest.giftCards());
+            orderService.placeOrder(authentication.getName(), orderRequest.couponCode());
             return ResponseEntity.ok(Map.of("message", "Order successfully created"));
         } catch (RuntimeException e) {
             System.out.println("Order failed: " + e.getMessage());

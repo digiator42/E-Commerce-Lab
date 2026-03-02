@@ -187,36 +187,32 @@ export class OrderManager {
         try {
             const response = await this.apiClient.fetch(`/api/coupons/check?code=${encodeURIComponent(code)}`);
 
-            if (response.ok) {
-                const data = await response.json();
+            const data = await response;
 
-                // Calculate discount on REGULAR ITEMS ONLY
-                const regularSubtotal = this.regularSubtotal || 0;
-                const discountAmount = (regularSubtotal * data.discountPercentage) / 100;
+            // Calculate discount
+            const subtotal = this.cartManager.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const discountAmount = (subtotal * data.discountPercentage) / 100;
+            this.discountedTotal = subtotal - discountAmount;
 
-                // Final total = (regular items - discount) + gift cards
-                const finalTotal = (regularSubtotal - discountAmount) + (this.giftCardTotal || 0);
+            // Store applied coupon
+            this.appliedCoupon = {
+                code: data.code,
+                discountPercentage: data.discountPercentage
+            };
 
-                // Store applied coupon
-                this.appliedCoupon = {
-                    code: data.code,
-                    discountPercentage: data.discountPercentage
-                };
+            // Update UI with discount
+            this.updatePriceDisplay(subtotal, discountAmount, data.discountPercentage);
 
-                // Update UI with discount
-                this.updatePriceDisplay(regularSubtotal, discountAmount, this.giftCardTotal || 0, data.discountPercentage);
+            // Show success message
+            this.showCouponMessage(`Coupon applied! You saved $${discountAmount.toFixed(2)}`, 'success');
 
-                // Show success message
-                this.showCouponMessage(`Coupon applied! You saved $${discountAmount.toFixed(2)} on products`, 'success');
+            // Show coupon details
+            couponDetails.innerHTML = `✅ ${data.code} - ${data.discountPercentage}% off`;
+            couponDetails.classList.remove('hidden');
+            couponDetails.className = 'text-sm text-green-600 font-medium';
 
-                // Show coupon details
-                couponDetails.innerHTML = `✅ ${data.code} - ${data.discountPercentage}% off products`;
-                couponDetails.classList.remove('hidden');
-                couponDetails.className = 'text-sm text-green-600 font-medium';
-
-                // Clear input
-                couponInput.value = '';
-            }
+            // Clear input
+            couponInput.value = '';
         } catch (error) {
             this.showCouponMessage(error.message || 'Invalid coupon code', 'error');
             couponDetails.classList.add('hidden');

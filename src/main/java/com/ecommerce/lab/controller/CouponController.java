@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ecommerce.lab.exception.ProductNotFoundException;
 import com.ecommerce.lab.model.Coupon;
 import com.ecommerce.lab.repository.CouponRepository;
 import com.ecommerce.lab.service.OrderService;
@@ -25,7 +26,7 @@ public class CouponController {
     @GetMapping("/check")
     public ResponseEntity<?> checkCoupon(@RequestParam String code, Principal principal) {
         Coupon coupon = couponRepository.findByCode(code)
-                .orElseThrow(() -> new RuntimeException("Coupon not found"));
+                .orElseThrow(() -> new ProductNotFoundException("Coupon not found"));
 
         // Call the same helper function used in placeOrder
         orderService.validateCoupon(coupon);
