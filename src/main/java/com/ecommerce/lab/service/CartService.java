@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 import com.ecommerce.lab.dto.CartItemResponseDTO;
+import com.ecommerce.lab.dto.GiftCardRequest;
 import com.ecommerce.lab.model.CartItem;
 import com.ecommerce.lab.model.Product;
 import com.ecommerce.lab.model.User;
@@ -48,6 +49,20 @@ public class CartService {
             newItem.setQuantity(1);
             cartRepository.save(newItem);
         }
+    }
+
+    public void addGiftCardToCart(GiftCardRequest request, String email) {
+        User user = userRepository.findByEmail(email).get();
+
+        CartItem item = new CartItem();
+        item.setUser(user);
+        item.setGiftCard(true);
+        item.setGiftCardAmount(request.amount());
+        item.setRecipientEmail(request.recipientEmail());
+        item.setGiftCardMessage(request.message());
+        item.setQuantity(1); // Usually 1 per unique recipient
+
+        cartRepository.save(item);
     }
 
     public List<CartItemResponseDTO> getCartItems(String email) {

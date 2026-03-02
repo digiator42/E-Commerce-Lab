@@ -40,6 +40,7 @@ public class UserGiftCardController {
         giftCard.setInitialAmount(request.amount());
         giftCard.setBalance(request.amount());
         giftCard.setRecipientEmail(request.recipientEmail()); // Can be self or a friend
+        giftCard.setMessage(request.message());
         giftCard.setExpiryDate(LocalDateTime.now().plusYears(1));
         giftCard.setActive(true);
 

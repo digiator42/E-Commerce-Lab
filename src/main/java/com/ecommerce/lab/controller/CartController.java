@@ -10,14 +10,15 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ecommerce.lab.dto.CartItemResponseDTO;
+import com.ecommerce.lab.dto.GiftCardRequest;
 import com.ecommerce.lab.model.CartItem;
 import com.ecommerce.lab.repository.CartRepository;
 import com.ecommerce.lab.service.CartService;
-
 
 @RestController
 @RequestMapping("/api/cart")
@@ -40,6 +41,15 @@ public class CartController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/add-gift-card")
+    public ResponseEntity<?> addGiftCardToCart(@RequestBody GiftCardRequest gcRequest, Principal principal) {
+        if (principal == null)
+            return ResponseEntity.status(401).body("Login required");
+
+        cartService.addGiftCardToCart(gcRequest, principal.getName());
+        return ResponseEntity.ok("Gift card added to cart");
+    }
+
     @GetMapping
     public ResponseEntity<?> getCart(Principal principal) {
 
@@ -58,7 +68,7 @@ public class CartController {
         cartRepository.flush(); // Force the DB to sync NOW
         return ResponseEntity.ok().build();
     }
-    
+
     @DeleteMapping("/clear")
     @Transactional
     public ResponseEntity<?> clearCart(Principal principal) {

@@ -160,7 +160,7 @@ export class CartManager {
         this.uiManager.updateCartBadge(count);
     }
 
-    addGiftCard(amount) {
+    async addGiftCard(amount) {
         // Validate amount
         amount = parseFloat(amount);
         if (isNaN(amount) || amount < 10 || amount > 500) {
@@ -182,6 +182,24 @@ export class CartManager {
             recipientEmail: null, // Will be collected at checkout
             message: null // Optional message
         };
+
+
+        try {
+            await this.apiClient.fetch('/api/cart/add-gift-card', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    amount: amount,
+                    recipientEmail: this.authManager.user.email,
+                    message: ""
+                })
+            });
+            this.render();
+            this.updateBadge();
+        } catch (error) {
+            console.error('Error syncing cart:', error);
+            this.uiManager.showToast('Error syncing cart: ' + error.message, 'error');
+        }
 
         this.items.push(giftCardItem);
         this.render();

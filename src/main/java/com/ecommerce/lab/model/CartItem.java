@@ -17,8 +17,13 @@ public class CartItem {
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "product_id", nullable = false)
+    @JoinColumn(name = "product_id")
     private Product product;
+
+    private boolean isGiftCard = false;
+    private double giftCardAmount;
+    private String recipientEmail;
+    private String giftCardMessage;
 
     private Integer quantity;
 }

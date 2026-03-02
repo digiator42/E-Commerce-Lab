@@ -5,18 +5,19 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.ecommerce.lab.dto.GiftCardRequest;
 import com.ecommerce.lab.model.CartItem;
 import com.ecommerce.lab.model.Coupon;
+import com.ecommerce.lab.model.GiftCard;
 import com.ecommerce.lab.model.Order;
 import com.ecommerce.lab.model.OrderItem;
 import com.ecommerce.lab.model.OrderStatus;
 import com.ecommerce.lab.model.User;
 import com.ecommerce.lab.repository.CartRepository;
 import com.ecommerce.lab.repository.CouponRepository;
+import com.ecommerce.lab.repository.GiftCardRepository;
 import com.ecommerce.lab.repository.OrderRepository;
 import com.ecommerce.lab.repository.UserRepository;
 
@@ -34,6 +35,7 @@ public class OrderService {
     private final EmailService emailService;
     private final CouponRepository couponRepository;
     private final GiftCardService giftCardService;
+    private final GiftCardRepository giftCardRepository;
 
     @Transactional(rollbackFor = Exception.class)
     public void placeOrder(String email, String couponCode, List<GiftCardRequest> giftCards) throws Exception {
@@ -50,15 +52,16 @@ public class OrderService {
         this.validateShippingAddress(user);
 
         // Process Items & Stock
-        double subtotal = this.processItemsAndStock(cartItems);
+        double subtotal = this.processItemsAndStock(cartItems, email);
 
         // Process Gift Card pusrchase
-        double giftCardTotal = giftCardService.purchaseMultiGiftCard(giftCards, user);
-        
+        // double giftCardTotal = giftCardService.purchaseMultiGiftCard(giftCards,
+        // user);
+
         // Apply Discount
         double finalTotal = this.applyCoupon(subtotal, couponCode);
 
-        finalTotal += giftCardTotal;
+        // finalTotal += giftCardTotal;
         // Persistence
         Order savedOrder = this.createAndSaveOrder(user, cartItems, finalTotal);
         cartRepository.deleteAll(cartItems);
@@ -73,18 +76,42 @@ public class OrderService {
         }
     }
 
-    private double processItemsAndStock(List<CartItem> cartItems) {
+    private double processItemsAndStock(List<CartItem> cartItems, String email) {
         double subtotal = 0;
         for (CartItem ci : cartItems) {
-            if (ci.getProduct().getStock() < ci.getQuantity()) {
-                throw new RuntimeException("Insufficient stock for " + ci.getProduct().getName());
-            }
+            if (ci.isGiftCard()) {
+                subtotal += ci.getGiftCardAmount();
+                this.generateAndEmailGiftCard(ci, email);
+            } else {
+                if (ci.getProduct().getStock() < ci.getQuantity()) {
+                    throw new RuntimeException("Insufficient stock for " + ci.getProduct().getName());
+                }
 
-            // Reduce stock
-            ci.getProduct().setStock(ci.getProduct().getStock() - ci.getQuantity());
-            subtotal += (ci.getProduct().getPrice() * ci.getQuantity());
+                // Reduce stock
+                ci.getProduct().setStock(ci.getProduct().getStock() - ci.getQuantity());
+                subtotal += (ci.getProduct().getPrice() * ci.getQuantity());
+            }
         }
         return subtotal;
+    }
+
+    private void generateAndEmailGiftCard(CartItem ci, String buyerEmail) {
+        // 1. Create the Actual Gift Card (The "Money" Object)
+        GiftCard gc = new GiftCard();
+        gc.setCode(UUID.randomUUID().toString().substring(0, 12).toUpperCase());
+        gc.setBalance(ci.getGiftCardAmount());
+        gc.setInitialAmount(ci.getGiftCardAmount());
+        gc.setRecipientEmail(ci.getRecipientEmail());
+        gc.setExpiryDate(LocalDateTime.now().plusYears(1));
+        gc.setActive(true);
+
+        giftCardRepository.save(gc);
+
+        // 2. Notify the Recipient
+        emailService.sendGiftCardCode(
+                ci.getRecipientEmail(),
+                gc.getCode(),
+                ci.getGiftCardMessage());
     }
 
     private double applyCoupon(double total, String couponCode) {
@@ -119,10 +146,21 @@ public class OrderService {
         // Map CartItems to OrderItems
         for (CartItem ci : cartItems) {
             OrderItem oi = new OrderItem();
-            oi.setProduct(ci.getProduct());
-            oi.setProductName(ci.getProduct().getName());
-            oi.setPriceAtPurchase(ci.getProduct().getPrice());
-            oi.setQuantity(ci.getQuantity());
+
+            if (ci.isGiftCard()) {
+                // Handle Virtual Item (Gift Card)
+                oi.setProduct(null); // No physical product link
+                oi.setProductName("Digital Gift Card (To: " + ci.getRecipientEmail() + ")");
+                oi.setPriceAtPurchase(ci.getGiftCardAmount());
+                oi.setQuantity(ci.getQuantity());
+            } else {
+                // Handle Physical Product
+                oi.setProduct(ci.getProduct());
+                oi.setProductName(ci.getProduct().getName());
+                oi.setPriceAtPurchase(ci.getProduct().getPrice());
+                oi.setQuantity(ci.getQuantity());
+            }
+
             order.getItems().add(oi);
         }
 
