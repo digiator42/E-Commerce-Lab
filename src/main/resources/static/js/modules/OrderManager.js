@@ -16,6 +16,9 @@ export class OrderManager {
         this.statusColors = Constants.STATUS_COLORS;
         this.appliedCoupon = null;
         this.discountedTotal = null;
+        this.userBalance = 0; // User's available store balance
+        this.usingStoreBalance = false;
+        this.balanceApplied = 0;
         this.giftCardTotal = 0;
         this.regularSubtotal = 0;
     }
@@ -105,6 +108,9 @@ export class OrderManager {
         // Calculate and display totals
         this.updateCheckoutTotals(doc);
 
+        // Fetch user balance for store balance option
+        this.fetchUserBalance();
+
         return doc.body.innerHTML;
     }
 
@@ -125,7 +131,113 @@ export class OrderManager {
 
     }
 
-    // Apply coupon from checkout page
+    // Toggle store balance
+    async toggleStoreBalance() {
+        const checkbox = document.getElementById('use-store-balance');
+        this.usingStoreBalance = checkbox.checked;
+
+        if (this.usingStoreBalance) {
+            // Fetch user's current balance if not already loaded
+            if (this.userBalance === 0) {
+                await this.fetchUserBalance();
+            }
+
+            // Show balance info
+            document.getElementById('store-balance-info').classList.remove('hidden');
+
+            // Calculate balance to apply (only to physical products)
+            this.calculateBalanceApplication();
+        } else {
+            // Hide balance info and reset
+            document.getElementById('store-balance-info').classList.add('hidden');
+            this.balanceApplied = 0;
+            this.updateTotalsAfterBalanceChange();
+        }
+    }
+
+    // Fetch user's available store balance
+    async fetchUserBalance() {
+        try {
+            const data = await this.apiClient.fetch('/api/gift-cards/history');
+            this.userBalance = data.userStoreBalance || 0;
+            document.getElementById('available-balance').textContent = `$${this.userBalance.toFixed(2)}`;
+        } catch (error) {
+            console.error('Error fetching user balance:', error);
+            this.userBalance = 0;
+        }
+    }
+
+    // Calculate how much balance to apply (only to physical products)
+    calculateBalanceApplication() {
+        // Get physical products total (non-gift cards)
+        const physicalItems = this.cartManager.items.filter(item => !item.isGiftCard);
+        const physicalTotal = physicalItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+        // Apply balance (can't exceed physical total or available balance)
+        this.balanceApplied = Math.min(physicalTotal, this.userBalance);
+
+        // Update display
+        document.getElementById('applied-balance').textContent = `$${this.balanceApplied.toFixed(2)}`;
+
+        // Update totals
+        this.updateTotalsAfterBalanceChange();
+    }
+
+    // Update totals after balance change
+    updateTotalsAfterBalanceChange() {
+        const regularItems = this.cartManager.items.filter(item => !item.isGiftCard);
+        const giftCardItems = this.cartManager.items.filter(item => item.isGiftCard);
+
+        this.regularSubtotal = regularItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        this.giftCardTotal = giftCardItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+        // Calculate final totals
+        const discountAmount = this.appliedCoupon?.discountAmount || 0;
+        const physicalAfterDiscount = this.regularSubtotal - discountAmount;
+        const physicalAfterBalance = Math.max(0, physicalAfterDiscount - this.balanceApplied);
+        const finalTotal = physicalAfterBalance + this.giftCardTotal;
+
+        // Update UI
+        const subtotalEl = document.getElementById('summary-subtotal');
+        const totalEl = document.getElementById('summary-total');
+        const discountRow = document.getElementById('summary-discount-row');
+
+        if (subtotalEl) subtotalEl.textContent = `$${(this.regularSubtotal + this.giftCardTotal).toFixed(2)}`;
+
+        // Show balance row if balance applied
+        let balanceRow = document.getElementById('balance-row');
+        if (this.balanceApplied > 0) {
+            if (!balanceRow) {
+                // Create balance row if it doesn't exist
+                const discountRow = document.getElementById('summary-discount-row');
+                balanceRow = document.createElement('div');
+                balanceRow.id = 'balance-row';
+                balanceRow.className = 'flex justify-between text-sm text-blue-600';
+                balanceRow.innerHTML = `
+                <span>Store Balance</span>
+                <span id="balance-amount">-$${this.balanceApplied.toFixed(2)}</span>
+            `;
+                discountRow.parentNode.insertBefore(balanceRow, discountRow.nextSibling);
+            } else {
+                balanceRow.classList.remove('hidden');
+                document.getElementById('balance-amount').textContent = `-$${this.balanceApplied.toFixed(2)}`;
+            }
+        } else if (balanceRow) {
+            balanceRow.classList.add('hidden');
+        }
+
+        // Show/hide discount row
+        if (discountAmount > 0) {
+            discountRow.classList.remove('hidden');
+            document.getElementById('summary-discount').textContent = `-$${discountAmount.toFixed(2)} (${this.appliedCoupon.discountPercentage}%)`;
+        } else {
+            discountRow.classList.add('hidden');
+        }
+
+        if (totalEl) totalEl.textContent = `$${finalTotal.toFixed(2)}`;
+    }
+
+    // Override applyCoupon to handle balance
     async applyCoupon() {
         const couponInput = document.getElementById('coupon-code');
         const applyBtn = document.getElementById('apply-coupon-btn');
@@ -154,8 +266,6 @@ export class OrderManager {
                 .filter(item => item.isGiftCard)
                 .reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
-            const finalTotal = (this.regularSubtotal - discountAmount) + this.giftCardTotal;
-
             // Store applied coupon
             this.appliedCoupon = {
                 code: data.code,
@@ -163,10 +273,17 @@ export class OrderManager {
                 discountAmount: discountAmount
             };
 
-            // Update UI
+            // Update UI with coupon
             document.getElementById('summary-discount-row').classList.remove('hidden');
             document.getElementById('summary-discount').textContent = `-$${discountAmount.toFixed(2)} (${data.discountPercentage}%)`;
-            document.getElementById('summary-total').textContent = `$${finalTotal.toFixed(2)}`;
+
+            // Recalculate balance after coupon
+            if (this.usingStoreBalance) {
+                this.calculateBalanceApplication();
+            } else {
+                const finalTotal = (this.regularSubtotal - discountAmount) + this.giftCardTotal;
+                document.getElementById('summary-total').textContent = `$${finalTotal.toFixed(2)}`;
+            }
 
             this.showCouponMessage(`Coupon applied! You saved $${discountAmount.toFixed(2)}`, 'success');
 
@@ -194,7 +311,7 @@ export class OrderManager {
         }
     }
 
-    // Remove coupon
+    // Override removeCoupon to handle balance
     removeCoupon() {
         this.appliedCoupon = null;
 
@@ -203,10 +320,17 @@ export class OrderManager {
 
         this.regularSubtotal = regularItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
         this.giftCardTotal = giftCardItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        const total = this.regularSubtotal + this.giftCardTotal;
 
+        // Hide discount row
         document.getElementById('summary-discount-row').classList.add('hidden');
-        document.getElementById('summary-total').textContent = `$${total.toFixed(2)}`;
+
+        // Recalculate with balance if active
+        if (this.usingStoreBalance) {
+            this.calculateBalanceApplication();
+        } else {
+            const total = this.regularSubtotal + this.giftCardTotal;
+            document.getElementById('summary-total').textContent = `$${total.toFixed(2)}`;
+        }
 
         const couponDetails = document.getElementById('coupon-details');
         couponDetails.classList.add('hidden');
@@ -285,11 +409,16 @@ export class OrderManager {
         const requestBody = {
             couponCode: this.appliedCoupon ? this.appliedCoupon.code : null,
             giftCards: giftCardPurchases,
-            useStoreBalance: document.getElementById('use-store-balance')?.checked || false,
+            useStoreBalance: this.usingStoreBalance,
+            storeBalanceAmount: this.balanceApplied, // Send amount to deduct
             shippingAddress: shippingAddress
         };
 
         try {
+            // Show processing modal
+            document.getElementById('payment-processing-modal').classList.remove('hidden');
+            document.getElementById('payment-processing-modal').classList.add('flex');
+
             // Simulate payment processing delay
             await new Promise(resolve => setTimeout(resolve, 2000));
 
@@ -306,16 +435,19 @@ export class OrderManager {
             // Store order data before clearing cart
             const orderData = {
                 id: response.id || 'FAKE-' + Math.floor(Math.random() * 1000000),
-                items: [...this.cartManager.items], // Copy items
+                items: [...this.cartManager.items],
                 appliedCoupon: this.appliedCoupon ? { ...this.appliedCoupon } : null,
                 regularSubtotal: this.regularSubtotal,
                 giftCardTotal: this.giftCardTotal,
+                balanceApplied: this.balanceApplied,
                 shippingAddress: shippingAddress
             };
 
             // Clear cart and reset state
             await this.cartManager.syncWithServer();
             this.appliedCoupon = null;
+            this.usingStoreBalance = false;
+            this.balanceApplied = 0;
 
             // Navigate to success page with data
             window.router.navigate('/order-success', orderData);
@@ -595,6 +727,12 @@ export class OrderManager {
         // Set totals
         doc.getElementById('success-subtotal').textContent = `$${(regularSubtotal + giftCardTotal).toFixed(2)}`;
         doc.getElementById('success-total').textContent = `$${finalTotal.toFixed(2)}`;
+
+        if (orderData.balanceApplied && orderData.balanceApplied > 0) {
+            const balanceRow = doc.getElementById('success-balance-row');
+            balanceRow.classList.remove('hidden');
+            doc.getElementById('success-balance').textContent = `-$${orderData.balanceApplied.toFixed(2)}`;
+        }
 
         // Show discount if applied
         if (orderData.appliedCoupon) {

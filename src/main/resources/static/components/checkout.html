@@ -135,8 +135,21 @@
                             </div>
                         </div>
                         <input type="checkbox" id="use-store-balance"
+                            onchange="window.orderManager.toggleStoreBalance()"
                             class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
                     </label>
+
+                    <!-- Store Balance Info (shown when checked) -->
+                    <div id="store-balance-info" class="hidden mt-3 pt-3 border-t border-blue-200">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Available Balance:</span>
+                            <span class="font-bold text-blue-600" id="available-balance">$0.00</span>
+                        </div>
+                        <div class="flex justify-between text-sm mt-1">
+                            <span class="text-gray-600">Applied to products:</span>
+                            <span class="font-bold text-green-600" id="applied-balance">$0.00</span>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Price Breakdown -->

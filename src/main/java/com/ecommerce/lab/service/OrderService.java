@@ -79,7 +79,8 @@ public class OrderService {
         Order savedOrder = this.createAndSaveOrder(user, cartItems, finalTotal);
 
         if (useStoreBalance && user.getStoreBalance() > 0) {
-            this.createUsageTX(user, amountToDeduct, savedOrder);
+            if (amountToDeduct != 0)
+                this.createUsageTX(user, amountToDeduct, savedOrder);
         }
 
         cartRepository.deleteAll(cartItems);
