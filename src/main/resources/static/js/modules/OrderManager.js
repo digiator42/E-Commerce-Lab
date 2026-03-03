@@ -2,6 +2,7 @@ import { ComponentStore } from '../core/ComponentStore.js';
 import { UIManager } from './UIManager.js';
 import { CartManager } from './CartManager.js';
 import { Constants } from '../config/Constants.js';
+import { Router } from '../core/Router.js';
 
 export class OrderManager {
     static instance = null;
@@ -11,9 +12,12 @@ export class OrderManager {
         this.componentStore = ComponentStore.getInstance();
         this.uiManager = UIManager.getInstance();
         this.cartManager = CartManager.getInstance(apiClient);
+        this.router = Router.getInstance();
         this.statusColors = Constants.STATUS_COLORS;
         this.appliedCoupon = null;
         this.discountedTotal = null;
+        this.giftCardTotal = 0;
+        this.regularSubtotal = 0;
     }
 
     static getInstance(apiClient) {
@@ -23,150 +27,105 @@ export class OrderManager {
         return OrderManager.instance;
     }
 
-    async checkout(event) {
-        const checkoutBtn = event.target;
-        if (this.cartManager.items.length === 0) return this.uiManager.showToast("Your cart is empty!", "error", 5000);
+    // Navigate to checkout page
+    async goToCheckout() {
+        if (this.cartManager.items.length === 0) {
+            this.uiManager.showToast("Your cart is empty!", "error");
+            return;
+        }
 
-        checkoutBtn.disabled = true;
-        checkoutBtn.innerText = "Processing...";
-
-        // Reset coupon state when opening new checkout
-        this.appliedCoupon = null;
-        this.discountedTotal = null;
-
-        this.openPaymentModal();
+        await window.router.navigate('/checkout');
     }
 
-    openPaymentModal() {
-        // Calculate separate totals
-        const regularItems = this.cartManager.items.filter(item => !item.isGiftCard);
+    // Render checkout page
+    async renderCheckout() {
+        const template = await this.componentStore.load('checkout');
+
+        // Get user email
+        const user = JSON.parse(localStorage.getItem('user')) || {};
+        let html = template.replace('{{userEmail}}', user.email || 'guest@example.com');
+
+        // Parse HTML to manipulate
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+
+        // Populate cart items preview
+        const previewContainer = doc.getElementById('order-items-preview');
+        previewContainer.innerHTML = this.cartManager.items.map(item => `
+        <div class="flex justify-between items-center text-sm">
+            <div class="flex-1">
+                <span class="font-medium">${item.name}</span>
+                <span class="text-xs text-gray-500 ml-2">x${item.quantity}</span>
+            </div>
+            <span class="font-medium">$${(item.price * item.quantity).toFixed(2)}</span>
+        </div>
+    `).join('');
+
+        // Check for gift cards
         const giftCardItems = this.cartManager.items.filter(item => item.isGiftCard);
+        if (giftCardItems.length > 0) {
+            const giftSection = doc.getElementById('gift-cards-section');
+            giftSection.classList.remove('hidden');
 
-        const regularSubtotal = regularItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        const giftCardTotal = giftCardItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        const totalWithGiftCards = regularSubtotal + giftCardTotal;
-
-        const subtotalFormatted = totalWithGiftCards.toFixed(2);
-
-        // Check if cart contains gift cards
-        const hasGiftCards = giftCardItems.length > 0;
-
-        let giftCardSection = '';
-        if (hasGiftCards) {
-            giftCardSection = `
-            <div class="mb-6 p-4 bg-purple-50 rounded-2xl border-2 border-purple-200">
-                <h4 class="font-bold text-purple-800 mb-3 flex items-center">
+            const giftHtml = `
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                <h2 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
                     <span class="text-2xl mr-2">🎁</span> Gift Card Details
-                </h4>
-                <div class="space-y-3">
+                </h2>
+                <div class="space-y-4">
                     ${giftCardItems.map((item, index) => `
-                        <div class="bg-white p-3 rounded-xl">
-                            <p class="font-medium text-gray-700 mb-2">${item.name}</p>
-                            <input type="email" 
-                                id="gift-recipient-${index}" 
-                                placeholder="Recipient's email" 
-                                class="w-full p-2 bg-gray-50 rounded-lg border-none ring-1 ring-gray-200 focus:ring-2 focus:ring-purple-500 mb-2"
-                                value="${item.recipientEmail || ''}">
-                            <textarea 
-                                id="gift-message-${index}"
-                                placeholder="Add a personal message (optional)" 
-                                rows="2"
-                                class="w-full p-2 bg-gray-50 rounded-lg border-none ring-1 ring-gray-200 focus:ring-2 focus:ring-purple-500 text-sm"
-                            >${item.message || ''}</textarea>
+                        <div class="p-4 bg-purple-50 rounded-xl">
+                            <p class="font-medium text-gray-700 mb-3">${item.name}</p>
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">Recipient Email</label>
+                                    <input type="email" 
+                                        id="gift-recipient-${index}" 
+                                        class="gift-recipient w-full px-3 py-2 bg-white rounded-lg border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition text-sm"
+                                        placeholder="friend@example.com">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">Personal Message (Optional)</label>
+                                    <textarea 
+                                        id="gift-message-${index}"
+                                        rows="2"
+                                        class="gift-message w-full px-3 py-2 bg-white rounded-lg border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition text-sm"
+                                        placeholder="Happy Birthday!"></textarea>
+                                </div>
+                            </div>
                         </div>
                     `).join('')}
                 </div>
-                <p class="text-xs text-gray-500 mt-2">Gift cards will be emailed directly to recipients</p>
+                <p class="text-xs text-gray-500 mt-4">Gift cards will be emailed directly to recipients</p>
             </div>
         `;
+            giftSection.innerHTML = giftHtml;
         }
 
-        const modalHtml = `
-    <div id="payment-overlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-md rounded-3xl p-8 shadow-2xl scale-in-center" style="max-height: 90vh; overflow-y: auto;">
-            <h3 class="text-2xl font-black mb-6">Fake Secure Payment</h3>
-            
-            <!-- Coupon Section - Only show if there are regular items -->
-            ${regularSubtotal > 0 ? `
-            <div class="mb-6 p-4 bg-gray-50 rounded-2xl">
-                <div class="flex gap-2 mb-3">
-                    <input type="text" 
-                           id="coupon-code" 
-                           placeholder="Have a coupon?" 
-                           class="flex-1 p-3 bg-white rounded-xl border-none ring-1 ring-gray-200 focus:ring-2 focus:ring-blue-500">
-                    <button onclick="window.orderManager.applyCoupon()" 
-                            id="apply-coupon-btn"
-                            class="px-4 bg-black text-white rounded-xl font-bold hover:bg-blue-600 transition">
-                        Apply
-                    </button>
-                </div>
-                <div id="coupon-message" class="text-sm hidden"></div>
-                <div id="coupon-details" class="text-sm hidden"></div>
-                ${giftCardTotal > 0 ? `
-                <p class="text-xs text-gray-500 mt-2">ℹ️ Coupons only apply to regular products, not gift cards</p>
-                ` : ''}
-            </div>
-            ` : ''}
-            
-            ${giftCardSection}
-            
-            <div class="space-y-4">
-                <!-- Price Breakdown -->
-                <div class="bg-gray-100 p-4 rounded-2xl">
-                    <!-- Regular Items Subtotal -->
-                    ${regularSubtotal > 0 ? `
-                    <div class="flex justify-between mb-2">
-                        <span class="text-gray-500">Products Subtotal</span>
-                        <span class="font-bold">$${regularSubtotal.toFixed(2)}</span>
-                    </div>
-                    ` : ''}
-                    
-                    <!-- Gift Cards Total -->
-                    ${giftCardTotal > 0 ? `
-                    <div class="flex justify-between mb-2">
-                        <span class="text-gray-500">Gift Cards Total</span>
-                        <span class="font-bold">$${giftCardTotal.toFixed(2)}</span>
-                    </div>
-                    ` : ''}
-                    
-                    <!-- Discount Row (only applies to products) -->
-                    <div id="discount-row" class="flex justify-between text-green-600 hidden">
-                        <span>Product Discount</span>
-                        <span id="discount-amount">-$0.00</span>
-                    </div>
-                    
-                    <!-- Final Total -->
-                    <div class="flex justify-between text-lg font-black mt-2 pt-2 border-t border-gray-300">
-                        <span>Total to Pay</span>
-                        <span id="total-amount" class="text-blue-600">$${totalWithGiftCards.toFixed(2)}</span>
-                    </div>
-                </div>
-                
-                <!-- Payment Form -->
-                <input type="text" placeholder="Card Number" class="w-full p-4 bg-gray-50 rounded-xl border-none ring-1 ring-gray-200 focus:ring-2 focus:ring-blue-500">
-                <div class="grid grid-cols-2 gap-4">
-                    <input type="text" placeholder="MM/YY" class="p-4 bg-gray-50 rounded-xl border-none ring-1 ring-gray-200">
-                    <input type="text" id="card-cvv" placeholder="CVV (3 digits)" class="p-4 bg-gray-50 rounded-xl border-none ring-1 ring-gray-200">
-                </div>
-            </div>
-            
-            <div class="mt-8 flex gap-4">
-                <button onclick="window.orderManager.closePaymentModal()" class="flex-1 font-bold text-gray-400">Cancel</button>
-                <button onclick="window.orderManager.processFakePayment()" id="pay-now-btn" class="flex-1 bg-black text-white py-4 rounded-2xl font-bold hover:bg-blue-600 transition">
-                    Pay Now
-                </button>
-            </div>
-        </div>
-    </div>
-    `;
+        // Calculate and display totals
+        this.updateCheckoutTotals(doc);
 
-        document.body.insertAdjacentHTML('beforeend', modalHtml);
-
-        // Store the regular subtotal for coupon calculations
-        this.regularSubtotal = regularSubtotal;
-        this.giftCardTotal = giftCardTotal;
+        return doc.body.innerHTML;
     }
 
+    // Update checkout totals
+    updateCheckoutTotals(doc) {
+        const regularItems = this.cartManager.items.filter(item => !item.isGiftCard);
+        const giftCardItems = this.cartManager.items.filter(item => item.isGiftCard);
+
+        this.regularSubtotal = regularItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        this.giftCardTotal = giftCardItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const subtotal = this.regularSubtotal + this.giftCardTotal;
+
+        const subtotalEl = doc.getElementById('summary-subtotal');
+        const totalEl = doc.getElementById('summary-total');
+
+        if (subtotalEl) subtotalEl.textContent = `$${subtotal.toFixed(2)}`;
+        if (totalEl) totalEl.textContent = `$${subtotal.toFixed(2)}`;
+
+    }
+
+    // Apply coupon from checkout page
     async applyCoupon() {
         const couponInput = document.getElementById('coupon-code');
         const applyBtn = document.getElementById('apply-coupon-btn');
@@ -179,87 +138,246 @@ export class OrderManager {
             return;
         }
 
-        // Disable button while validating
         applyBtn.disabled = true;
         applyBtn.innerText = '...';
         couponMessage.classList.add('hidden');
 
         try {
-            const response = await this.apiClient.fetch(`/api/coupons/check?code=${encodeURIComponent(code)}`);
+            const data = await this.apiClient.fetch(`/api/coupons/check?code=${encodeURIComponent(code)}`);
 
-            const data = await response;
+            // Calculate discount (only on regular items)
+            const regularItems = this.cartManager.items.filter(item => !item.isGiftCard);
+            this.regularSubtotal = regularItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
-            // Calculate discount
-            const subtotal = this.cartManager.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            const discountAmount = (subtotal * data.discountPercentage) / 100;
-            this.discountedTotal = subtotal - discountAmount;
+            const discountAmount = (this.regularSubtotal * data.discountPercentage) / 100;
+            this.giftCardTotal = this.cartManager.items
+                .filter(item => item.isGiftCard)
+                .reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+            const finalTotal = (this.regularSubtotal - discountAmount) + this.giftCardTotal;
 
             // Store applied coupon
             this.appliedCoupon = {
                 code: data.code,
-                discountPercentage: data.discountPercentage
+                discountPercentage: data.discountPercentage,
+                discountAmount: discountAmount
             };
 
-            // Update UI with discount
-            this.updatePriceDisplay(subtotal, discountAmount, data.discountPercentage);
+            // Update UI
+            document.getElementById('summary-discount-row').classList.remove('hidden');
+            document.getElementById('summary-discount').textContent = `-$${discountAmount.toFixed(2)} (${data.discountPercentage}%)`;
+            document.getElementById('summary-total').textContent = `$${finalTotal.toFixed(2)}`;
 
-            // Show success message
             this.showCouponMessage(`Coupon applied! You saved $${discountAmount.toFixed(2)}`, 'success');
 
-            // Show coupon details
-            couponDetails.innerHTML = `✅ ${data.code} - ${data.discountPercentage}% off`;
+            couponDetails.innerHTML = `
+            <div class="flex items-center justify-between">
+                <span class="text-green-600 font-medium">✅ ${data.code} - ${data.discountPercentage}% off</span>
+                <button onclick="window.orderManager.removeCoupon()" class="text-gray-400 hover:text-red-600 ml-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        `;
             couponDetails.classList.remove('hidden');
-            couponDetails.className = 'text-sm text-green-600 font-medium';
 
-            // Clear input
             couponInput.value = '';
+
         } catch (error) {
             this.showCouponMessage(error.message || 'Invalid coupon code', 'error');
             couponDetails.classList.add('hidden');
-
-            // Reset pricing
-            this.resetPriceDisplay();
+            this.removeCoupon();
         } finally {
-            // Re-enable button
             applyBtn.disabled = false;
             applyBtn.innerText = 'Apply';
         }
     }
 
-    // Helper method to show coupon messages
+    // Remove coupon
+    removeCoupon() {
+        this.appliedCoupon = null;
+
+        const regularItems = this.cartManager.items.filter(item => !item.isGiftCard);
+        const giftCardItems = this.cartManager.items.filter(item => item.isGiftCard);
+
+        this.regularSubtotal = regularItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        this.giftCardTotal = giftCardItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const total = this.regularSubtotal + this.giftCardTotal;
+
+        document.getElementById('summary-discount-row').classList.add('hidden');
+        document.getElementById('summary-total').textContent = `$${total.toFixed(2)}`;
+
+        const couponDetails = document.getElementById('coupon-details');
+        couponDetails.classList.add('hidden');
+
+        this.showCouponMessage('Coupon removed', 'success');
+    }
+
+    // Show coupon message helper
     showCouponMessage(message, type) {
         const couponMessage = document.getElementById('coupon-message');
         couponMessage.textContent = message;
-        couponMessage.className = `text-sm mt-2 ${type === 'error' ? 'text-red-600' : 'text-green-600'}`;
+        couponMessage.className = `text-xs mt-2 ${type === 'error' ? 'text-red-600' : 'text-green-600'}`;
         couponMessage.classList.remove('hidden');
+
+        setTimeout(() => {
+            couponMessage.classList.add('hidden');
+        }, 3000);
     }
 
-    closePaymentModal() {
-        const modal = document.getElementById('payment-overlay');
-        if (modal) modal.remove();
-        const checkoutBtn = document.getElementById('checkout-btn');
+    // Process checkout
+    // Process checkout
+    async processCheckout() {
+        // Validate shipping address
+        const street = document.getElementById('shipping-street')?.value;
+        const city = document.getElementById('shipping-city')?.value;
+        const state = document.getElementById('shipping-state')?.value;
+        const zip = document.getElementById('shipping-zip')?.value;
+        const country = document.getElementById('shipping-country')?.value;
 
-        checkoutBtn.disabled = false;
-        checkoutBtn.innerText = "Checkout";
-    }
-
-    async processFakePayment() {
-        const btn = document.getElementById('pay-now-btn');
-        const cvv = document.getElementById('card-cvv').value;
-
-        btn.innerText = "Verifying...";
-        btn.disabled = true;
-
-        await new Promise(resolve => setTimeout(resolve, 2000));
-
-        if (cvv === "000") {
-            this.uiManager.showToast("Payment Declined: Insufficient Funds", "error", 5000);
-            btn.innerText = "Try Again";
-            btn.disabled = false;
+        if (!street || !city || !state || !zip || !country) {
+            this.uiManager.showToast('Please fill in all shipping fields', 'error');
             return;
         }
 
-        await this.finalizeCheckout();
+        // Validate gift cards if present
+        const giftCardItems = this.cartManager.items.filter(item => item.isGiftCard);
+        if (giftCardItems.length > 0) {
+            let hasValidEmails = true;
+
+            giftCardItems.forEach((item, index) => {
+                const recipientInput = document.getElementById(`gift-recipient-${index}`);
+                if (recipientInput) {
+                    const email = recipientInput.value.trim();
+                    if (!email || !this.isValidEmail(email)) {
+                        this.uiManager.showToast(`Please enter a valid email for ${item.name}`, "error");
+                        hasValidEmails = false;
+                        return;
+                    }
+                    item.recipientEmail = email;
+                    item.message = document.getElementById(`gift-message-${index}`)?.value.trim() || '';
+                }
+            });
+
+            if (!hasValidEmails) return;
+        }
+
+        // Show processing modal
+        document.getElementById('payment-processing-modal').classList.remove('hidden');
+        document.getElementById('payment-processing-modal').classList.add('flex');
+
+        // Prepare shipping address
+        const shippingAddress = {
+            street, city, state, zipCode: zip, country
+        };
+
+        // Prepare gift card purchases
+        const giftCardPurchases = this.cartManager.items
+            .filter(item => item.isGiftCard)
+            .map(item => ({
+                amount: item.price,
+                recipientEmail: item.recipientEmail,
+                message: item.message || ''
+            }));
+
+        // Prepare request body
+        const requestBody = {
+            couponCode: this.appliedCoupon ? this.appliedCoupon.code : null,
+            giftCards: giftCardPurchases,
+            useStoreBalance: document.getElementById('use-store-balance')?.checked || false,
+            shippingAddress: shippingAddress
+        };
+
+        try {
+            // Simulate payment processing delay
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            const response = await this.apiClient.fetch('/api/orders/place', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestBody)
+            });
+
+            // Hide processing modal
+            document.getElementById('payment-processing-modal').classList.add('hidden');
+            document.getElementById('payment-processing-modal').classList.remove('flex');
+
+            // Store order data before clearing cart
+            const orderData = {
+                id: response.id || 'FAKE-' + Math.floor(Math.random() * 1000000),
+                items: [...this.cartManager.items], // Copy items
+                appliedCoupon: this.appliedCoupon ? { ...this.appliedCoupon } : null,
+                regularSubtotal: this.regularSubtotal,
+                giftCardTotal: this.giftCardTotal,
+                shippingAddress: shippingAddress
+            };
+
+            // Clear cart and reset state
+            await this.cartManager.syncWithServer();
+            this.appliedCoupon = null;
+
+            // Navigate to success page with data
+            window.router.navigate('/order-success', orderData);
+
+        } catch (error) {
+            document.getElementById('payment-processing-modal').classList.add('hidden');
+            document.getElementById('payment-processing-modal').classList.remove('flex');
+            this.uiManager.showToast("Order failed: " + error.message, "error");
+        }
+    }
+
+    // Close success modal and navigate
+    closeSuccessModal() {
+        document.getElementById('success-modal').classList.add('hidden');
+        document.getElementById('success-modal').classList.remove('flex');
+        this.router.navigate('/products');
+    }
+
+    // Show success modal
+    showSuccessModal(orderData) {
+        const regularItems = this.cartManager.items.filter(item => !item.isGiftCard);
+        const giftCardItems = this.cartManager.items.filter(item => item.isGiftCard);
+
+        this.regularSubtotal = regularItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        this.giftCardTotal = giftCardItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const discountAmount = this.appliedCoupon?.discountAmount || 0;
+        const finalTotal = (this.regularSubtotal - discountAmount) + this.giftCardTotal;
+
+        let detailsHtml = `
+        <div class="space-y-2">
+            <p><span class="font-medium">Order ID:</span> #ORD-${orderData.id || 'FAKE-' + Math.floor(Math.random() * 1000000)}</p>
+            <p><span class="font-medium">Total Paid:</span> $${finalTotal.toFixed(2)}</p>
+    `;
+
+        if (giftCardItems.length > 0) {
+            detailsHtml += `
+            <p class="text-purple-600">🎁 ${giftCardItems.length} Gift Card(s) purchased</p>
+        `;
+        }
+
+        if (this.appliedCoupon) {
+            detailsHtml += `
+            <p class="text-green-600">✨ Saved $${discountAmount.toFixed(2)} with coupon ${this.appliedCoupon.code}</p>
+        `;
+        }
+
+        detailsHtml += `</div>`;
+
+        document.getElementById('order-details').innerHTML = detailsHtml;
+        document.getElementById('success-message').textContent =
+            giftCardItems.length > 0
+                ? 'Your order has been placed! Gift cards have been sent to recipients.'
+                : 'Your order has been successfully placed.';
+
+        document.getElementById('success-modal').classList.remove('hidden');
+        document.getElementById('success-modal').classList.add('flex');
+    }
+
+    // Email validation helper
+    isValidEmail(email) {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(email);
     }
 
     updatePriceDisplay(regularSubtotal, discountAmount, giftCardTotal, discountPercentage) {
@@ -267,7 +385,7 @@ export class OrderManager {
         const discountAmountSpan = document.getElementById('discount-amount');
         const totalSpan = document.getElementById('total-amount');
 
-        const finalTotal = (regularSubtotal - discountAmount) + giftCardTotal;
+        const finalTotal = (this.regularSubtotal - discountAmount) + giftCardTotal;
 
         // Show discount row
         discountRow.classList.remove('hidden');
@@ -277,8 +395,8 @@ export class OrderManager {
 
     // Reset price display (remove discount)
     resetPriceDisplay() {
-        const discountRow = document.getElementById('discount-row');
-        const totalSpan = document.getElementById('total-amount');
+        const discountRow = document.getElementById('summary-discount-row');
+        const totalSpan = document.getElementById('summary-total');
         const finalTotal = (this.regularSubtotal || 0) + (this.giftCardTotal || 0);
 
         discountRow.classList.add('hidden');
@@ -345,10 +463,10 @@ export class OrderManager {
             // Calculate totals for success message
             const regularItems = this.cartManager.items.filter(item => !item.isGiftCard);
             const regularTotal = regularItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            const giftCardTotal = giftCardItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            this.giftCardTotal = giftCardItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
             const discountAmount = this.appliedCoupon ? (regularTotal * this.appliedCoupon.discountPercentage) / 100 : 0;
-            const finalTotal = (regularTotal - discountAmount) + giftCardTotal;
+            const finalTotal = (regularTotal - discountAmount) + this.giftCardTotal;
             const savings = this.appliedCoupon ? discountAmount : 0;
 
             this.cartManager.toggle();
@@ -392,7 +510,7 @@ export class OrderManager {
             <div class="bg-gray-50 p-4 rounded-2xl mb-8 inline-block">
                 <p class="text-gray-700">
                     ${regularTotal > 0 ? `Products: $${regularTotal.toFixed(2)}` : ''}
-                    ${giftCardTotal > 0 ? (regularTotal > 0 ? ' + ' : '') + `Gift Cards: $${giftCardTotal.toFixed(2)}` : ''}
+                    ${this.giftCardTotal > 0 ? (regularTotal > 0 ? ' + ' : '') + `Gift Cards: $${giftCardTotal.toFixed(2)}` : ''}
                     ${this.appliedCoupon ? `<br><span class="text-green-600">- Discount: $${discountAmount.toFixed(2)}</span>` : ''}
                     <br><span class="font-black">Total paid: <span class="text-blue-600">$${finalTotal.toFixed(2)}</span></span>
                 </p>
@@ -430,15 +548,91 @@ export class OrderManager {
         return re.test(email);
     }
 
-    removeCoupon() {
-        this.appliedCoupon = null;
-        this.discountedTotal = null;
-        this.resetPriceDisplay();
+    // Render order success page
+    async renderOrderSuccess(orderData) {
+        const template = await this.componentStore.load('order-success');
 
-        const couponDetails = document.getElementById('coupon-details');
-        couponDetails.classList.add('hidden');
+        // Parse date
+        const now = new Date();
+        const orderDate = now.toLocaleDateString() + ' at ' + now.toLocaleTimeString();
 
-        this.showCouponMessage('Coupon removed', 'success');
+        let html = template.replace('{{orderDate}}', orderDate);
+
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+
+        // Set order ID
+        doc.getElementById('success-order-id').textContent = '#ORD-' + (orderData.id || Math.floor(Math.random() * 1000000));
+
+        // Populate order items
+        const itemsContainer = doc.getElementById('success-order-items');
+        itemsContainer.innerHTML = orderData.items.map(item => `
+        <div class="flex justify-between items-center">
+            <div class="flex items-center">
+                <div class="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden mr-3">
+                    <img src="${item.imageUrl || 'https://placehold.co/600x400/EEE/31343C'}" 
+                         alt="${item.name}" 
+                         class="w-full h-full object-cover">
+                </div>
+                <div>
+                    <p class="font-medium text-gray-900">${item.name}</p>
+                    <p class="text-xs text-gray-500">Qty: ${item.quantity}</p>
+                </div>
+            </div>
+            <span class="font-medium">$${(item.price * item.quantity).toFixed(2)}</span>
+        </div>
+    `).join('');
+
+        // Calculate totals
+        const regularItems = orderData.items.filter(item => !item.isGiftCard);
+        const giftCardItems = orderData.items.filter(item => item.isGiftCard);
+
+        const regularSubtotal = regularItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const giftCardTotal = giftCardItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const discountAmount = orderData.appliedCoupon?.discountAmount || 0;
+        const finalTotal = (regularSubtotal - discountAmount) + giftCardTotal;
+
+        // Set totals
+        doc.getElementById('success-subtotal').textContent = `$${(regularSubtotal + giftCardTotal).toFixed(2)}`;
+        doc.getElementById('success-total').textContent = `$${finalTotal.toFixed(2)}`;
+
+        // Show discount if applied
+        if (orderData.appliedCoupon) {
+            doc.getElementById('success-discount').textContent = `-$${discountAmount.toFixed(2)} (${orderData.appliedCoupon.discountPercentage}%)`;
+        } else {
+            doc.getElementById('success-discount-row').classList.add('hidden');
+        }
+
+        // Show gift cards section if present
+        if (giftCardItems.length > 0) {
+            const giftSection = doc.getElementById('success-gift-cards');
+            giftSection.classList.remove('hidden');
+
+            giftSection.innerHTML = `
+            <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                <span class="text-2xl mr-2">🎁</span> Gift Cards Purchased
+            </h3>
+            <div class="space-y-3">
+                ${giftCardItems.map(item => `
+                    <div class="bg-white p-4 rounded-xl">
+                        <p class="font-medium text-gray-900">${item.name}</p>
+                        <p class="text-sm text-purple-600">Sent to: ${item.recipientEmail || 'Pending'}</p>
+                        ${item.message ? `<p class="text-xs text-gray-500 mt-1">"${item.message}"</p>` : ''}
+                    </div>
+                `).join('')}
+            </div>
+            <p class="text-sm text-purple-600 mt-4">✨ Gift card codes have been emailed to recipients!</p>
+        `;
+        }
+
+        // Set shipping address from order data
+        if (orderData.shippingAddress) {
+            const addr = orderData.shippingAddress;
+            doc.getElementById('success-shipping-address').textContent =
+                `${addr.street}, ${addr.city}, ${addr.state} ${addr.zipCode}, ${addr.country}`;
+        }
+
+        return doc.body.innerHTML;
     }
 
     async getMyOrders() {

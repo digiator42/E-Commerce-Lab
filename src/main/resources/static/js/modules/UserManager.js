@@ -50,7 +50,7 @@ export class UserManager {
             this.uiManager.showToast('Profile updated successfully!');
             return true;
         } catch (error) {
-            this.uiManager.showToast('Failed to update profile: ' + error.message, 'error');
+            this.uiManager.showToast('Failed to update profile: ' + error, 'error');
             return false;
         }
     }
@@ -212,7 +212,7 @@ export class UserManager {
 
 
         } catch (error) {
-            this.uiManager.showToast('Error: ' + error.message, 'error', 4000);
+            this.uiManager.showToast(error, 'error', 4000);
         } finally {
             // Re-enable button
             redeemBtn.disabled = false;

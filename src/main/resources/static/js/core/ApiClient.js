@@ -20,7 +20,8 @@ export class ApiClient {
 
         if (!response.ok) {
             const error = await response.json();
-            throw new Error(error.message || `Something went wrong, try again!`);
+            const errorMessage = error.message || error.error || JSON.stringify(errorData);
+            throw new Error(errorMessage || `Something went wrong, try again!`);
         }
 
         const contentLength = response.headers.get('content-length');

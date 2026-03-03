@@ -235,6 +235,36 @@ export class Router {
                 return template;
             },
 
+            '/checkout': async () => {
+                // Protected route - requires authentication
+                if (!this.authManager?.isAuthenticated) {
+                    sessionStorage.setItem('redirectAfterLogin', '/checkout');
+                    window.history.pushState(null, '', '/login');
+                    return await this.route();
+                }
+
+                // Check if cart is empty
+                if (this.cartManager.items.length === 0) {
+                    window.history.pushState(null, '', '/products');
+                    return await this.route();
+                }
+
+                return await this.orderManager.renderCheckout();
+            },
+
+            '/order-success': async () => {
+                // Protected route
+                if (!this.authManager?.isAuthenticated) {
+                    window.history.pushState(null, '', '/login');
+                    return await this.route();
+                }
+
+                // Get order data from history state
+                const orderData = window.history.state || {};
+                console.log("====> ", orderData);
+                return await this.orderManager.renderOrderSuccess(orderData);
+            },
+
             '/admin/add-product': async () => {
                 if (!this.authManager?.isAdmin()) {
                     window.history.pushState(null, '', '/products');
@@ -746,8 +776,8 @@ export class Router {
         };
     }
 
-    async navigate(path) {
-        window.history.pushState(null, '', path);
+    async navigate(path, state = {}) {
+        window.history.pushState(state, '', path);
         document.title = "MASTER SHOP | " + path.toLocaleUpperCase();
         await this.route();
     }

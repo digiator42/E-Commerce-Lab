@@ -1,0 +1,120 @@
+<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-2xl w-full">
+        <!-- Success Animation -->
+        <div class="text-center mb-8">
+            <div
+                class="inline-flex items-center justify-center w-24 h-24 bg-green-100 rounded-full mb-6 animate-bounce">
+                <svg class="w-12 h-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                </svg>
+            </div>
+            <h1 class="text-4xl font-black text-gray-900 mb-2">Order Confirmed!</h1>
+            <p class="text-lg text-gray-500">Thank you for your purchase</p>
+        </div>
+
+        <!-- Progress Steps - Completed -->
+        <div class="mb-8">
+            <div class="flex items-center justify-center space-x-4">
+                <div class="flex items-center">
+                    <div
+                        class="w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center font-bold">
+                        ✓</div>
+                    <span class="ml-2 text-sm font-medium text-gray-900">Cart Review</span>
+                </div>
+                <div class="w-12 h-0.5 bg-green-600"></div>
+                <div class="flex items-center">
+                    <div
+                        class="w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center font-bold">
+                        ✓</div>
+                    <span class="ml-2 text-sm font-medium text-gray-900">Checkout</span>
+                </div>
+                <div class="w-12 h-0.5 bg-green-600"></div>
+                <div class="flex items-center">
+                    <div
+                        class="w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center font-bold">
+                        3</div>
+                    <span class="ml-2 text-sm font-medium text-gray-900">Confirmation</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Details Card -->
+        <div class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden mb-6">
+            <!-- Order Header -->
+            <div class="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6 text-white">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-blue-100 text-sm mb-1">Order ID</p>
+                        <p class="text-2xl font-mono font-bold" id="success-order-id">#ORD-123456</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-blue-100 text-sm mb-1">Order Date</p>
+                        <p class="font-medium" id="success-order-date">{{orderDate}}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Items -->
+            <div class="p-8 border-b border-gray-100">
+                <h3 class="text-lg font-bold text-gray-900 mb-4">Order Summary</h3>
+                <div class="space-y-4" id="success-order-items">
+                    <!-- Dynamically populated -->
+                </div>
+            </div>
+
+            <!-- Gift Cards Section -->
+            <div id="success-gift-cards" class="hidden p-8 border-b border-gray-100 bg-purple-50">
+                <!-- Dynamically populated -->
+            </div>
+
+            <!-- Price Breakdown -->
+            <div class="p-8 bg-gray-50">
+                <div class="space-y-3">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Subtotal</span>
+                        <span class="font-medium" id="success-subtotal">$0.00</span>
+                    </div>
+                    <div class="flex justify-between text-sm text-green-600" id="success-discount-row">
+                        <span>Discount</span>
+                        <span id="success-discount">-$0.00</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Shipping</span>
+                        <span class="font-medium text-green-600">Free</span>
+                    </div>
+                    <div class="flex justify-between text-lg font-black pt-3 border-t border-gray-200">
+                        <span>Total Paid</span>
+                        <span class="text-blue-600" id="success-total">$0.00</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shipping Address -->
+            <div class="p-8 border-t border-gray-100">
+                <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-3">Shipping Address</h3>
+                <p class="text-gray-700" id="success-shipping-address"></p>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="/products" onclick="window.router.route(event)"
+                class="inline-flex items-center justify-center px-8 py-4 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition transform hover:scale-[1.02] shadow-lg">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                </svg>
+                Continue Shopping
+            </a>
+            <a href="/orders" onclick="window.router.route(event)"
+                class="inline-flex items-center justify-center px-8 py-4 bg-white border-2 border-gray-200 text-gray-700 rounded-xl font-bold hover:bg-gray-50 transition transform hover:scale-[1.02]">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2">
+                    </path>
+                </svg>
+                View Orders
+            </a>
+        </div>
+    </div>
+</div>
