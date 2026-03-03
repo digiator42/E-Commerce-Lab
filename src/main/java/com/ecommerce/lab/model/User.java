@@ -35,6 +35,9 @@ public class User {
     @Enumerated(EnumType.STRING)
     private AuthProvider provider = AuthProvider.LOCAL;
 
+    @Column(unique = true)
+    private String providerId;
+
     private Integer age;
 
     private String profilePicture;
@@ -59,7 +62,7 @@ public class User {
 
     private String address;
 
-    private Double storeBalance = 0.0;
+    private double storeBalance = 0.0;
 
     @Column(nullable = false, columnDefinition = "boolean default false")
     @JsonIgnore

@@ -79,6 +79,18 @@
                                 2FA Settings
                             </span>
                         </button>
+                        <button onclick="window.userManager.showTab('redeem')"
+                            class="w-full text-left px-4 py-2 rounded-xl font-medium transition profile-tab text-gray-500 hover:bg-gray-50"
+                            data-tab="redeem">
+                            <span class="flex items-center">
+                                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                                    </path>
+                                </svg>
+                                Store Balance
+                            </span>
+                        </button>
                     </nav>
                 </div>
             </div>
@@ -240,6 +252,72 @@
                     <div id="2fa-status" class="text-sm text-gray-600">
                         Loading status...
                     </div>
+                </div>
+            </div>
+
+            <!-- Redeem Gift Card Tab -->
+            <div id="tab-redeem" class="profile-tab-content hidden">
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                    <!-- Current Balance Card -->
+                    <div class="mb-8 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-2xl p-6 text-white">
+                        <h3 class="text-lg font-medium opacity-90 mb-2">Your Store Balance</h3>
+                        <div class="flex items-baseline justify-between">
+                            <span class="text-4xl font-black" id="store-balance-display">$0.00</span>
+                            <span class="text-sm opacity-75">Available for purchases</span>
+                        </div>
+                    </div>
+
+                    <!-- Redeem Form -->
+                    <h3 class="text-xl font-bold text-gray-900 mb-6">Redeem Gift Card</h3>
+
+                    <form id="redeem-giftcard-form" onsubmit="window.userManager.handleRedeemSubmit(event)">
+                        <div class="space-y-6">
+                            <!-- Gift Card Code Input -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Gift Card Code</label>
+                                <div class="flex gap-3">
+                                    <input type="text" id="giftcard-code" name="code"
+                                        class="flex-1 px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition uppercase"
+                                        placeholder="GIFT-XXXXXX" maxlength="20" autocomplete="off"
+                                        style="text-transform: uppercase;">
+                                    <button type="submit" id="redeem-btn"
+                                        class="px-8 bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-xl font-bold hover:from-purple-700 hover:to-indigo-700 transition">
+                                        Redeem
+                                    </button>
+                                </div>
+                                <p class="text-xs text-gray-400 mt-2">Enter the gift card code you received via email
+                                </p>
+                            </div>
+
+                            <!-- Redeem History / Recent Activity -->
+                            <div class="border-t border-gray-100 pt-6">
+                                <h4 class="font-bold text-gray-900 mb-4">Recent Activity</h4>
+                                <div id="redeem-history" class="space-y-3">
+                                    <!-- This will be populated by JavaScript -->
+                                    <div class="text-center text-gray-400 py-4">
+                                        No recent activity
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Quick Tips -->
+                            <div class="bg-purple-50 rounded-xl p-4">
+                                <h5 class="font-bold text-purple-800 mb-2 flex items-center">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    💡 Gift Card Tips
+                                </h5>
+                                <ul class="text-sm text-purple-700 space-y-1 list-disc list-inside">
+                                    <li>Codes are case-insensitive</li>
+                                    <li>Balance never expires</li>
+                                    <li>Can be used on any product</li>
+                                    <li>Multiple cards can be redeemed</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>

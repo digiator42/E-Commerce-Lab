@@ -19,8 +19,8 @@ export class ApiClient {
         }
 
         if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(errorText || `Error ${response.status}`);
+            const error = await response.json();
+            throw new Error(error.message || `Something went wrong, try again!`);
         }
 
         const contentLength = response.headers.get('content-length');

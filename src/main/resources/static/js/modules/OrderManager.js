@@ -330,7 +330,8 @@ export class OrderManager {
             // Prepare request body
             const requestBody = {
                 couponCode: this.appliedCoupon ? this.appliedCoupon.code : null,
-                giftCards: giftCardPurchases
+                giftCards: giftCardPurchases,
+                useStoreBalance: false
             };
 
             const response = await this.apiClient.fetch('/api/orders/place', {

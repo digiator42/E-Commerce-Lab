@@ -8,6 +8,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 import com.ecommerce.lab.dto.GiftCardRequest;
+import com.ecommerce.lab.model.BalanceTransaction;
 import com.ecommerce.lab.model.CartItem;
 import com.ecommerce.lab.model.Coupon;
 import com.ecommerce.lab.model.GiftCard;
@@ -15,6 +16,7 @@ import com.ecommerce.lab.model.Order;
 import com.ecommerce.lab.model.OrderItem;
 import com.ecommerce.lab.model.OrderStatus;
 import com.ecommerce.lab.model.User;
+import com.ecommerce.lab.repository.BalanceTransactionRepository;
 import com.ecommerce.lab.repository.CartRepository;
 import com.ecommerce.lab.repository.CouponRepository;
 import com.ecommerce.lab.repository.GiftCardRepository;
@@ -36,6 +38,7 @@ public class OrderService {
     private final CouponRepository couponRepository;
     private final GiftCardService giftCardService;
     private final GiftCardRepository giftCardRepository;
+    private final BalanceTransactionRepository balanceTransactionRepository;
 
     @Transactional(rollbackFor = Exception.class)
     public void placeOrder(String email, String couponCode, boolean useStoreBalance) throws Exception {
@@ -59,12 +62,14 @@ public class OrderService {
 
         // Apply Store Balance ONLY to the physical discounted total
         double remainingPhysical = discountedPhysical;
+        double amountToDeduct = 0;
         if (useStoreBalance && user.getStoreBalance() > 0) {
-            double amountToDeduct = Math.min(discountedPhysical, user.getStoreBalance());
+            amountToDeduct = Math.min(discountedPhysical, user.getStoreBalance());
             remainingPhysical = discountedPhysical - amountToDeduct;
 
             // Deduct from user profile
             user.setStoreBalance(user.getStoreBalance() - amountToDeduct);
+
             userRepository.save(user);
         }
 
@@ -72,10 +77,31 @@ public class OrderService {
 
         // Persistence
         Order savedOrder = this.createAndSaveOrder(user, cartItems, finalTotal);
+
+        if (useStoreBalance && user.getStoreBalance() > 0) {
+            this.createUsageTX(user, amountToDeduct, savedOrder);
+        }
+
         cartRepository.deleteAll(cartItems);
 
         // Async/External Tasks (Emails)
         this.sendNotifications(savedOrder, user);
+    }
+
+    private void createUsageTX(User user, double amountToDeduct, Order savedOrder) {
+        BalanceTransaction tx = new BalanceTransaction();
+        tx.setUser(user);
+
+        // This is a negative amount because they are SPENDING
+        tx.setAmount(-amountToDeduct);
+
+        // Instead of a card code, we use the Order ID or Transaction ID
+        tx.setCode("ORDER-" + savedOrder.getId());
+
+        tx.setDate(LocalDateTime.now());
+        tx.setType("PURCHASE");
+
+        balanceTransactionRepository.save(tx);
     }
 
     private void validateShippingAddress(User user) {

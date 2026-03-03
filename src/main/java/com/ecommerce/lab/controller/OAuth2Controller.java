@@ -40,6 +40,7 @@ public class OAuth2Controller {
         String email = principal.getAttribute("email");
         String name = principal.getAttribute("name");
         String picture = principal.getAttribute("picture");
+        String sub = principal.getAttribute("sub");
 
         // Check if user exists
         Optional<User> userOptional = userRepository.findByEmail(email);
@@ -48,10 +49,12 @@ public class OAuth2Controller {
         if (userOptional.isEmpty()) {
             // Register new user
             user = new User();
+            user.setProviderId(sub);
             user.setEmail(email);
             user.setUserName(name);
             user.setProvider(AuthProvider.GOOGLE);
             String randomPassword = UUID.randomUUID().toString();
+            System.out.println("===> " + randomPassword);
             user.setPassword(passwordEncoder.encode(randomPassword));
             user.setRole(Role.ROLE_USER);
         } else {
