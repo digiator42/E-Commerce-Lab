@@ -180,11 +180,234 @@ export class UIManager {
         });
     }
 
-    showLoading(containerId) {
-        const container = document.getElementById(containerId);
-        if (container) {
-            container.innerHTML = '<div class="flex items-center justify-center w-full h-screen col-span-full"><div class="spinner">Loading...</div></div>';
+    showLoading(containerId, type) {
+
+        if (type === undefined || type == null) {
+            type = document.title.split("|")[1].trim().toLocaleLowerCase();
+            console.log("===> ", type);
         }
+
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        switch (true) {
+            case type === 'products':
+                container.innerHTML = this.getProductSkeleton();
+                break;
+            case /^product\/\d+$/.test(type):
+                console.log("------->> ")
+                container.innerHTML = this.getProductDetailSkeleton();
+                break;
+            case type === 'orders':
+                container.innerHTML = this.getOrdersSkeleton();
+                break;
+            case type === 'checkout':
+                container.innerHTML = this.getCheckoutSkeleton();
+                break;
+            case type === 'profile':
+                container.innerHTML = this.getProfileSkeleton();
+                break;
+            default:
+                container.innerHTML = this.getDefaultSkeleton();
+        }
+    }
+
+    getProductSkeleton() {
+        return Array(12).fill(0).map(() => `
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden animate-pulse">
+                <div class="h-56 bg-gray-200"></div>
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="h-6 bg-gray-200 rounded w-2/3"></div>
+                        <div class="h-4 bg-gray-200 rounded w-12"></div>
+                    </div>
+                    <div class="h-4 bg-gray-200 rounded w-full mb-2"></div>
+                    <div class="h-4 bg-gray-200 rounded w-5/6 mb-6"></div>
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <div class="h-3 bg-gray-200 rounded w-12 mb-2"></div>
+                            <div class="h-6 bg-gray-200 rounded w-20"></div>
+                            <div class="h-5 bg-gray-200 rounded-full w-16 mt-2"></div>
+                        </div>
+                        <div class="w-12 h-12 bg-gray-200 rounded-xl"></div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+
+    getProductDetailSkeleton() {
+        return `
+            <div class="h-6 bg-gray-200 rounded w-32 mb-8"></div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                <div class="aspect-square bg-gray-200 rounded-3xl"></div>
+                <div class="space-y-6">
+                    <div class="h-6 bg-gray-200 rounded w-24"></div>
+                    <div class="h-12 bg-gray-200 rounded w-3/4"></div>
+                    <div class="h-8 bg-gray-200 rounded w-32"></div>
+                    <div class="h-6 bg-gray-200 rounded w-40"></div>
+                    <div class="space-y-3">
+                        <div class="h-4 bg-gray-200 rounded w-full"></div>
+                        <div class="h-4 bg-gray-200 rounded w-5/6"></div>
+                        <div class="h-4 bg-gray-200 rounded w-4/6"></div>
+                    </div>
+                    <div class="h-14 bg-gray-200 rounded-2xl w-full"></div>
+                </div>
+            </div>
+    `;
+    }
+
+    getOrdersSkeleton() {
+        return `
+        <div class="max-w-3xl mx-auto space-y-6 animate-pulse">
+            <!-- Header Skeleton -->
+            <div class="flex items-center space-x-4 p-4 mb-10">
+                <div class="w-14 h-14 bg-gray-200 rounded-2xl"></div>
+                <div>
+                    <div class="h-8 bg-gray-200 rounded w-48 mb-2"></div>
+                    <div class="h-4 bg-gray-200 rounded w-64"></div>
+                </div>
+            </div>
+
+            <!-- Simplified Order Cards -->
+            ${Array(3).fill(0).map(() => `
+                <div class="bg-white rounded-2xl border border-gray-100 p-6">
+                    <!-- Header -->
+                    <div class="flex justify-between items-center border-b pb-4 mb-4">
+                        <div>
+                            <div class="h-4 bg-gray-200 rounded w-24 mb-2"></div>
+                            <div class="h-6 bg-gray-200 rounded w-32"></div>
+                        </div>
+                        <div class="h-6 bg-gray-200 rounded w-28"></div>
+                    </div>
+
+                    <!-- Items -->
+                    <div class="space-y-3">
+                        ${Array(2).fill(0).map(() => `
+                            <div class="flex justify-between">
+                                <div class="h-4 bg-gray-200 rounded w-2/3"></div>
+                                <div class="h-4 bg-gray-200 rounded w-16"></div>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="border-t mt-4 pt-4 flex justify-between">
+                        <div class="h-5 bg-gray-200 rounded w-20"></div>
+                        <div class="h-8 bg-gray-200 rounded w-32"></div>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+    }
+
+    getCheckoutSkeleton() {
+        return `
+        <div class="max-w-7xl mx-auto py-8 px-4">
+            <div class="flex justify-center mb-8 animate-pulse">
+                <div class="flex items-center space-x-4">
+                    <div class="w-8 h-8 bg-gray-200 rounded-full"></div>
+                    <div class="w-12 h-0.5 bg-gray-200"></div>
+                    <div class="w-8 h-8 bg-gray-200 rounded-full"></div>
+                    <div class="w-12 h-0.5 bg-gray-200"></div>
+                    <div class="w-8 h-8 bg-gray-200 rounded-full"></div>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-pulse">
+                <div class="lg:col-span-2 space-y-6">
+                    <div class="bg-white rounded-2xl p-6">
+                        <div class="h-6 bg-gray-200 rounded w-48 mb-4"></div>
+                        <div class="h-12 bg-gray-200 rounded w-full"></div>
+                    </div>
+                    <div class="bg-white rounded-2xl p-6">
+                        <div class="h-6 bg-gray-200 rounded w-48 mb-4"></div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="h-12 bg-gray-200 rounded col-span-2"></div>
+                            <div class="h-12 bg-gray-200 rounded"></div>
+                            <div class="h-12 bg-gray-200 rounded"></div>
+                            <div class="h-12 bg-gray-200 rounded"></div>
+                            <div class="h-12 bg-gray-200 rounded"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="lg:col-span-1">
+                    <div class="bg-white rounded-2xl p-6 sticky top-24">
+                        <div class="h-6 bg-gray-200 rounded w-32 mb-4"></div>
+                        <div class="space-y-3 mb-4">
+                            ${Array(3).fill(0).map(() => `
+                                <div class="flex justify-between">
+                                    <div class="h-4 bg-gray-200 rounded w-2/3"></div>
+                                    <div class="h-4 bg-gray-200 rounded w-16"></div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="h-12 bg-gray-200 rounded w-full mt-6"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    }
+
+    getProfileSkeleton() {
+        return `
+        <div class="max-w-4xl mx-auto animate-pulse">
+            <div class="mb-8">
+                <div class="h-8 bg-gray-200 rounded w-48 mb-2"></div>
+                <div class="h-4 bg-gray-200 rounded w-64"></div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white rounded-2xl p-6">
+                    <div class="flex flex-col items-center">
+                        <div class="w-24 h-24 bg-gray-200 rounded-full mb-4"></div>
+                        <div class="h-6 bg-gray-200 rounded w-32 mb-2"></div>
+                        <div class="h-4 bg-gray-200 rounded w-48"></div>
+                    </div>
+                </div>
+                <div class="md:col-span-2 bg-white rounded-2xl p-6">
+                    <div class="h-6 bg-gray-200 rounded w-48 mb-6"></div>
+                    <div class="space-y-4">
+                        <div class="h-12 bg-gray-200 rounded w-full"></div>
+                        <div class="h-12 bg-gray-200 rounded w-full"></div>
+                        <div class="h-12 bg-gray-200 rounded w-1/2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    }
+
+    getDefaultSkeleton() {
+        return `
+        <div class="flex items-center justify-center w-full h-64">
+            <div class="spinner"></div>
+        </div>
+    `;
+    }
+
+    // Also add a shimmer effect CSS
+    addShimmerStyles() {
+        const style = document.createElement('style');
+        style.textContent = `
+        @keyframes shimmer {
+            0% {
+                background-position: -1000px 0;
+            }
+            100% {
+                background-position: 1000px 0;
+            }
+        }
+        
+        .animate-pulse {
+            background: linear-gradient(to right, #f0f0f0 8%, #f8f8f8 18%, #f0f0f0 33%);
+            background-size: 1000px 100%;
+            animation: shimmer 2s infinite linear;
+        }
+    `;
+        document.head.appendChild(style);
     }
 
     showSpinner(event, id) {

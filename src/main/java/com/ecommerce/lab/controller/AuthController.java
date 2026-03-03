@@ -73,7 +73,7 @@ public class AuthController {
         User user = userService.findByEmail(loginReq.email());
 
         if (!passwordEncoder.matches(loginReq.password(), user.getPassword())) {
-            throw new AuthenticationException("Wrong password");
+            throw new AuthenticationException("Invalid Login");
         }
 
         if (user.is2faEnabled()) {

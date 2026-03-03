@@ -385,8 +385,8 @@ export class AuthManager {
             });
 
             if (!response.ok) {
-                const error = await response.text();
-                throw new Error(error || 'Login failed');
+                const error = await response.json();
+                throw new Error(error.message || 'Login failed');
             }
 
             const responseData = await response.json();
@@ -423,7 +423,7 @@ export class AuthManager {
             await this.router.navigate(redirect);
 
         } catch (error) {
-            this.uiManager.showToast(error.message, 'error');
+            this.uiManager.showToast(error, 'error');
         } finally {
             loginBtn.innerHTML = originalText;
             loginBtn.disabled = false;

@@ -77,6 +77,7 @@ export class Router {
             '/orders',
             '/cart',
             '/checkout',
+            '/order-success',
             '/profile',
             '/wishlist'
         ];
@@ -835,7 +836,9 @@ export class Router {
         }
 
         // Show loading
-        this.uiManager.showLoading('content');
+        if (path != "/products") {
+            this.uiManager.showLoading('content');
+        }
 
         // Only sync cart & wishlist if authenticated (since APIs require auth)
         if (this.authManager?.isAuthenticated) {

@@ -326,10 +326,8 @@ export class ProductManager {
     async renderProducts(containerId = 'product-list-container') {
         const container = document.getElementById(containerId);
 
-        // Show loading state
-        if (container) {
-            container.innerHTML = '<div class="col-span-full text-center py-10"><div class="spinner mx-auto"></div><p class="mt-4 text-gray-500">Loading products...</p></div>';
-        }
+        this.uiManager.showLoading(containerId);
+
 
         const data = await this.fetchProducts();
 
@@ -774,7 +772,7 @@ export class ProductManager {
                     .replace(/{{price}}/g, p.price.toFixed(2))
                     .replace(/{{id}}/g, p.id)
                     .replace(/{{category}}/g, p.category)
-                    .replace(/{{rating}}/g, '★★★★☆') // You can add actual rating
+                    .replace(/{{rating}}/g, '★★★★☆')
                     .replace(/{{reviewCount}}/g, p.reviews?.length || 0)
                     .replace(/{{reviewStatus}}/g, '')
                     .replace(/{{reviewStatusTag}}/g, '')
