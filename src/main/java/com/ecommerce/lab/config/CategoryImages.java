@@ -28,8 +28,7 @@ public class CategoryImages {
         homeGardenImages.put("Kitchen Knife Set",
                 "https://images.pexels.com/photos/4226881/pexels-photo-4226881.jpeg");
         homeGardenImages.put("Curtains", "https://images.pexels.com/photos/6492390/pexels-photo-6492390.jpeg");
-        homeGardenImages.put("Vacuum Cleaner",
-                "https://images.pexels.com/photos/38325/vacuum-cleaner-cleaner-housework-housekeeping-38325.jpeg");
+        homeGardenImages.put("Vacuum Cleaner", null);
         categoryImageUrls.put("Home & Garden", homeGardenImages);
 
     }
@@ -46,8 +45,7 @@ public class CategoryImages {
         sportsImages.put("Fitness Tracker", "https://images.pexels.com/photos/437037/pexels-photo-437037.jpeg");
         sportsImages.put("Jump Rope", "https://images.pexels.com/photos/4046718/pexels-photo-4046718.jpeg");
         sportsImages.put("Resistance Bands", "https://images.pexels.com/photos/4397833/pexels-photo-4397833.jpeg");
-        sportsImages.put("Soccer Ball",
-                "https://images.pexels.com/photos/46735/soccer-ball-sport-ball-game-46735.jpeg");
+        sportsImages.put("Soccer Ball", null);
         sportsImages.put("Gym Gloves", "https://images.pexels.com/photos/3120003/pexels-photo-3120003.jpeg");
         sportsImages.put("Sports Bag", "https://images.pexels.com/photos/1105666/pexels-photo-1105666.jpeg");
         categoryImageUrls.put("Sports", sportsImages);
@@ -109,8 +107,7 @@ public class CategoryImages {
         clothingImages.put("Women's Jeans", "https://images.pexels.com/photos/1082528/pexels-photo-1082528.jpeg");
         clothingImages.put("Hoodie Sweatshirt",
                 "https://images.pexels.com/photos/1183266/pexels-photo-1183266.jpeg");
-        clothingImages.put("Running Shorts",
-                "https://images.pexels.com/photos/15531551/pexels-photo-15531551.jpeg");
+        clothingImages.put("Running Shorts", null);
         clothingImages.put("Leather Jacket", "https://images.pexels.com/photos/1124468/pexels-photo-1124468.jpeg");
         clothingImages.put("Summer Dress", "https://images.pexels.com/photos/985635/pexels-photo-985635.jpeg");
         clothingImages.put("Wool Sweater", "https://images.pexels.com/photos/459486/pexels-photo-459486.jpeg");

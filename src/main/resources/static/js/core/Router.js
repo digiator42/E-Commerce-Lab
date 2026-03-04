@@ -679,7 +679,7 @@ export class Router {
                         </div>
                     `).join('') : '<p class="text-gray-400 italic">No reviews yet. Be the first!</p>';
 
-                    const imageSrc = p.imageUrl || 'https://placehold.co/600x400/EEE/31343C';
+                    const imageSrc = p.imageUrl.replace("?w=200&q=80", "?w=300&q=90") || 'https://placehold.co/600x400/EEE/31343C';
 
                     return template
                         .replace(/{{name}}/g, p.name)

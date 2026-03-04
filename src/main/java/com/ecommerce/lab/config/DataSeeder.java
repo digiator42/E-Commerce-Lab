@@ -66,10 +66,10 @@ public class DataSeeder {
 
                 // Add version number for products beyond the base list
                 String productName = baseProductName;
-                if (i > namesForCategory.size()) {
-                    int version = (i / namesForCategory.size()) + 1;
-                    productName = baseProductName + " v" + version;
-                }
+                // if (i > namesForCategory.size()) {
+                // int version = (i / namesForCategory.size()) + 1;
+                // productName = baseProductName + " v" + version;
+                // }
                 p.setName(productName);
 
                 // Set realistic description
@@ -85,9 +85,16 @@ public class DataSeeder {
                 // Set realistic stock
                 p.setStock(generateStockByCategory(categoryName, i));
 
+                CategoryImages.setBooksImages();
+                CategoryImages.setClothingImages();
+                CategoryImages.setElectronicsImages();
+                CategoryImages.setHomeGardenImages();
+                CategoryImages.setSportsImages();
+
                 // Set image URL from our mappings
                 Map<String, String> categoryImages = CategoryImages.categoryImageUrls.get(categoryName);
-                if (categoryImages != null && categoryImages.containsKey(baseProductName)) {
+                System.out.println("==> " + baseProductName + " | " + categoryImages.containsKey(baseProductName));
+                if (categoryImages != null && categoryImages.get(baseProductName) != null) {
                     p.setImageUrl(categoryImages.get(baseProductName));
                 } else {
                     // Fallback image if not found

@@ -262,7 +262,7 @@ export class UIManager {
         return `
         <div class="max-w-3xl mx-auto space-y-6 animate-pulse">
             <!-- Header Skeleton -->
-            <div class="flex items-center space-x-4 p-4 mb-10">
+            <div class="flex items-center space-x-4 p-4  mb-10">
                 <div class="w-14 h-14 bg-gray-200 rounded-2xl"></div>
                 <div>
                     <div class="h-8 bg-gray-200 rounded w-48 mb-2"></div>

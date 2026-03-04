@@ -9,7 +9,9 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
         <div
             class="aspect-square bg-gray-100 rounded-3xl flex items-center justify-center text-gray-300 overflow-hidden">
-            <img src="{{imageSrc}}" alt="{{name}}"
+            <img src="{{imageSrc}}?w=100&q=30" srcset="{{imageSrc}}?w=200&q=70 200w,
+                    {{imageSrc}}?w=300&q=80 300w,
+                    {{imageSrc}}?w=400&q=90 400w" sizes="(max-width: 600px) 300px, 600px" alt="{{name}}" loading="lazy"
                 class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
         </div>
 

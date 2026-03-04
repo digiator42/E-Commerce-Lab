@@ -7,7 +7,6 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
-import com.ecommerce.lab.dto.GiftCardRequest;
 import com.ecommerce.lab.model.BalanceTransaction;
 import com.ecommerce.lab.model.CartItem;
 import com.ecommerce.lab.model.Coupon;
