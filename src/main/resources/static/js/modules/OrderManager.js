@@ -702,7 +702,7 @@ export class OrderManager {
         <div class="flex justify-between items-center">
             <div class="flex items-center">
                 <div class="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden mr-3">
-                    <img src="${item.imageUrl || 'https://placehold.co/600x400/EEE/31343C'}" 
+                    <img src="${item.imageUrl || `https://placehold.co/600x400/9333ea/ffffff?text=Gift+Card+${item.price}`}" 
                          alt="${item.name}" 
                          class="w-full h-full object-cover">
                 </div>

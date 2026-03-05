@@ -726,12 +726,6 @@ export class Router {
             },
 
             '/gift-cards': async () => {
-                // Check if user is authenticated
-                // const token = localStorage.getItem('token');
-                // if (!token) {
-                //     window.router.navigate('/login?redirect=gift-cards');
-                //     return '<div></div>';
-                // }
 
                 return `
                     <div class="max-w-4xl mx-auto text-center py-16">
@@ -822,34 +816,41 @@ export class Router {
         // Authentication check for protected routes
         if (requiresAuth && !this.authManager?.isAuthenticated) {
             console.log('Access Denied. Redirecting to login...');
+            localStorage.removeItem('cart_sync_completed');
             // Save the attempted URL to redirect back after login
             sessionStorage.setItem('redirectAfterLogin', path);
             window.history.pushState(null, '', '/login');
             return await this.route();
         }
 
+        
         // Redirect authenticated users away from login/register
         if (this.authManager?.isAuthenticated && (path === '/login' || path === '/register')) {
             console.log('Already logged in. Redirecting to home...');
             window.history.pushState(null, '', '/');
             return await this.route();
         }
-
+        
         // Show loading
         if (path != "/products") {
             this.uiManager.showLoading('content');
         }
+        
+        if (path != "/login") {
+            sessionStorage.setItem('redirectAfterLogin', path);
+        }
+
 
         // Only sync cart & wishlist if authenticated (since APIs require auth)
-        if (this.authManager?.isAuthenticated) {
-            try {
-                await this.cartManager?.syncWithServer();
-                await this.wishlistManager?.syncWithServer();
-            } catch (error) {
-                console.log('Error syncing user data:', error);
-                // Don't block rendering if sync fails
-            }
-        }
+        // if (this.authManager?.isAuthenticated) {
+        //     try {
+        //         // await this.cartManager?.syncWithServer();
+        //         await this.wishlistManager?.syncWithServer();
+        //     } catch (error) {
+        //         console.log('Error syncing user data:', error);
+        //         // Don't block rendering if sync fails
+        //     }
+        // }
 
         // Find route
         let routeAction = this.routes[path];

@@ -365,13 +365,13 @@ export class AuthManager {
         window.location.href = '/oauth2/authorization/google';
     }
 
+    // In AuthManager.js handleLogin method
     async handleLogin(event) {
         event.preventDefault();
 
         const formData = new FormData(event.target);
         const data = Object.fromEntries(formData.entries());
 
-        // Show loading state
         const loginBtn = event.target.querySelector('#login-btn');
         const originalText = loginBtn.innerText;
         loginBtn.innerHTML = '<div class="spinner-small mx-auto"></div>';
@@ -384,16 +384,9 @@ export class AuthManager {
                 body: JSON.stringify(data)
             });
 
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.message || 'Login failed');
-            }
-
             const responseData = await response.json();
 
-            // Check if 2FA is required
             if (responseData.requires2FA) {
-                // Store 2FA data
                 this.set2FAData({
                     email: data.email,
                     qrCodeUrl: responseData.qrCodeUrl,
@@ -409,7 +402,6 @@ export class AuthManager {
                 throw new Error(responseData.message || 'Login failed');
             }
 
-            // Normal login without 2FA
             this.user = responseData;
             this.isAuthenticated = true;
             localStorage.setItem('user', JSON.stringify(responseData));
@@ -417,13 +409,25 @@ export class AuthManager {
             this.uiManager.updateUserDisplay(this.user);
             this.uiManager.showToast('Login successful!');
 
-            // Redirect
+            // Sync cart from localStorage to server - this will handle everything
+            if (this.cartManager) {
+                console.log("===> ");
+                // Force reload local items first
+                this.cartManager.loadFromLocalStorage();
+                // Then sync with server
+                await this.cartManager.syncLocalCartWithServer();
+            }
+
+            if (this.wishlistManager) {
+                await this.wishlistManager.syncWithServer();
+            }
+
             const redirect = sessionStorage.getItem('redirectAfterLogin') || '/';
             sessionStorage.removeItem('redirectAfterLogin');
-            await this.router.navigate(redirect);
+            window.router.navigate(redirect || '/profile');
 
         } catch (error) {
-            this.uiManager.showToast(error, 'error');
+            this.uiManager.showToast(error.message, 'error');
         } finally {
             loginBtn.innerHTML = originalText;
             loginBtn.disabled = false;
@@ -706,14 +710,18 @@ export class AuthManager {
                 localStorage.removeItem('user');
                 localStorage.removeItem('cartCount');
                 localStorage.removeItem('wishlistCount');
+                localStorage.removeItem('cart_sync_completed');
                 this.user = null;
                 this.isAuthenticated = false;
                 this.uiManager.updateUserDisplay(null);
                 this.uiManager.toggleAuthButtons(false);
-                // clear cart on logout and wishlist
+                // Clear cart sync flag
                 if (this.cartManager) {
-                    await this.cartManager.syncWithServer();
-                    await this.wishlistManager.syncWithServer();
+                    this.cartManager.clearSyncFlag();
+                    this.cartManager.items = [];
+                    this.cartManager.clearLocalStorage();
+                    this.cartManager.render();
+                    this.cartManager.updateBadge();
                 }
                 if (this.router) {
                     await this.router.navigate('/login');
