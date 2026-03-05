@@ -708,6 +708,8 @@ export class AuthManager {
                 localStorage.removeItem('cartCount');
                 localStorage.removeItem('wishlistCount');
                 localStorage.removeItem('cart_sync_completed');
+                localStorage.removeItem('wishlist_sync_completed');
+                localStorage.removeItem('guest_cart');
                 this.wishlistManager.clearSyncFlag();
                 this.user = null;
                 this.isAuthenticated = false;

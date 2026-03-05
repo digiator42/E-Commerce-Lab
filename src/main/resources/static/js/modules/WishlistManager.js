@@ -53,7 +53,7 @@ export class WishlistManager {
     clearSyncFlag() {
         const userId = this.authManager.user?.id;
         if (userId) {
-            const syncKey = `${this.syncCompletedKey}_${userId}`;
+            const syncKey = `${this.syncCompletedKey}`;
             localStorage.removeItem(syncKey);
         }
     }

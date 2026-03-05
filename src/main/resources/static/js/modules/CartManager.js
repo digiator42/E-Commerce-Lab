@@ -56,7 +56,7 @@ export class CartManager {
     clearSyncFlag() {
         const userId = this.authManager.user?.id;
         if (userId) {
-            const syncKey = `${this.syncCompletedKey}_${userId}`;
+            const syncKey = `${this.syncCompletedKey}`;
             localStorage.removeItem(syncKey);
         }
     }
@@ -65,6 +65,7 @@ export class CartManager {
     loadFromLocalStorage() {
         try {
             const savedCart = localStorage.getItem(this.storageKey);
+            console.log("=====> saved ", savedCart);
             if (savedCart) {
                 const rawItems = JSON.parse(savedCart);
                 // Convert each raw item to a Product instance
@@ -83,6 +84,8 @@ export class CartManager {
             } else {
                 this.items = [];
             }
+            this.render();
+            this.updateBadge();
         } catch (error) {
             console.error('Error loading cart from localStorage:', error);
             this.items = [];
