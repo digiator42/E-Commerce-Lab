@@ -58,7 +58,7 @@
                 class="w-full bg-blue-600 text-white py-5 rounded-2xl font-bold text-xl hover:bg-black transition shadow-xl shadow-blue-100">
                 Add to Cart
             </button>
-            <button onclick="window.wishlistManager.toggleItem({{id}})"
+            <button onclick="window.wishlistManager.toggleItem(event, {{id}})"
                 class="flex-1 border-2 border-gray-200 text-gray-700 py-6 rounded-xl font-bold hover:border-red-500 hover:text-red-500 transition flex items-center justify-center gap-2"
                 data-product-id="{{id}}">
                 <svg class="w-5 h-5 wishlist-heart-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">

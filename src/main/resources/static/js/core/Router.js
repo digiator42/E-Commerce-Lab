@@ -335,41 +335,11 @@ export class Router {
             '/products': async () => {
                 // Public route
                 window.productManager.loadFiltersFromURL();
+
                 const template = await this.componentStore.load('products');
-                const categoryRes = await fetch('/api/categories').then(res => res.json());
-
-                // Build category sidebar HTML
-                const categoryHtml = categoryRes.map(cat => `
-                    <label class="flex items-center space-x-3 p-2 rounded-xl hover:bg-gray-50 cursor-pointer transition">
-                        <input type="checkbox" 
-                            onchange="window.productManager.toggleCategoryFilter('${cat.name.trim()}')" 
-                            class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 category-checkbox"
-                            data-category="${cat.name.trim()}"
-                            ${window.productManager.selectedCategories.has(cat.name.trim()) ? 'checked' : ''}>
-                        <span class="text-sm font-medium text-gray-700">${cat.icon || ''} ${cat.name}</span>
-                    </label>
-                `).join('');
-
-                const allProductsHtml = `
-                    <label class="flex items-center space-x-3 p-2 rounded-xl hover:bg-gray-50 cursor-pointer transition">
-                        <input type="checkbox" 
-                            onchange="window.productManager.toggleCategoryFilter(null)" 
-                            class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 category-checkbox"
-                            data-category="all"
-                            ${window.productManager.selectedCategories.size === 0 ? 'checked' : ''}>
-                        <span class="text-sm font-medium text-gray-700">All Products</span>
-                    </label>
-                `;
-
-                let finalHtml = template.replace(
-                    '<div id="category-list" class="space-y-2 min-h-60 overflow-y-auto pr-2">',
-                    `<div id="category-list" class="space-y-2 min-h-60 overflow-y-auto pr-2">
-                        ${allProductsHtml}
-                        ${categoryHtml}`
-                );
 
                 const parser = new DOMParser();
-                const doc = parser.parseFromString(finalHtml, 'text/html');
+                const doc = parser.parseFromString(template, 'text/html');
 
                 // Set UI elements from filters
                 const searchInput = doc.getElementById('product-search');
@@ -401,9 +371,11 @@ export class Router {
 
 
                 setTimeout(async () => {
-                    await window.productManager.renderProducts();
                     window.productManager.updateRatingCounts();
                     window.productManager.updateActiveFilters();
+                    window.productManager.initPriceSlider();
+                    await this.productManager.fetchCategories();
+                    await this.productManager.renderProducts();
                     const searchBar = document.getElementById("product-search");
 
                     if (searchBar && window.productManager.currentSearch) {
@@ -855,7 +827,7 @@ export class Router {
 
         // Find route
         let routeAction = this.routes[path];
-        console.log("==> ", routeAction);
+
         if (!routeAction) {
             const editMatch = path.match(/^\/admin\/edit-product\/(\d+)$/);
             const detailMatch = path.match(/^\/product\/(\d+)$/);
@@ -871,9 +843,8 @@ export class Router {
             try {
                 const html = await routeAction();
                 if (html === undefined) {
-                    return ;
+                    return;
                 }
-                console.log("==> ", html);
                 document.getElementById('content').innerHTML = html;
                 window.scrollTo(0, 0);
             } catch (error) {

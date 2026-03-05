@@ -1,7 +1,7 @@
 <div class="flex flex-col lg:flex-row gap-4">
     <aside class="lg:w-64 flex-shrink-0">
         <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm sticky top-24 space-y-6">
-            <!-- Categories Section -->
+            <!-- Categories Section - Normal text, no checkboxes -->
             <div>
                 <h3
                     class="font-black text-gray-900 mb-4 uppercase tracking-widest text-xs flex items-center justify-between">
@@ -12,33 +12,39 @@
                     </button>
                 </h3>
                 <div id="category-list" class="space-y-2 min-h-60 overflow-y-auto pr-2">
+                    <!-- Categories will be rendered -->
                 </div>
             </div>
 
-            <!-- Price Range Filter -->
+            <!-- Price Range Filter with Custom Dual Range Slider -->
             <div class="border-t border-gray-100 pt-4">
                 <h3 class="font-black text-gray-900 mb-4 uppercase tracking-widest text-xs">Price Range</h3>
-                <div class="space-y-3">
-                    <div class="flex items-center space-x-2">
-                        <input type="range" id="min-price-range" min="0" max="1000" step="10" value="0"
-                            oninput="window.productManager.updatePriceRange()" class="w-full accent-blue-600">
+                <div class="space-y-4">
+                    <!-- Custom Slider Container -->
+                    <div class="relative h-2 bg-gray-200 rounded-full" id="price-slider-container">
+                        <!-- Colored range between min and max -->
+                        <div class="absolute h-full bg-blue-400 rounded-full" id="price-range-highlight"></div>
+
+                        <!-- Min thumb (draggable) -->
+                        <div id="min-thumb"
+                            class="absolute top-1/2 -translate-y-1/2 w-5 h-5 bg-white border-2 border-blue-600 rounded-full shadow-lg cursor-pointer hover:scale-110 transition-transform z-20"
+                            style="left: 0%;"></div>
+
+                        <!-- Max thumb (draggable) -->
+                        <div id="max-thumb"
+                            class="absolute top-1/2 -translate-y-1/2 w-5 h-5 bg-white border-2 border-blue-600 rounded-full shadow-lg cursor-pointer hover:scale-110 transition-transform z-10"
+                            style="left: 100%;"></div>
                     </div>
-                    <div class="flex items-center space-x-2">
-                        <input type="range" id="max-price-range" min="0" max="1000" step="10" value="1000"
-                            oninput="window.productManager.updatePriceRange()" class="w-full accent-blue-600">
-                    </div>
+
+                    <!-- Price displays -->
                     <div class="flex items-center justify-between text-sm">
                         <div class="flex items-center space-x-2">
                             <span class="text-gray-500">Min:</span>
-                            <input type="number" id="min-price-input" value="0" min="0" max="1000" step="10"
-                                onchange="window.productManager.updatePriceRange()"
-                                class="w-20 px-2 py-1 border rounded-lg text-sm">
+                            <span class="font-medium text-blue-600" id="min-price-display">$0</span>
                         </div>
                         <div class="flex items-center space-x-2">
                             <span class="text-gray-500">Max:</span>
-                            <input type="number" id="max-price-input" value="1000" min="0" max="1000" step="10"
-                                onchange="window.productManager.updatePriceRange()"
-                                class="w-20 px-2 py-1 border rounded-lg text-sm">
+                            <span class="font-medium text-blue-600" id="max-price-display">$1000</span>
                         </div>
                     </div>
                 </div>
@@ -50,7 +56,7 @@
                 <div class="space-y-2">
                     <!-- 4 Stars & Up -->
                     <label
-                        class="flex items-center justify-between p-2 rounded-xl hover:bg-gray-50 cursor-pointer transition">
+                        class="flex items-center justify-between p-2 rounded-xl hover:bg-blue-50 cursor-pointer transition has-[:checked]:bg-blue-100 has-[:checked]:ring-1 has-[:checked]:ring-blue-300">
                         <div class="flex items-center space-x-3">
                             <input type="radio" name="rating-filter" value="4"
                                 onchange="window.productManager.setRatingFilter(4)"
@@ -80,7 +86,7 @@
 
                     <!-- 3 Stars & Up -->
                     <label
-                        class="flex items-center justify-between p-2 rounded-xl hover:bg-gray-50 cursor-pointer transition">
+                        class="flex items-center justify-between p-2 rounded-xl hover:bg-blue-50 cursor-pointer transition has-[:checked]:bg-blue-100 has-[:checked]:ring-1 has-[:checked]:ring-blue-300">
                         <div class="flex items-center space-x-3">
                             <input type="radio" name="rating-filter" value="3"
                                 onchange="window.productManager.setRatingFilter(3)"
@@ -106,7 +112,7 @@
 
                     <!-- 2 Stars & Up -->
                     <label
-                        class="flex items-center justify-between p-2 rounded-xl hover:bg-gray-50 cursor-pointer transition">
+                        class="flex items-center justify-between p-2 rounded-xl hover:bg-blue-50 cursor-pointer transition has-[:checked]:bg-blue-100 has-[:checked]:ring-1 has-[:checked]:ring-blue-300">
                         <div class="flex items-center space-x-3">
                             <input type="radio" name="rating-filter" value="2"
                                 onchange="window.productManager.setRatingFilter(2)"
@@ -128,7 +134,7 @@
 
                     <!-- 1 Star & Up -->
                     <label
-                        class="flex items-center justify-between p-2 rounded-xl hover:bg-gray-50 cursor-pointer transition">
+                        class="flex items-center justify-between p-2 rounded-xl hover:bg-blue-50 cursor-pointer transition has-[:checked]:bg-blue-100 has-[:checked]:ring-1 has-[:checked]:ring-blue-300">
                         <div class="flex items-center space-x-3">
                             <input type="radio" name="rating-filter" value="1"
                                 onchange="window.productManager.setRatingFilter(1)"
@@ -146,7 +152,7 @@
 
                     <!-- All Ratings -->
                     <label
-                        class="flex items-center justify-between p-2 rounded-xl hover:bg-gray-50 cursor-pointer transition">
+                        class="flex items-center justify-between p-2 rounded-xl hover:bg-blue-50 cursor-pointer transition has-[:checked]:bg-blue-100 has-[:checked]:ring-1 has-[:checked]:ring-blue-300">
                         <div class="flex items-center space-x-3">
                             <input type="radio" name="rating-filter" value="0"
                                 onchange="window.productManager.setRatingFilter(0)"
@@ -159,7 +165,8 @@
 
             <!-- In Stock Only -->
             <div class="border-t border-gray-100 pt-4">
-                <label class="flex items-center justify-between cursor-pointer">
+                <label
+                    class="flex items-center justify-between cursor-pointer p-2 rounded-xl hover:bg-blue-50 transition has-[:checked]:bg-blue-100 has-[:checked]:ring-1 has-[:checked]:ring-blue-300">
                     <span class="text-sm font-medium text-gray-700">In Stock Only</span>
                     <input type="checkbox" id="in-stock-filter" onchange="window.productManager.toggleInStock()"
                         class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">

@@ -25,6 +25,7 @@ export class ProductManager {
         this.searchDebounce = null;
         this.cartManager = null;
         this.wishlistManager = null;
+        this.categories = []; // Store categories from backend
     }
 
     static getInstance(apiClient) {
@@ -35,6 +36,167 @@ export class ProductManager {
             ProductManager.instance.wishlistManager = WishlistManager.getInstance(apiClient);
         }
         return ProductManager.instance;
+    }
+
+    // New method to fetch categories from backend
+    async fetchCategories() {
+        const container = document.getElementById('category-list');
+
+        const categoryLoadingHtml = `
+            <div class="space-y-2">
+                ${Array(5).fill(0).map(() => `
+                    <div class="flex items-center space-x-3 p-2">
+                        <div class="w-4 h-4 bg-gray-200 rounded shimmer"></div>
+                        <div class="flex-1">
+                            <div class="h-4 bg-gray-200 rounded shimmer w-24"></div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+
+        container.innerHTML = categoryLoadingHtml;
+
+        try {
+            const data = await this.apiClient.fetch('/api/categories');
+            console.log('Raw categories data:', data);
+
+            // Handle different data structures
+            if (Array.isArray(data)) {
+                // If it's an array of strings
+                if (data.length > 0 && typeof data[0] === 'string') {
+                    this.categories = data;
+                }
+                // If it's an array of objects with name/id property
+                else if (data.length > 0 && typeof data[0] === 'object') {
+                    this.categories = data.map(cat => cat.name || cat.category || cat.title || String(cat));
+                }
+            }
+            // If it's an object with a categories property
+            else if (data && data.categories && Array.isArray(data.categories)) {
+                this.categories = data.categories.map(cat => cat.name || cat.category || cat.title || String(cat));
+            }
+
+            console.log('Processed categories:', this.categories);
+            this.renderCategories();
+        } catch (error) {
+            console.error('Error fetching categories:', error);
+            this.categories = [];
+        }
+    }
+
+    initPriceSlider() {
+        const container = document.getElementById('price-slider-container');
+        const minThumb = document.getElementById('min-thumb');
+        const maxThumb = document.getElementById('max-thumb');
+        const minDisplay = document.getElementById('min-price-display');
+        const maxDisplay = document.getElementById('max-price-display');
+        const highlight = document.getElementById('price-range-highlight');
+
+        if (!container || !minThumb || !maxThumb) return;
+
+        let activeThumb = null;
+        const minValue = 0;
+        const maxValue = 1000;
+
+        const updatePositions = () => {
+            const minPercent = (this.priceRange.min / maxValue) * 100;
+            const maxPercent = (this.priceRange.max / maxValue) * 100;
+
+            minThumb.style.left = minPercent + '%';
+            maxThumb.style.left = maxPercent + '%';
+            highlight.style.left = minPercent + '%';
+            highlight.style.width = (maxPercent - minPercent) + '%';
+
+            minDisplay.textContent = `$${this.priceRange.min}`;
+            maxDisplay.textContent = `$${this.priceRange.max}`;
+        };
+
+        const handleMouseDown = (e, thumb) => {
+            e.preventDefault();
+            activeThumb = thumb;
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', handleMouseUp);
+        };
+
+        const handleMouseMove = (e) => {
+            if (!activeThumb) return;
+
+            const rect = container.getBoundingClientRect();
+            let x = e.clientX - rect.left;
+            x = Math.max(0, Math.min(x, rect.width));
+
+            const percent = (x / rect.width) * 100;
+            const value = Math.round((percent / 100) * maxValue / 10) * 10; // Round to nearest 10
+
+            if (activeThumb === 'min') {
+                const newMin = Math.min(value, this.priceRange.max - 10);
+                if (newMin >= minValue && newMin <= this.priceRange.max - 10) {
+                    this.priceRange.min = newMin;
+                }
+            } else {
+                const newMax = Math.max(value, this.priceRange.min + 10);
+                if (newMax <= maxValue && newMax >= this.priceRange.min + 10) {
+                    this.priceRange.max = newMax;
+                }
+            }
+
+            updatePositions();
+        };
+
+        const handleMouseUp = () => {
+            if (activeThumb) {
+                activeThumb = null;
+                document.removeEventListener('mousemove', handleMouseMove);
+                document.removeEventListener('mouseup', handleMouseUp);
+
+                // Trigger product render after drag ends
+                this.currentPage = 0;
+                this.renderProducts();
+            }
+        };
+
+        // Add event listeners
+        minThumb.addEventListener('mousedown', (e) => handleMouseDown(e, 'min'));
+        maxThumb.addEventListener('mousedown', (e) => handleMouseDown(e, 'max'));
+
+        // Initialize positions
+        updatePositions();
+    }
+
+    // New method to render categories as clickable pills
+    renderCategories() {
+        const container = document.getElementById('category-list');
+        if (!container) return;
+
+        if (this.categories.length === 0) {
+            container.innerHTML = '<p class="text-gray-500 text-sm">No categories available</p>';
+            return;
+        }
+
+        container.innerHTML = `
+            <!-- All Categories option -->
+            <div onclick="window.productManager.toggleCategoryFilter(null)"
+                 class="m-2 px-3 py-2 rounded-xl cursor-pointer transition text-md font-bold mb-2
+                        ${this.selectedCategories.size === 0
+                ? 'bg-blue-100 text-blue-700 font-medium ring-1 ring-blue-300'
+                : 'bg-gray-50 text-gray-700 hover:bg-gray-100'}">
+                All Categories
+            </div>
+            ${this.categories.map(category => {
+                    // Ensure category is a string
+                    const categoryStr = String(category);
+                    return `
+                    <div onclick="window.productManager.toggleCategoryFilter('${categoryStr.replace(/'/g, "\\'")}')"
+                         class="m-2 px-3 py-2 rounded-xl cursor-pointer transition text-sm
+                                ${this.selectedCategories.has(categoryStr)
+                            ? 'bg-blue-100 text-blue-700 font-medium ring-1 ring-blue-300'
+                            : 'bg-gray-50 text-gray-700 hover:bg-gray-100'}">
+                        ${categoryStr}
+                    </div>
+                `;
+                }).join('')}
+        `;
     }
 
     // Update URL with current filters
@@ -82,9 +244,12 @@ export class ProductManager {
         this.minRating = parseInt(params.get('minRating')) || 0;
 
         // Load price range if present
+        const minPrice = parseInt(params.get('minPrice'));
+        const maxPrice = parseInt(params.get('maxPrice'));
+
         this.priceRange = {
-            min: parseInt(params.get('minPrice')) || 0,
-            max: parseInt(params.get('maxPrice')) || 1000
+            min: !isNaN(minPrice) ? minPrice : 0,
+            max: !isNaN(maxPrice) ? maxPrice : 1000
         };
 
         // In stock is client-side only
@@ -118,37 +283,67 @@ export class ProductManager {
         const sortSelect = document.getElementById('products-filter');
         if (sortSelect) sortSelect.value = this.sortBy;
 
-        // Update category checkboxes
-        document.querySelectorAll('.category-checkbox').forEach(cb => {
-            if (cb.dataset.category === 'all') {
-                cb.checked = this.selectedCategories.size === 0;
-            } else {
-                cb.checked = this.selectedCategories.has(cb.dataset.category);
-            }
-        });
+        // Re-render categories to reflect selection
+        this.renderCategories();
 
-        // Update price inputs
-        const minRange = document.getElementById('min-price-range');
-        const maxRange = document.getElementById('max-price-range');
-        const minInput = document.getElementById('min-price-input');
-        const maxInput = document.getElementById('max-price-input');
-
-        if (minRange) minRange.value = this.priceRange.min;
-        if (maxRange) maxRange.value = this.priceRange.max;
-        if (minInput) minInput.value = this.priceRange.min;
-        if (maxInput) maxInput.value = this.priceRange.max;
+        // Update price slider
+        this.updatePriceSliderPositions();
 
         // Update rating radio
         const ratingRadio = document.querySelector(`input[name="rating-filter"][value="${this.minRating}"]`);
         if (ratingRadio) {
             ratingRadio.checked = true;
         } else {
-            document.querySelector('input[name="rating-filter"][value="0"]').checked = true;
+            const allRatingRadio = document.querySelector('input[name="rating-filter"][value="0"]');
+            if (allRatingRadio) allRatingRadio.checked = true;
         }
 
         // Update in-stock checkbox
         const stockCheckbox = document.getElementById('in-stock-filter');
         if (stockCheckbox) stockCheckbox.checked = this.inStockOnly;
+    }
+
+    // Add this helper method
+    updatePriceSliderPositions() {
+        const minThumb = document.getElementById('min-thumb');
+        const maxThumb = document.getElementById('max-thumb');
+        const minDisplay = document.getElementById('min-price-display');
+        const maxDisplay = document.getElementById('max-price-display');
+        const highlight = document.getElementById('price-range-highlight');
+
+        if (!minThumb || !maxThumb || !highlight) return;
+
+        const maxValue = 1000;
+        const minPercent = (this.priceRange.min / maxValue) * 100;
+        const maxPercent = (this.priceRange.max / maxValue) * 100;
+
+        minThumb.style.left = minPercent + '%';
+        maxThumb.style.left = maxPercent + '%';
+        highlight.style.left = minPercent + '%';
+        highlight.style.width = (maxPercent - minPercent) + '%';
+
+        if (minDisplay) minDisplay.textContent = `$${this.priceRange.min}`;
+        if (maxDisplay) maxDisplay.textContent = `$${this.priceRange.max}`;
+    }
+
+
+    // New method to update price range highlight
+    updatePriceRangeHighlight() {
+        const minSlider = document.getElementById('min-price-range');
+        const maxSlider = document.getElementById('max-price-range');
+        const highlight = document.getElementById('price-range-highlight');
+
+        if (minSlider && maxSlider && highlight) {
+            const min = parseInt(minSlider.value) || 0;
+            const max = parseInt(maxSlider.value) || 1000;
+            const total = parseInt(maxSlider.max) || 1000;
+
+            const minPercent = (min / total) * 100;
+            const maxPercent = (max / total) * 100;
+
+            highlight.style.left = minPercent + '%';
+            highlight.style.width = (maxPercent - minPercent) + '%';
+        }
     }
 
     async fetchProducts() {
@@ -425,86 +620,78 @@ export class ProductManager {
         }, 300);
     }
 
-    // Modified: Category filter is client-side only
+    // Modified: Category filter for pills
     toggleCategoryFilter(category) {
         console.log('Toggling category:', category);
-        console.log('Current selected before:', Array.from(this.selectedCategories));
 
         if (category === null) {
+            // "All Categories" clicked
             this.selectedCategories.clear();
-            document.querySelectorAll('.category-checkbox').forEach(cb => {
-                if (cb.dataset.category === 'all') {
-                    cb.checked = true;
-                } else {
-                    cb.checked = false;
-                }
-            });
         } else {
-            const allCheckbox = document.querySelector('.category-checkbox[data-category="all"]');
-            if (allCheckbox) {
-                allCheckbox.checked = false;
-            }
-
-            if (this.selectedCategories.has(category)) {
-                this.selectedCategories.delete(category);
+            // Ensure category is a string
+            const categoryStr = String(category);
+            if (this.selectedCategories.has(categoryStr)) {
+                this.selectedCategories.delete(categoryStr);
             } else {
-                this.selectedCategories.add(category);
-            }
-
-            const checkbox = document.querySelector(`.category-checkbox[data-category="${category}"]`);
-            if (checkbox) {
-                checkbox.checked = this.selectedCategories.has(category);
+                this.selectedCategories.add(categoryStr);
             }
         }
 
-        console.log('Current selected after:', Array.from(this.selectedCategories));
+        console.log('Current selected categories:', Array.from(this.selectedCategories));
+
+        // Update UI
+        this.renderCategories();
 
         this.currentPage = 0;
-        this.renderProducts(); // This will now fetch from server with category param
+        this.renderProducts();
     }
 
     clearCategoryFilters() {
         this.selectedCategories.clear();
-        document.querySelectorAll('.category-checkbox').forEach(cb => {
-            cb.checked = cb.dataset.category === 'all';
-        });
+        this.renderCategories();
         this.currentPage = 0;
         this.renderProducts();
     }
 
     updatePriceRange() {
-        const minRange = document.getElementById('min-price-range');
-        const maxRange = document.getElementById('max-price-range');
-        const minInput = document.getElementById('min-price-input');
-        const maxInput = document.getElementById('max-price-input');
+        const minSlider = document.getElementById('min-price-range');
+        const maxSlider = document.getElementById('max-price-range');
+        const minDisplay = document.getElementById('min-price-display');
+        const maxDisplay = document.getElementById('max-price-display');
+        const highlight = document.getElementById('price-range-highlight');
 
-        if (!minRange || !maxRange || !minInput || !maxInput) return;
+        if (!minSlider || !maxSlider) return;
 
-        // Parse values with fallback
-        let minVal = parseInt(minRange.value) || 0;
-        let maxVal = parseInt(maxRange.value) || 1000;
+        // Get current values
+        let minVal = parseInt(minSlider.value);
+        let maxVal = parseInt(maxSlider.value);
 
-        // Ensure values are within bounds
-        minVal = Math.max(0, Math.min(minVal, 1000));
-        maxVal = Math.max(minVal, Math.min(maxVal, 1000));
-
-        // Update inputs
-        minInput.value = minVal;
-        maxInput.value = maxVal;
-        minRange.value = minVal;
-        maxRange.value = maxVal;
-
-        // Ensure min <= max
+        // Ensure min doesn't exceed max
         if (minVal > maxVal) {
-            if (event && event.target.id.includes('min')) {
-                maxVal = minVal;
-            } else {
-                minVal = maxVal;
-            }
-            maxRange.value = maxVal;
-            maxInput.value = maxVal;
-            minRange.value = minVal;
-            minInput.value = minVal;
+            minVal = maxVal;
+            minSlider.value = minVal;
+        }
+
+        // Ensure max doesn't go below min
+        if (maxVal < minVal) {
+            maxVal = minVal;
+            maxSlider.value = maxVal;
+        }
+
+        // Update display
+        if (minDisplay) minDisplay.textContent = `$${minVal}`;
+        if (maxDisplay) maxDisplay.textContent = `$${maxVal}`;
+
+        // Calculate percentages
+        const total = parseInt(maxSlider.max) || 1000;
+
+        const minPercent = (minVal / total) * 100;
+        const maxPercent = (maxVal / total) * 100;
+
+        // Update highlight bar - position it from min to max
+        if (highlight) {
+            highlight.style.left = minPercent + '%';
+            highlight.style.width = (maxPercent - minPercent) + '%';
         }
 
         this.priceRange = {
@@ -611,26 +798,12 @@ export class ProductManager {
         switch (type) {
             case 'category':
                 this.selectedCategories.delete(value);
-                const checkbox = document.querySelector(`.category-checkbox[data-category="${value}"]`);
-                if (checkbox) checkbox.checked = false;
-
-                // Check if no categories selected, then check "All Products"
-                if (this.selectedCategories.size === 0) {
-                    const allCheckbox = document.querySelector('.category-checkbox[data-category="all"]');
-                    if (allCheckbox) allCheckbox.checked = true;
-                }
+                // Re-render categories to update UI
+                this.renderCategories();
                 break;
             case 'price':
                 this.priceRange = { min: 0, max: 1000 };
-                const minRange = document.getElementById('min-price-range');
-                const maxRange = document.getElementById('max-price-range');
-                const minInput = document.getElementById('min-price-input');
-                const maxInput = document.getElementById('max-price-input');
-
-                if (minRange) minRange.value = 0;
-                if (maxRange) maxRange.value = 1000;
-                if (minInput) minInput.value = 0;
-                if (maxInput) maxInput.value = 1000;
+                this.updatePriceSliderPositions();
                 break;
             case 'rating':
                 this.minRating = 0;
@@ -648,6 +821,7 @@ export class ProductManager {
         this.renderProducts();
     }
 
+    // Update clearAllFilters method
     clearAllFilters() {
         this.selectedCategories.clear();
         this.priceRange = { min: 0, max: 1000 };
@@ -658,19 +832,8 @@ export class ProductManager {
         this.currentPage = 0;
 
         // Reset UI elements
-        document.querySelectorAll('.category-checkbox').forEach(cb => {
-            cb.checked = cb.dataset.category === 'all';
-        });
-
-        const minRange = document.getElementById('min-price-range');
-        const maxRange = document.getElementById('max-price-range');
-        const minInput = document.getElementById('min-price-input');
-        const maxInput = document.getElementById('max-price-input');
-
-        if (minRange) minRange.value = 0;
-        if (maxRange) maxRange.value = 1000;
-        if (minInput) minInput.value = 0;
-        if (maxInput) maxInput.value = 1000;
+        this.renderCategories();
+        this.updatePriceSliderPositions();
 
         const allRatingRadio = document.querySelector('input[name="rating-filter"][value="0"]');
         if (allRatingRadio) allRatingRadio.checked = true;

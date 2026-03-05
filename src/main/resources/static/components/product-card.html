@@ -1,7 +1,7 @@
 <div
     class="group bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-2xl transition-all duration-300 relative">
     <!-- Wishlist Heart Icon -->
-    <button onclick="event.preventDefault(); window.wishlistManager.toggleItem({{id}})"
+    <button onclick="event.preventDefault(); window.wishlistManager.toggleItem(event, {{id}})"
         class="absolute top-4 right-4 z-10 bg-white/90 backdrop-blur p-2 rounded-full shadow-md hover:scale-110 transition-transform duration-200">
         <svg class="w-5 h-5 {{wishlistClass}}" fill="{{wishlistFill}}" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
