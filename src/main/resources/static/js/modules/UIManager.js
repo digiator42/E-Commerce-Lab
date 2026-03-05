@@ -195,7 +195,6 @@ export class UIManager {
                 container.innerHTML = this.getProductSkeleton();
                 break;
             case /^product\/\d+$/.test(type):
-                console.log("------->> ")
                 container.innerHTML = this.getProductDetailSkeleton();
                 break;
             case type === 'orders':

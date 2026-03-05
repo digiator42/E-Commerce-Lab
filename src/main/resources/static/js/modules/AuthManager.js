@@ -409,11 +409,8 @@ export class AuthManager {
             this.uiManager.updateUserDisplay(this.user);
             this.uiManager.showToast('Login successful!');
 
-            // Sync cart from localStorage to server - this will handle everything
+            // Sync cart from localStorage to server
             if (this.cartManager) {
-                console.log("===> ");
-                // Force reload local items first
-                this.cartManager.loadFromLocalStorage();
                 // Then sync with server
                 await this.cartManager.syncLocalCartWithServer();
             }

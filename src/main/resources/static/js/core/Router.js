@@ -25,9 +25,9 @@ export class Router {
         return Router.instance;
     }
 
-    setAuthManager(authManager) {
+    async setAuthManager(authManager) {
         this.authManager = authManager;
-        this.routes = this.initRoutes();
+        this.routes = await this.initRoutes();
     }
 
     setProductManager(productManager) {
@@ -90,7 +90,7 @@ export class Router {
         return path === pattern;
     }
 
-    initRoutes() {
+    async initRoutes() {
 
         if (!this.authManager) {
             console.error('AuthManager not set in Router');
@@ -247,7 +247,8 @@ export class Router {
                 // Check if cart is empty
                 if (this.cartManager.items.length === 0) {
                     window.history.pushState(null, '', '/products');
-                    return await this.route();
+                    await this.route();
+                    return;
                 }
 
                 return await this.orderManager.renderCheckout();
@@ -823,19 +824,19 @@ export class Router {
             return await this.route();
         }
 
-        
+
         // Redirect authenticated users away from login/register
         if (this.authManager?.isAuthenticated && (path === '/login' || path === '/register')) {
             console.log('Already logged in. Redirecting to home...');
             window.history.pushState(null, '', '/');
             return await this.route();
         }
-        
+
         // Show loading
         if (path != "/products") {
             this.uiManager.showLoading('content');
         }
-        
+
         if (path != "/login") {
             sessionStorage.setItem('redirectAfterLogin', path);
         }
@@ -854,7 +855,7 @@ export class Router {
 
         // Find route
         let routeAction = this.routes[path];
-
+        console.log("==> ", routeAction);
         if (!routeAction) {
             const editMatch = path.match(/^\/admin\/edit-product\/(\d+)$/);
             const detailMatch = path.match(/^\/product\/(\d+)$/);
@@ -869,6 +870,10 @@ export class Router {
         if (routeAction) {
             try {
                 const html = await routeAction();
+                if (html === undefined) {
+                    return ;
+                }
+                console.log("==> ", html);
                 document.getElementById('content').innerHTML = html;
                 window.scrollTo(0, 0);
             } catch (error) {

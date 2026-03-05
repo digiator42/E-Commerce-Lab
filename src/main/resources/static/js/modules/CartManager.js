@@ -167,6 +167,7 @@ export class CartManager {
         try {
             // Add each item from local cart to server
             for (const item of this.items) {
+                let i = -1;
                 if (item.isGiftCard) {
                     await this.apiClient.fetch('/api/cart/add-gift-card', {
                         method: 'POST',
@@ -178,9 +179,11 @@ export class CartManager {
                         })
                     });
                 } else {
-                    await this.apiClient.fetch(`/api/cart/add/${item.id}`, {
-                        method: 'POST'
-                    });
+                    while(++i < item.quantity) {
+                        await this.apiClient.fetch(`/api/cart/add/${item.id}`, {
+                            method: 'POST'
+                        });
+                    }
                 }
             }
 
