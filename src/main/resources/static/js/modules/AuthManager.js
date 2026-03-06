@@ -411,8 +411,7 @@ export class AuthManager {
 
             // Sync cart from localStorage to server
             if (this.cartManager) {
-                // Then sync with server
-                await this.cartManager.syncLocalCartWithServer();
+                await this.cartManager.syncWithServer();
             }
 
             if (this.wishlistManager) {

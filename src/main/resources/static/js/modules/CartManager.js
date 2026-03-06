@@ -236,7 +236,7 @@ export class CartManager {
         }
     }
 
-    // Main sync method - called on route changes
+    // Main sync method
     async syncWithServer() {
         if (!this.authManager.isAuthenticated) {
             // For unauthenticated users, load from localStorage

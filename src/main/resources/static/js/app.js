@@ -86,15 +86,6 @@ class App {
         const user = JSON.parse(localStorage.getItem('user'));
         this.uiManager.updateUserDisplay(user);
 
-        // Initialize cart based on auth status
-        if (this.authManager.isAuthenticated) {
-            await this.cartManager.syncWithServer();
-            await this.wishlistManager.syncWithServer();
-        } else {
-            // Load guest cart from localStorage
-            this.cartManager.loadFromLocalStorage();
-        }
-
         // Initialize router
         await this.router.route();
 

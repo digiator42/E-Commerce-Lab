@@ -814,16 +814,13 @@ export class Router {
         }
 
 
-        // Only sync cart & wishlist if authenticated (since APIs require auth)
-        // if (this.authManager?.isAuthenticated) {
-        //     try {
-        //         // await this.cartManager?.syncWithServer();
-        //         await this.wishlistManager?.syncWithServer();
-        //     } catch (error) {
-        //         console.log('Error syncing user data:', error);
-        //         // Don't block rendering if sync fails
-        //     }
-        // }
+        try {
+            await this.cartManager?.syncWithServer();
+            await this.wishlistManager?.syncWithServer();
+        } catch (error) {
+            console.log('Error syncing user data:', error);
+            // Don't block rendering if sync fails
+        }
 
         // Find route
         let routeAction = this.routes[path];

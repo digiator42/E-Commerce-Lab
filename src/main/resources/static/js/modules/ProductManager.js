@@ -38,7 +38,7 @@ export class ProductManager {
         return ProductManager.instance;
     }
 
-    // New method to fetch categories from backend
+    // Fetch categories from backend
     async fetchCategories() {
         const container = document.getElementById('category-list');
 
@@ -112,18 +112,34 @@ export class ProductManager {
             maxDisplay.textContent = `$${this.priceRange.max}`;
         };
 
-        const handleMouseDown = (e, thumb) => {
-            e.preventDefault();
-            activeThumb = thumb;
-            document.addEventListener('mousemove', handleMouseMove);
-            document.addEventListener('mouseup', handleMouseUp);
+        const getClientX = (e) => {
+            if (e.touches) {
+                return e.touches[0].clientX;
+            }
+            return e.clientX;
         };
 
-        const handleMouseMove = (e) => {
+        const handleStart = (e, thumb) => {
+            e.preventDefault();
+            activeThumb = thumb;
+
+            // Add both mouse and touch event listeners
+            document.addEventListener('mousemove', handleMove);
+            document.addEventListener('mouseup', handleEnd);
+            document.addEventListener('touchmove', handleMove, { passive: false });
+            document.addEventListener('touchend', handleEnd);
+            document.addEventListener('touchcancel', handleEnd);
+        };
+
+        const handleMove = (e) => {
             if (!activeThumb) return;
 
+            // Prevent scrolling on touch devices
+            e.preventDefault();
+
             const rect = container.getBoundingClientRect();
-            let x = e.clientX - rect.left;
+            const clientX = getClientX(e);
+            let x = clientX - rect.left;
             x = Math.max(0, Math.min(x, rect.width));
 
             const percent = (x / rect.width) * 100;
@@ -144,11 +160,16 @@ export class ProductManager {
             updatePositions();
         };
 
-        const handleMouseUp = () => {
+        const handleEnd = () => {
             if (activeThumb) {
                 activeThumb = null;
-                document.removeEventListener('mousemove', handleMouseMove);
-                document.removeEventListener('mouseup', handleMouseUp);
+
+                // Remove all event listeners
+                document.removeEventListener('mousemove', handleMove);
+                document.removeEventListener('mouseup', handleEnd);
+                document.removeEventListener('touchmove', handleMove);
+                document.removeEventListener('touchend', handleEnd);
+                document.removeEventListener('touchcancel', handleEnd);
 
                 // Trigger product render after drag ends
                 this.currentPage = 0;
@@ -156,15 +177,18 @@ export class ProductManager {
             }
         };
 
-        // Add event listeners
-        minThumb.addEventListener('mousedown', (e) => handleMouseDown(e, 'min'));
-        maxThumb.addEventListener('mousedown', (e) => handleMouseDown(e, 'max'));
+        // Add both mouse and touch event listeners
+        minThumb.addEventListener('mousedown', (e) => handleStart(e, 'min'));
+        minThumb.addEventListener('touchstart', (e) => handleStart(e, 'min'), { passive: false });
+
+        maxThumb.addEventListener('mousedown', (e) => handleStart(e, 'max'));
+        maxThumb.addEventListener('touchstart', (e) => handleStart(e, 'max'), { passive: false });
 
         // Initialize positions
         updatePositions();
     }
 
-    // New method to render categories as clickable pills
+    // Render categories as clickable pills
     renderCategories() {
         const container = document.getElementById('category-list');
         if (!container) return;
@@ -303,7 +327,6 @@ export class ProductManager {
         if (stockCheckbox) stockCheckbox.checked = this.inStockOnly;
     }
 
-    // Add this helper method
     updatePriceSliderPositions() {
         const minThumb = document.getElementById('min-thumb');
         const maxThumb = document.getElementById('max-thumb');
@@ -327,7 +350,7 @@ export class ProductManager {
     }
 
 
-    // New method to update price range highlight
+    // Update price range highlight
     updatePriceRangeHighlight() {
         const minSlider = document.getElementById('min-price-range');
         const maxSlider = document.getElementById('max-price-range');
@@ -609,7 +632,7 @@ export class ProductManager {
         this.updateActiveFilters();
     }
 
-    // Modified: Search now triggers server fetch
+    // Search now triggers server fetch
     handleSearch(event) {
         this.currentSearch = event.target.value;
         this.currentPage = 0; // Reset to first page
@@ -620,7 +643,7 @@ export class ProductManager {
         }, 300);
     }
 
-    // Modified: Category filter for pills
+    // Category filter for pills
     toggleCategoryFilter(category) {
         console.log('Toggling category:', category);
 
@@ -821,7 +844,6 @@ export class ProductManager {
         this.renderProducts();
     }
 
-    // Update clearAllFilters method
     clearAllFilters() {
         this.selectedCategories.clear();
         this.priceRange = { min: 0, max: 1000 };
