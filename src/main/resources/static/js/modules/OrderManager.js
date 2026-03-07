@@ -37,6 +37,7 @@ export class OrderManager {
             return;
         }
 
+        this.cartManager.close();
         await window.router.navigate('/checkout');
     }
 

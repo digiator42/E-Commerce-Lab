@@ -3,8 +3,12 @@ export class User {
         this.id = data.id || null;
         this.email = data.email || '';
         this.displayName = data.displayName || '';
+        this.userName = data.userName || '';
         this.role = data.role || 'ROLE_USER';
         this.defaultAddress = data.defaultAddress || null;
+        this.profilePicture = data.profilePicture
+        this.lastLogin = new Date(data.lastLogin).toLocaleDateString() || new Date.now().toLocaleDateString();
+        this.isConstructorized = true;
     }
 
     isAdmin() {

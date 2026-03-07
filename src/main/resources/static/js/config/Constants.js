@@ -6,7 +6,26 @@ export const Constants = {
         'DELIVERED': 'bg-green-100 text-green-700',
         'CANCELLED': 'bg-red-100 text-red-700'
     },
-    PUBLIC_PATHS: ['/', '/login', '/register', '/products', '/product/'],
+    PUBLIC_PATHS: [
+        '/',
+        '/login',
+        '/register',
+        '/products',
+        '/product/',
+        '/categories',
+        '/2fa/verify',
+        '/forgot-password',
+        '/reset-password'
+    ],
+    PROTECTED_PATHS: [
+        '/orders',
+        '/cart',
+        '/checkout',
+        '/order-success',
+        '/profile',
+        '/wishlist'
+    ],
     TOAST_DURATION: 3000,
     PAGE_SIZE: 6
+
 };

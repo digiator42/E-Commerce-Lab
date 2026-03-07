@@ -59,28 +59,11 @@ export class Router {
     }
 
     getPublicPaths() {
-        return [
-            '/',
-            '/login',
-            '/register',
-            '/products',
-            '/product/',
-            '/categories',
-            '/2fa/verify',
-            '/forgot-password',
-            '/reset-password'
-        ];
+        return Constants.PUBLIC_PATHS;
     }
 
     getProtectedPaths() {
-        return [
-            '/orders',
-            '/cart',
-            '/checkout',
-            '/order-success',
-            '/profile',
-            '/wishlist'
-        ];
+        return Constants.PROTECTED_PATHS;
     }
 
     pathMatchesPattern(path, pattern) {
@@ -812,7 +795,6 @@ export class Router {
         if (path != "/login") {
             sessionStorage.setItem('redirectAfterLogin', path);
         }
-
 
         try {
             await this.cartManager?.syncWithServer();

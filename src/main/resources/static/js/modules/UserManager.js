@@ -144,8 +144,8 @@ export class UserManager {
             return;
         }
 
-        historyContainer.innerHTML = history.map(item => `
-        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+        historyContainer.innerHTML = history.map(item => ` 
+        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl ${item.type === 'REDEEM' ? 'bg-green-100' : 'bg-red-100'}">
             <div class="flex items-center">
                 <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
                     <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -153,7 +153,7 @@ export class UserManager {
                     </svg>
                 </div>
                 <div>
-                    <p class="font-medium text-gray-900">$${item.amount.toFixed(2)} added</p>
+                    <p class="font-medium text-gray-900">$${item.amount.toFixed(2)}</p>
                     <p class="text-xs text-gray-500">${new Date(item.date).toLocaleDateString()}</p>
                 </div>
             </div>

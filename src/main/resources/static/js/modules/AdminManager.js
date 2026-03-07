@@ -152,6 +152,10 @@ export class AdminManager {
         }
     }
 
+    async editProduct(id) {
+        window.router.navigate("/admin/edit-product/" + id);        
+    }
+
     filterOrders() {
         const searchTerm = document.getElementById('admin-order-search').value.toLowerCase();
         const statusFilter = document.getElementById('admin-order-filter').value;
@@ -490,7 +494,15 @@ export class AdminManager {
         }
     }
 
-    // Update switchTab method to include coupons tab
+    async getApiRoutes() {
+        try {
+            return await this.apiClient.fetch('/api/admin/routes');
+        } catch (error) {
+            this.uiManager.showToast('Error fetching API routes: ' + error.message, 'error');
+            return [];
+        }
+    }
+
     async switchTab(tab) {
         const sections = ['inventory', 'coupons', 'orders', 'users'];
         sections.forEach(s => {

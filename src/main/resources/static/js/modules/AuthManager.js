@@ -1,4 +1,5 @@
 import { UIManager } from './UIManager.js';
+import { User } from '../models/User.js';
 
 export class AuthManager {
     static instance = null;
@@ -187,7 +188,7 @@ export class AuthManager {
 
     // Start email timer
     startEmailTimer() {
-        let timeLeft = 600; // 10 minutes in seconds
+        let timeLeft = 300; // 5 minutes in seconds
         const timerEl = document.getElementById('email-timer');
 
         const interval = setInterval(() => {
@@ -224,7 +225,7 @@ export class AuthManager {
     async checkAuthStatus() {
         try {
             const response = await fetch('/api/auth/is-logged-in');
-            this.user = await response.json();
+            this.user = new User(await response.json());
             this.isAuthenticated = response.ok;
 
             // Need to be set in localstoarge to be active on refresh
@@ -402,7 +403,8 @@ export class AuthManager {
                 throw new Error(responseData.message || 'Login failed');
             }
 
-            this.user = responseData;
+            this.user = new User(responseData);
+
             this.isAuthenticated = true;
             localStorage.setItem('user', JSON.stringify(responseData));
 
@@ -703,25 +705,14 @@ export class AuthManager {
         try {
             const response = await fetch('/api/auth/logout', { method: 'POST' });
             if (response.ok) {
-                localStorage.removeItem('user');
-                localStorage.removeItem('cartCount');
-                localStorage.removeItem('wishlistCount');
-                localStorage.removeItem('cart_sync_completed');
-                localStorage.removeItem('wishlist_sync_completed');
-                localStorage.removeItem('guest_cart');
-                this.wishlistManager.clearSyncFlag();
                 this.user = null;
                 this.isAuthenticated = false;
                 this.uiManager.updateUserDisplay(null);
                 this.uiManager.toggleAuthButtons(false);
-                // Clear cart sync flag
-                if (this.cartManager) {
-                    this.cartManager.clearSyncFlag();
-                    this.cartManager.items = [];
-                    this.cartManager.clearLocalStorage();
-                    this.cartManager.render();
-                    this.cartManager.updateBadge();
-                }
+
+                // this will clear all stored data
+                localStorage.clear();
+
                 if (this.router) {
                     await this.router.navigate('/login');
                 }
@@ -731,6 +722,23 @@ export class AuthManager {
             this.uiManager.showToast('Logout failed', 'error');
             return false;
         }
+    }
+
+    clearStoredLocalStorage() {
+        localStorage.removeItem('user');
+        localStorage.removeItem('cartCount');
+        localStorage.removeItem('wishlistCount');
+        localStorage.removeItem('cart_sync_completed');
+        localStorage.removeItem('wishlist_sync_completed');
+        localStorage.removeItem('guest_cart');
+
+        this.wishlistManager.clearSyncFlag();
+
+        this.cartManager.items = [];
+        this.cartManager.clearSyncFlag();
+        this.cartManager.clearLocalStorage();
+        this.cartManager.render();
+        this.cartManager.updateBadge();
     }
 
     isAdmin() {
