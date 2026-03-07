@@ -117,6 +117,9 @@ export class OrderManager {
                 if (newBtn) {
                     newBtn.classList.add('border-blue-600', 'text-blue-600');
                     newBtn.classList.remove('text-gray-500', 'border-transparent');
+                    setTimeout(() => {
+                        document.getElementById('use-new-address-btn').click();
+                    }, 50); 
                 }
             }
         }
@@ -189,7 +192,7 @@ export class OrderManager {
 
         if (this.useSavedAddress) {
             // Get saved address from user
-            const user = window.authManager.user || JSON.parse(localStorage.getItem('user')) || {};
+            const user = window.authManager.user || {};
             if (!user.defaultAddress) {
                 this.uiManager.showToast('No saved address found. Please add a new address.', 'error');
                 return;

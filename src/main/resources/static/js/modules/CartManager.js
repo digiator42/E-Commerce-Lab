@@ -347,7 +347,7 @@ export class CartManager {
 
     async removeItem(event, itemId) {
         if (!this.authManager.isAuthenticated) {
-            const index = this.items.findIndex(item => item.cartItemId === itemId);
+            const index = this.items.findIndex(item => item.isGiftCard === true);
             if (index !== -1) {
                 const item = this.items[index];
                 this.items.splice(index, 1);
