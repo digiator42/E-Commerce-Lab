@@ -262,7 +262,7 @@ export class OrderManager {
             giftCards: giftCardPurchases,
             useStoreBalance: this.usingStoreBalance,
             storeBalanceAmount: this.balanceApplied,
-            shippingAddress: shippingAddress
+            shippingAddress: JSON.stringify(shippingAddress)
         };
 
         try {

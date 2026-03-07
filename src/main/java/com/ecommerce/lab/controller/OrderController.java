@@ -51,7 +51,8 @@ public class OrderController {
             orderService.placeOrder(
                     authentication.getName(),
                     orderRequest.couponCode(),
-                    orderRequest.useStoreBalance());
+                    orderRequest.useStoreBalance(),
+                    orderRequest.shippingAddress().toString());
 
             return ResponseEntity.ok(Map.of("message", "Order successfully created"));
         } catch (RuntimeException e) {

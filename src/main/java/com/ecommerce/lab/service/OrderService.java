@@ -40,7 +40,8 @@ public class OrderService {
     private final BalanceTransactionRepository balanceTransactionRepository;
 
     @Transactional(rollbackFor = Exception.class)
-    public void placeOrder(String email, String couponCode, boolean useStoreBalance) throws Exception {
+    public void placeOrder(String email, String couponCode, boolean useStoreBalance, String shippingAddress)
+            throws Exception {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -51,7 +52,11 @@ public class OrderService {
         }
 
         // Core Validation
-        this.validateShippingAddress(user);
+        if (shippingAddress == null) {
+            this.validateShippingAddress(user);
+        } else {
+            user.setAddress(shippingAddress);
+        }
 
         // Process Items & Stock
         OrderBreakdown breakdown = this.processItemsAndStock(cartItems, email);
