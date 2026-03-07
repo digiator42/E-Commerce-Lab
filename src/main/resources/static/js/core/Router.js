@@ -608,6 +608,10 @@ export class Router {
             },
 
             '/orders': async () => {
+                if (!this.authManager?.isAuthenticated) {
+                    window.history.pushState({ isManuallySet: true }, '', '/');
+                    return await this.route();
+                }
                 return await this.orderManager.renderOrders();
             },
 
@@ -821,7 +825,10 @@ export class Router {
         if (routeAction) {
             try {
                 const html = await routeAction();
-                if (html === undefined) {
+
+                if (html === undefined || history.state?.isManuallySet) {
+                    const isManuallyState = { ...history.state, isManuallySet: false };
+                    history.replaceState(isManuallyState, '', location.href);
                     return;
                 }
                 document.getElementById('content').innerHTML = html;

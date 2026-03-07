@@ -237,7 +237,7 @@ export class AdminManager {
     }
 
     async navigateToAddProduct() {
-        this.router.navigate("/admin/add-product");
+        await this.router.navigate("/admin/add-product");
     }
 
     // Load all coupons

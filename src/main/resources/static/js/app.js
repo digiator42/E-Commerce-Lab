@@ -90,7 +90,7 @@ class App {
         await this.router.route();
 
         // Setup popstate listener
-        window.addEventListener('popstate', () => this.router.route());
+        window.addEventListener('popstate', async () => await this.router.route());
 
         // Mobile menu button
         document.getElementById('mobile-menu-btn')?.addEventListener('click', () => {

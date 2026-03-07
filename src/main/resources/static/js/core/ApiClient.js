@@ -14,7 +14,7 @@ export class ApiClient {
         }
         
         if (response.status === 403) {
-            await this.router.navigate('/orders');
+            await this.router.navigate('/products');
             throw new Error('Unauthorized');
         }
 

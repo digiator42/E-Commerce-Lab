@@ -21,6 +21,7 @@ export class OrderManager {
         this.balanceApplied = 0;
         this.giftCardTotal = 0;
         this.regularSubtotal = 0;
+        this.useSavedAddress = true; // Default to saved address
     }
 
     static getInstance(apiClient) {
@@ -41,17 +42,84 @@ export class OrderManager {
         await window.router.navigate('/checkout');
     }
 
-    // Render checkout page
+    toggleAddressSelection(type) {
+        const savedSection = document.getElementById('saved-address-section');
+        const newSection = document.getElementById('new-address-section');
+        const savedBtn = document.getElementById('use-saved-address-btn');
+        const newBtn = document.getElementById('use-new-address-btn');
+
+        if (type === 'saved') {
+            this.useSavedAddress = true;
+            savedSection.classList.remove('hidden');
+            newSection.classList.add('hidden');
+
+            // Update tab styles
+            savedBtn.classList.add('border-blue-600', 'text-blue-600');
+            savedBtn.classList.remove('text-gray-500', 'border-transparent');
+            newBtn.classList.remove('border-blue-600', 'text-blue-600');
+            newBtn.classList.add('text-gray-500', 'border-transparent');
+        } else {
+            this.useSavedAddress = false;
+            savedSection.classList.add('hidden');
+            newSection.classList.remove('hidden');
+
+            // Update tab styles
+            newBtn.classList.add('border-blue-600', 'text-blue-600');
+            newBtn.classList.remove('text-gray-500', 'border-transparent');
+            savedBtn.classList.remove('border-blue-600', 'text-blue-600');
+            savedBtn.classList.add('text-gray-500', 'border-transparent');
+        }
+    }
+
     async renderCheckout() {
         const template = await this.componentStore.load('checkout');
 
-        // Get user email
-        const user = JSON.parse(localStorage.getItem('user')) || {};
-        let html = template.replace('{{userEmail}}', user.email || 'guest@example.com');
+        // Get user data
+        const user = window.authManager.user || JSON.parse(localStorage.getItem('user')) || {};
+        let html = template.replace('{{userEmail}}', user.email);
 
         // Parse HTML to manipulate
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, 'text/html');
+
+        // Populate saved address if exists
+        if (user.defaultAddress) {
+            let address;
+            try {
+                address = typeof user.defaultAddress === 'string'
+                    ? JSON.parse(user.defaultAddress)
+                    : user.defaultAddress;
+            } catch (e) {
+                console.error('Error parsing address:', e);
+                address = null;
+            }
+
+            if (address) {
+                const streetEl = doc.getElementById('saved-address-street');
+                const cityStateEl = doc.getElementById('saved-address-city-state');
+                const countryEl = doc.getElementById('saved-address-country');
+
+                if (streetEl) streetEl.textContent = address.street || '';
+                if (cityStateEl) cityStateEl.textContent = `${address.city || ''}, ${address.state || ''} ${address.zipCode || ''}`;
+                if (countryEl) countryEl.textContent = address.country || '';
+            }
+        } else {
+            // Hide saved address section if no saved address
+            const savedSection = doc.getElementById('saved-address-section');
+            const savedBtn = doc.getElementById('use-saved-address-btn');
+            const newBtn = doc.getElementById('use-new-address-btn');
+
+            if (savedSection) savedSection.classList.add('hidden');
+            if (savedBtn) {
+                savedBtn.classList.add('hidden');
+                // Auto-select new address
+                this.useSavedAddress = false;
+                if (newBtn) {
+                    newBtn.classList.add('border-blue-600', 'text-blue-600');
+                    newBtn.classList.remove('text-gray-500', 'border-transparent');
+                }
+            }
+        }
 
         // Populate cart items preview
         const previewContainer = doc.getElementById('order-items-preview');
@@ -72,37 +140,38 @@ export class OrderManager {
             giftSection.classList.remove('hidden');
 
             const giftHtml = `
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                <h2 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                    <span class="text-2xl mr-2">🎁</span> Gift Card Details
-                </h2>
-                <div class="space-y-4">
-                    ${giftCardItems.map((item, index) => `
-                        <div class="p-4 bg-purple-50 rounded-xl">
-                            <p class="font-medium text-gray-700 mb-3">${item.name}</p>
-                            <div class="space-y-3">
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-600 mb-1">Recipient Email</label>
-                                    <input type="email" 
-                                        id="gift-recipient-${index}" 
-                                        class="gift-recipient w-full px-3 py-2 bg-white rounded-lg border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition text-sm"
-                                        placeholder="friend@example.com">
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-600 mb-1">Personal Message (Optional)</label>
-                                    <textarea 
-                                        id="gift-message-${index}"
-                                        rows="2"
-                                        class="gift-message w-full px-3 py-2 bg-white rounded-lg border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition text-sm"
-                                        placeholder="Happy Birthday!"></textarea>
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                    <h2 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                        <span class="text-2xl mr-2">🎁</span> Gift Card Details
+                    </h2>
+                    <div class="space-y-4">
+                        ${giftCardItems.map((item, index) => `
+                            <div class="p-4 bg-purple-50 rounded-xl">
+                                <p class="font-medium text-gray-700 mb-3">${item.name}</p>
+                                <div class="space-y-3">
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Recipient Email</label>
+                                        <input type="email" 
+                                            id="gift-recipient-${index}" 
+                                            class="gift-recipient w-full px-3 py-2 bg-white rounded-lg border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition text-sm"
+                                            placeholder="friend@example.com"
+                                            ${this.authManager.user?.email ? `value="${this.authManager.user.email}"` : ''}>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Personal Message (Optional)</label>
+                                        <textarea 
+                                            id="gift-message-${index}"
+                                            rows="2"
+                                            class="gift-message w-full px-3 py-2 bg-white rounded-lg border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition text-sm"
+                                            placeholder="Happy Birthday!"></textarea>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    `).join('')}
+                        `).join('')}
+                    </div>
+                    <p class="text-xs text-gray-500 mt-4">Gift cards will be emailed directly to recipients</p>
                 </div>
-                <p class="text-xs text-gray-500 mt-4">Gift cards will be emailed directly to recipients</p>
-            </div>
-        `;
+            `;
             giftSection.innerHTML = giftHtml;
         }
 
@@ -113,6 +182,135 @@ export class OrderManager {
         this.fetchUserBalance();
 
         return doc.body.innerHTML;
+    }
+
+    async processCheckout() {
+        let shippingAddress;
+
+        if (this.useSavedAddress) {
+            // Get saved address from user
+            const user = window.authManager.user || JSON.parse(localStorage.getItem('user')) || {};
+            if (!user.defaultAddress) {
+                this.uiManager.showToast('No saved address found. Please add a new address.', 'error');
+                return;
+            }
+
+            try {
+                shippingAddress = typeof user.defaultAddress === 'string'
+                    ? JSON.parse(user.defaultAddress)
+                    : user.defaultAddress;
+            } catch (e) {
+                this.uiManager.showToast('Error loading saved address', 'error');
+                return;
+            }
+        } else {
+            // Get address from form
+            const street = document.getElementById('shipping-street')?.value;
+            const city = document.getElementById('shipping-city')?.value;
+            const state = document.getElementById('shipping-state')?.value;
+            const zip = document.getElementById('shipping-zip')?.value;
+            const country = document.getElementById('shipping-country')?.value;
+
+            if (!street || !city || !state || !zip || !country) {
+                this.uiManager.showToast('Please fill in all shipping fields', 'error');
+                return;
+            }
+
+            shippingAddress = {
+                street, city, state, zipCode: zip, country
+            };
+        }
+
+        // Validate gift cards if present
+        const giftCardItems = this.cartManager.items.filter(item => item.isGiftCard);
+        if (giftCardItems.length > 0) {
+            let hasValidEmails = true;
+
+            giftCardItems.forEach((item, index) => {
+                const recipientInput = document.getElementById(`gift-recipient-${index}`);
+                if (recipientInput) {
+                    const email = recipientInput.value.trim();
+                    if (!email || !this.isValidEmail(email)) {
+                        this.uiManager.showToast(`Please enter a valid email for ${item.name}`, "error");
+                        hasValidEmails = false;
+                        return;
+                    }
+                    item.recipientEmail = email;
+                    item.message = document.getElementById(`gift-message-${index}`)?.value.trim() || '';
+                }
+            });
+
+            if (!hasValidEmails) return;
+        }
+
+        // Show processing modal
+        document.getElementById('payment-processing-modal').classList.remove('hidden');
+        document.getElementById('payment-processing-modal').classList.add('flex');
+
+        // Prepare gift card purchases
+        const giftCardPurchases = this.cartManager.items
+            .filter(item => item.isGiftCard)
+            .map(item => ({
+                amount: item.price,
+                recipientEmail: item.recipientEmail,
+                message: item.message || ''
+            }));
+
+        // Prepare request body
+        const requestBody = {
+            couponCode: this.appliedCoupon ? this.appliedCoupon.code : null,
+            giftCards: giftCardPurchases,
+            useStoreBalance: this.usingStoreBalance,
+            storeBalanceAmount: this.balanceApplied,
+            shippingAddress: shippingAddress
+        };
+
+        try {
+            // Simulate payment processing delay
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            const response = await this.apiClient.fetch('/api/orders/place', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestBody)
+            });
+
+            // Hide processing modal
+            document.getElementById('payment-processing-modal').classList.add('hidden');
+            document.getElementById('payment-processing-modal').classList.remove('flex');
+
+            // Store order data before clearing cart
+            const orderData = {
+                id: response.id || 'FAKE-' + Math.floor(Math.random() * 1000000),
+                items: [...this.cartManager.items],
+                appliedCoupon: this.appliedCoupon ? { ...this.appliedCoupon } : null,
+                regularSubtotal: this.regularSubtotal,
+                giftCardTotal: this.giftCardTotal,
+                balanceApplied: this.balanceApplied,
+                shippingAddress: shippingAddress,
+                useSavedAddress: this.useSavedAddress
+            };
+
+            // Clear cart and reset state
+            await this.cartManager.syncWithServer();
+            this.appliedCoupon = null;
+            this.usingStoreBalance = false;
+            this.balanceApplied = 0;
+
+            // Navigate to success page with data
+            window.router.navigate('/order-success', orderData);
+
+        } catch (error) {
+            document.getElementById('payment-processing-modal').classList.add('hidden');
+            document.getElementById('payment-processing-modal').classList.remove('flex');
+            this.uiManager.showToast("Order failed: " + error.message, "error");
+        }
+    }
+
+    // Helper method to validate email
+    isValidEmail(email) {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(email);
     }
 
     // Update checkout totals
@@ -349,115 +547,6 @@ export class OrderManager {
         setTimeout(() => {
             couponMessage.classList.add('hidden');
         }, 3000);
-    }
-
-    // Process checkout
-    // Process checkout
-    async processCheckout() {
-        // Validate shipping address
-        const street = document.getElementById('shipping-street')?.value;
-        const city = document.getElementById('shipping-city')?.value;
-        const state = document.getElementById('shipping-state')?.value;
-        const zip = document.getElementById('shipping-zip')?.value;
-        const country = document.getElementById('shipping-country')?.value;
-
-        if (!street || !city || !state || !zip || !country) {
-            this.uiManager.showToast('Please fill in all shipping fields', 'error');
-            return;
-        }
-
-        // Validate gift cards if present
-        const giftCardItems = this.cartManager.items.filter(item => item.isGiftCard);
-        if (giftCardItems.length > 0) {
-            let hasValidEmails = true;
-
-            giftCardItems.forEach((item, index) => {
-                const recipientInput = document.getElementById(`gift-recipient-${index}`);
-                if (recipientInput) {
-                    const email = recipientInput.value.trim();
-                    if (!email || !this.isValidEmail(email)) {
-                        this.uiManager.showToast(`Please enter a valid email for ${item.name}`, "error");
-                        hasValidEmails = false;
-                        return;
-                    }
-                    item.recipientEmail = email;
-                    item.message = document.getElementById(`gift-message-${index}`)?.value.trim() || '';
-                }
-            });
-
-            if (!hasValidEmails) return;
-        }
-
-        // Show processing modal
-        document.getElementById('payment-processing-modal').classList.remove('hidden');
-        document.getElementById('payment-processing-modal').classList.add('flex');
-
-        // Prepare shipping address
-        const shippingAddress = {
-            street, city, state, zipCode: zip, country
-        };
-
-        // Prepare gift card purchases
-        const giftCardPurchases = this.cartManager.items
-            .filter(item => item.isGiftCard)
-            .map(item => ({
-                amount: item.price,
-                recipientEmail: item.recipientEmail,
-                message: item.message || ''
-            }));
-
-        // Prepare request body
-        const requestBody = {
-            couponCode: this.appliedCoupon ? this.appliedCoupon.code : null,
-            giftCards: giftCardPurchases,
-            useStoreBalance: this.usingStoreBalance,
-            storeBalanceAmount: this.balanceApplied, // Send amount to deduct
-            shippingAddress: shippingAddress
-        };
-
-        try {
-            // Show processing modal
-            document.getElementById('payment-processing-modal').classList.remove('hidden');
-            document.getElementById('payment-processing-modal').classList.add('flex');
-
-            // Simulate payment processing delay
-            await new Promise(resolve => setTimeout(resolve, 2000));
-
-            const response = await this.apiClient.fetch('/api/orders/place', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(requestBody)
-            });
-
-            // Hide processing modal
-            document.getElementById('payment-processing-modal').classList.add('hidden');
-            document.getElementById('payment-processing-modal').classList.remove('flex');
-
-            // Store order data before clearing cart
-            const orderData = {
-                id: response.id || 'FAKE-' + Math.floor(Math.random() * 1000000),
-                items: [...this.cartManager.items],
-                appliedCoupon: this.appliedCoupon ? { ...this.appliedCoupon } : null,
-                regularSubtotal: this.regularSubtotal,
-                giftCardTotal: this.giftCardTotal,
-                balanceApplied: this.balanceApplied,
-                shippingAddress: shippingAddress
-            };
-
-            // Clear cart and reset state
-            await this.cartManager.syncWithServer();
-            this.appliedCoupon = null;
-            this.usingStoreBalance = false;
-            this.balanceApplied = 0;
-
-            // Navigate to success page with data
-            window.router.navigate('/order-success', orderData);
-
-        } catch (error) {
-            document.getElementById('payment-processing-modal').classList.add('hidden');
-            document.getElementById('payment-processing-modal').classList.remove('flex');
-            this.uiManager.showToast("Order failed: " + error.message, "error");
-        }
     }
 
     // Close success modal and navigate
