@@ -20,8 +20,7 @@ import tools.jackson.databind.ObjectMapper;
 @Service
 public class InvoiceService {
 
-    private static final String LOGO_PATH = "/images/mastershop-logo.png";
-                                                                           // src/main/resources/static/images/
+    private static final String LOGO_PATH = "/images/logo.png";
     private static final Color PRIMARY_COLOR = new Color(70, 130, 180); // Steel Blue
     private static final Color SECONDARY_COLOR = new Color(245, 245, 245); // Light Gray
     private static final Color ACCENT_COLOR = new Color(255, 99, 71); // Tomato Red
@@ -55,6 +54,7 @@ public class InvoiceService {
             // Add logo
             String imagePath = getClass().getResource(LOGO_PATH).getPath();
             Image logo = Image.getInstance(imagePath);
+            System.out.println("====> " + logo);
             logo.scaleToFit(100, 60);
             PdfPCell logoCell = new PdfPCell(logo);
             logoCell.setBorder(Rectangle.NO_BORDER);

@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
+import com.ecommerce.lab.model.Address;
 import com.ecommerce.lab.model.BalanceTransaction;
 import com.ecommerce.lab.model.CartItem;
 import com.ecommerce.lab.model.Coupon;
@@ -23,6 +24,7 @@ import com.ecommerce.lab.repository.OrderRepository;
 import com.ecommerce.lab.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
+import tools.jackson.databind.ObjectMapper;
 
 import org.springframework.transaction.annotation.Transactional;;
 
@@ -55,7 +57,17 @@ public class OrderService {
         if (shippingAddress == null) {
             this.validateShippingAddress(user);
         } else {
-            user.setAddress(shippingAddress);
+            ObjectMapper mapper = new ObjectMapper();
+            Address address = mapper.readValue(shippingAddress, Address.class);
+
+            // Save default address if not
+            if (user.getAddress() == null || user.getAddress().isBlank()) {
+                user.setAddress(shippingAddress);
+            }
+            // Add address to list of addresses
+            address.setUser(user);
+            user.getAddressObjects().add(address);
+            userRepository.save(user);
         }
 
         // Process Items & Stock
