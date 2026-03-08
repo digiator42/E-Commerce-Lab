@@ -53,12 +53,13 @@ public class OrderService {
             throw new RuntimeException("Cart is empty");
         }
 
+        Address address = null;
         // Core Validation
         if (shippingAddress == null) {
             this.validateShippingAddress(user);
         } else {
             ObjectMapper mapper = new ObjectMapper();
-            Address address = mapper.readValue(shippingAddress, Address.class);
+            address = mapper.readValue(shippingAddress, Address.class);
 
             // Save default address if not
             if (user.getAddress() == null || user.getAddress().isBlank()) {
@@ -92,7 +93,7 @@ public class OrderService {
         double finalTotal = remainingPhysical + breakdown.giftCardTotal();
 
         // Persistence
-        Order savedOrder = this.createAndSaveOrder(user, cartItems, finalTotal);
+        Order savedOrder = this.createAndSaveOrder(user, shippingAddress, address, cartItems, finalTotal);
 
         if (useStoreBalance && user.getStoreBalance() > 0) {
             if (amountToDeduct != 0)
@@ -189,11 +190,12 @@ public class OrderService {
         return total - discount;
     }
 
-    private Order createAndSaveOrder(User user, List<CartItem> cartItems, double finalTotal) {
+    private Order createAndSaveOrder(User user, String shippingAddress, Address address, List<CartItem> cartItems, double finalTotal) {
         Order order = new Order();
         order.setUser(user);
         order.setOrderDate(LocalDateTime.now());
-        order.setShippingAddress(user.getAddress());
+        // A snapshot of shipping address, current order address
+        order.setShippingAddress(shippingAddress != null ? shippingAddress : address.toString());
         order.setTotalAmount(Math.round(finalTotal * 100.0) / 100.0);
         order.setPaymentStatus("PAID");
         order.setStatus(OrderStatus.COMPLETED);

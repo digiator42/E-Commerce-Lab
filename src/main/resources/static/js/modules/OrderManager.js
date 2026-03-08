@@ -119,7 +119,7 @@ export class OrderManager {
                     newBtn.classList.remove('text-gray-500', 'border-transparent');
                     setTimeout(() => {
                         document.getElementById('use-new-address-btn').click();
-                    }, 50); 
+                    }, 50);
                 }
             }
         }
@@ -946,7 +946,7 @@ export class OrderManager {
                                     <span class="font-medium text-gray-900">${item.productName}</span>
                                     ${item.product?.category ? `
                                         <span class="ml-2 text-xs bg-gray-100 px-2 py-0.5 rounded-full">
-                                            ${item.product.category.icon || ''} ${item.product.category.name}
+                                            ${item.product.category}
                                         </span>
                                     ` : ''}
                                 </div>

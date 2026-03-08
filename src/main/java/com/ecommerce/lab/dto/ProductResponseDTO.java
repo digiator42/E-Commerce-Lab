@@ -50,4 +50,20 @@ public record ProductResponseDTO(
                                 product.getReviews().size(),
                                 reviews);
         }
+
+        public static ProductResponseDTO simpleFromEntity(Product product) {
+                return new ProductResponseDTO(
+                                product.getId(),
+                                product.getName(),
+                                product.getDescription(),
+                                product.getPrice(),
+                                product.getStock(),
+                                product.getCategory().getName(),
+                                product.getImageUrl(),
+                                null,
+                                null,
+                                null,
+                                null);
+        }
+
 }

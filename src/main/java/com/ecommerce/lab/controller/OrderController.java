@@ -15,8 +15,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ecommerce.lab.dto.GiftCardRequest;
 import com.ecommerce.lab.dto.OrderRequest;
+import com.ecommerce.lab.dto.OrderResponseDTO;
 import com.ecommerce.lab.model.Order;
 import com.ecommerce.lab.repository.OrderRepository;
 import com.ecommerce.lab.service.InvoiceService;
@@ -64,12 +64,12 @@ public class OrderController {
     }
 
     @GetMapping("/my-orders")
-    public ResponseEntity<List<Order>> getMyOrders(Principal principal) {
+    public ResponseEntity<List<OrderResponseDTO>> getMyOrders(Principal principal) {
         if (principal == null)
             return ResponseEntity.status(401).build();
 
         List<Order> orders = orderRepository.findByUserEmailOrderByOrderDateDesc(principal.getName());
-        return ResponseEntity.ok(orders);
+        return ResponseEntity.ok(orders.stream().map(OrderResponseDTO::fromEntity).toList());
     }
 
     @GetMapping("/{orderId}/download-invoice")
