@@ -20,7 +20,9 @@ This lab documents the core business logic and architectural patterns used to bu
     - [✓] Update display name  
     - [✓] Update shipping address  
     - [✓] Change/Forget, Reset password
-    - [✓] Enable 2FA  
+    - [✓] Enable/Disable 2FA
+    - [✓] Store Balance management
+    - [✓] Redeem service, history (REDEEM, PURCHASE)
 
 - [✓] **Admin Management**
     - Admin Features
@@ -29,6 +31,7 @@ This lab documents the core business logic and architectural patterns used to bu
       - [✓] Customer Orders requests
       - [✓] Users Access management (ROLE_ADMIN & ROLE_USER)
       - [✓] Self downgrade protection
+      - [✓] Coupons in admin dashboard (add, edit, activate)
 
 
 - [✓] Role-Based Access Control (RBAC)
@@ -54,7 +57,9 @@ This lab documents the core business logic and architectural patterns used to bu
 - [✓] **Invoice Service**
 
 
-- [❎] **Offers / Discounts / Gift Cards Logic**
+- [✓] **Offers / Discounts / Gift Cards Logic**
+  - [✓] Coupons/Discounts applying
+  - [✓] GiftCards as virtual products
 
 
 
@@ -62,7 +67,7 @@ This lab documents the core business logic and architectural patterns used to bu
 
 - [✓] **Model Layer (Domain)**: JPA Entities (`User`, `Product`, `CartItem`, `Order`, `Review`) defining schema and relationships  
 - [✓] **Repository Layer**: Spring Data JPA interfaces + custom JPQL for optimized fetching  
-- [✓] **Service Layer**: Business rules (e.g., attributes validation, price snapshotting)  
+- [✓] **Service Layer**: Business rules (e.g., DTO validation, price snapshotting)  
 - [✓] **Controller Layer (API)**: RESTful endpoints
 
 
@@ -75,7 +80,7 @@ This lab documents the core business logic and architectural patterns used to bu
 ## Global Exception Handling
 
 - [✓] **Global Exception Handler**:  
-  > Uses `@ControllerAdvice` to catch and format backend errors into JSON for `apiFetch`  
+  > Uses `@ControllerAdvice` to catch and format backend errors into JSON
 
 - [✓] **SPA Routing Support**:  
   > Logic: Catch-all fallback returns `index.html`, Frontend router handles route rendering  
