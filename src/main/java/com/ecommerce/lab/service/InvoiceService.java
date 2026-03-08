@@ -25,7 +25,8 @@ public class InvoiceService {
     private static final Color SECONDARY_COLOR = new Color(245, 245, 245); // Light Gray
     private static final Color ACCENT_COLOR = new Color(255, 99, 71); // Tomato Red
 
-    public void generateInvoice(Order order, OutputStream outputStream) throws IOException, DocumentException {
+    public void generateInvoice(Order order, OutputStream outputStream)
+        throws IOException, DocumentException {
         Document document = new Document(PageSize.A4);
         PdfWriter writer = PdfWriter.getInstance(document, outputStream);
 
@@ -49,7 +50,9 @@ public class InvoiceService {
             // Create a table for logo and header
             PdfPTable headerTable = new PdfPTable(2);
             headerTable.setWidthPercentage(100);
-            headerTable.setWidths(new int[] { 1, 3 });
+            headerTable.setWidths(new int[] {
+                    1, 3
+            });
 
             // Add logo
             String imagePath = getClass().getResource(LOGO_PATH).getPath();
@@ -96,7 +99,9 @@ public class InvoiceService {
 
         Font infoFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
 
-        PdfPCell invoiceNoCell = new PdfPCell(new Phrase("Invoice #: INV-" + order.getId(), infoFont));
+        PdfPCell invoiceNoCell = new PdfPCell(
+            new Phrase("Invoice #: INV-" + order.getId(), infoFont)
+        );
         invoiceNoCell.setBorder(Rectangle.NO_BORDER);
         invoiceNoCell.setHorizontalAlignment(Element.ALIGN_LEFT);
         invoiceInfoTable.addCell(invoiceNoCell);
@@ -120,12 +125,21 @@ public class InvoiceService {
         companyCell.setPadding(10);
 
         Paragraph companyInfo = new Paragraph();
-        companyInfo.add(new Chunk("FAKEMASTERSHOP Inc.\n", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12)));
+        companyInfo.add(
+            new Chunk("FAKEMASTERSHOP Inc.\n", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12))
+        );
         companyInfo.add(new Chunk("123 STREET\n", FontFactory.getFont(FontFactory.HELVETICA, 10)));
         companyInfo.add(new Chunk("Suite 100\n", FontFactory.getFont(FontFactory.HELVETICA, 10)));
-        companyInfo.add(new Chunk("New York, NY 10001\n", FontFactory.getFont(FontFactory.HELVETICA, 10)));
-        companyInfo.add(new Chunk("Phone: (999) 999-9999\n", FontFactory.getFont(FontFactory.HELVETICA, 10)));
-        companyInfo.add(new Chunk("Email: billing@fakemastershop.com", FontFactory.getFont(FontFactory.HELVETICA, 10)));
+        companyInfo
+            .add(new Chunk("New York, NY 10001\n", FontFactory.getFont(FontFactory.HELVETICA, 10)));
+        companyInfo.add(
+            new Chunk("Phone: (999) 999-9999\n", FontFactory.getFont(FontFactory.HELVETICA, 10))
+        );
+        companyInfo.add(
+            new Chunk(
+                "Email: billing@fakemastershop.com", FontFactory.getFont(FontFactory.HELVETICA, 10)
+            )
+        );
 
         companyCell.addElement(companyInfo);
         companyTable.addCell(companyCell);
@@ -134,7 +148,8 @@ public class InvoiceService {
         document.add(new Paragraph(" "));
     }
 
-    private void addCustomerInfo(Document document, Order order) throws IOException, DocumentException {
+    private void addCustomerInfo(Document document, Order order)
+        throws IOException, DocumentException {
         ObjectMapper mapper = new ObjectMapper();
         Address address = mapper.readValue(order.getUser().getAddress(), Address.class);
 
@@ -148,11 +163,27 @@ public class InvoiceService {
         billToCell.setBackgroundColor(SECONDARY_COLOR);
 
         Paragraph billTo = new Paragraph();
-        billTo.add(new Chunk("BILL TO:\n", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12, PRIMARY_COLOR)));
-        billTo.add(new Chunk(order.getUser().getName() + "\n", FontFactory.getFont(FontFactory.HELVETICA, 11)));
-        billTo.add(new Chunk(address.getStreet() + "\n", FontFactory.getFont(FontFactory.HELVETICA, 10)));
-        billTo.add(new Chunk(address.getCity() + ", " + address.getState() + " " + address.getZipCode() + "\n",
-                FontFactory.getFont(FontFactory.HELVETICA, 10)));
+        billTo.add(
+            new Chunk(
+                "BILL TO:\n", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12, PRIMARY_COLOR)
+            )
+        );
+        billTo.add(
+            new Chunk(
+                order.getUser().getName() + "\n", FontFactory.getFont(FontFactory.HELVETICA, 11)
+            )
+        );
+        billTo.add(
+            new Chunk(address.getStreet() + "\n", FontFactory.getFont(FontFactory.HELVETICA, 10))
+        );
+        billTo
+            .add(
+                new Chunk(
+                    address.getCity() + ", " + address.getState() + " " + address.getZipCode()
+                        + "\n",
+                    FontFactory.getFont(FontFactory.HELVETICA, 10)
+                )
+            );
         billTo.add(new Chunk(address.getCountry(), FontFactory.getFont(FontFactory.HELVETICA, 10)));
 
         billToCell.addElement(billTo);
@@ -165,14 +196,35 @@ public class InvoiceService {
         summaryCell.setBackgroundColor(SECONDARY_COLOR);
 
         Paragraph summary = new Paragraph();
-        summary.add(new Chunk("ORDER SUMMARY:\n", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12, PRIMARY_COLOR)));
-        summary.add(new Chunk("Order ID: " + order.getId() + "\n", FontFactory.getFont(FontFactory.HELVETICA, 10)));
-        summary.add(new Chunk("Payment Transaction: " + order.getPaymentTransactionId().toString() + "\n",
-                FontFactory.getFont(FontFactory.HELVETICA, 10)));
-        summary.add(new Chunk("Payment Status: " + order.getPaymentStatus().toString() + "\n",
-                FontFactory.getFont(FontFactory.HELVETICA, 10)));
-        summary.add(new Chunk("Order Status: " + order.getStatus().toString(),
-                FontFactory.getFont(FontFactory.HELVETICA, 10)));
+        summary.add(
+            new Chunk(
+                "ORDER SUMMARY:\n",
+                FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12, PRIMARY_COLOR)
+            )
+        );
+        summary.add(
+            new Chunk(
+                "Order ID: " + order.getId() + "\n", FontFactory.getFont(FontFactory.HELVETICA, 10)
+            )
+        );
+        summary.add(
+            new Chunk(
+                "Payment Transaction: " + order.getPaymentTransactionId().toString() + "\n",
+                FontFactory.getFont(FontFactory.HELVETICA, 10)
+            )
+        );
+        summary.add(
+            new Chunk(
+                "Payment Status: " + order.getPaymentStatus().toString() + "\n",
+                FontFactory.getFont(FontFactory.HELVETICA, 10)
+            )
+        );
+        summary.add(
+            new Chunk(
+                "Order Status: " + order.getStatus().toString(),
+                FontFactory.getFont(FontFactory.HELVETICA, 10)
+            )
+        );
 
         summaryCell.addElement(summary);
         customerTable.addCell(summaryCell);
@@ -215,13 +267,21 @@ public class InvoiceService {
         table.setWidthPercentage(100);
         table.setSpacingBefore(10);
         table.setSpacingAfter(10);
-        table.setWidths(new int[] { 3, 2, 1, 1 }); // Column width ratios
+        table.setWidths(new int[] {
+                3, 2, 1, 1
+        }); // Column width ratios
 
         // Table header
-        String[] headers = { "Product", "Category", "Qty", "Price" };
+        String[] headers = {
+                "Product", "Category", "Qty", "Price"
+        };
         for (String header : headers) {
-            PdfPCell cell = new PdfPCell(new Phrase(header,
-                    FontFactory.getFont(FontFactory.HELVETICA_BOLD, 11, Color.WHITE)));
+            PdfPCell cell = new PdfPCell(
+                new Phrase(
+                    header,
+                    FontFactory.getFont(FontFactory.HELVETICA_BOLD, 11, Color.WHITE)
+                )
+            );
             cell.setBackgroundColor(PRIMARY_COLOR);
             cell.setPadding(8);
             cell.setHorizontalAlignment(Element.ALIGN_CENTER);
@@ -230,20 +290,25 @@ public class InvoiceService {
 
         // Table content
         for (OrderItem item : order.getItems()) {
-            String categoryName = item.getProduct() != null ? item.getProduct().getCategory().getName().toString()
-                    : "Store Item";
+            String categoryName = item.getProduct() != null
+                ? item.getProduct().getCategory().getName().toString()
+                : "Store Item";
 
             addProductCell(table, item.getProductName(), Element.ALIGN_LEFT);
             addProductCell(table, categoryName, Element.ALIGN_LEFT);
             addProductCell(table, String.valueOf(item.getQuantity()), Element.ALIGN_CENTER);
-            addProductCell(table, "$" + String.format("%.2f", item.getPriceAtPurchase()), Element.ALIGN_RIGHT);
+            addProductCell(
+                table, "$" + String.format("%.2f", item.getPriceAtPurchase()), Element.ALIGN_RIGHT
+            );
         }
 
         document.add(table);
     }
 
     private void addProductCell(PdfPTable table, String content, int alignment) {
-        PdfPCell cell = new PdfPCell(new Phrase(content, FontFactory.getFont(FontFactory.HELVETICA, 10)));
+        PdfPCell cell = new PdfPCell(
+            new Phrase(content, FontFactory.getFont(FontFactory.HELVETICA, 10))
+        );
         cell.setPadding(5);
         cell.setHorizontalAlignment(alignment);
         cell.setBorder(Rectangle.BOTTOM);
@@ -259,8 +324,8 @@ public class InvoiceService {
 
         // Calculate subtotal
         double subtotal = order.getItems().stream()
-                .mapToDouble(item -> item.getQuantity() * item.getPriceAtPurchase())
-                .sum();
+            .mapToDouble(item -> item.getQuantity() * item.getPriceAtPurchase())
+            .sum();
 
         double total = order.getTotalAmount();
 
@@ -272,11 +337,13 @@ public class InvoiceService {
     }
 
     private void addTotalRow(PdfPTable table, String label, String value, boolean isTotal) {
-        Font labelFont = isTotal ? FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12, PRIMARY_COLOR)
-                : FontFactory.getFont(FontFactory.HELVETICA, 11);
+        Font labelFont = isTotal
+            ? FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12, PRIMARY_COLOR)
+            : FontFactory.getFont(FontFactory.HELVETICA, 11);
 
-        Font valueFont = isTotal ? FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12, PRIMARY_COLOR)
-                : FontFactory.getFont(FontFactory.HELVETICA, 11);
+        Font valueFont = isTotal
+            ? FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12, PRIMARY_COLOR)
+            : FontFactory.getFont(FontFactory.HELVETICA, 11);
 
         PdfPCell labelCell = new PdfPCell(new Phrase(label, labelFont));
         labelCell.setBorder(Rectangle.NO_BORDER);
@@ -305,10 +372,18 @@ public class InvoiceService {
         footerCell.setHorizontalAlignment(Element.ALIGN_CENTER);
 
         Paragraph footer = new Paragraph();
-        footer.add(new Chunk("Thank you for shopping with MASTERSHOP!\n",
-                FontFactory.getFont(FontFactory.HELVETICA, 10, PRIMARY_COLOR)));
-        footer.add(new Chunk("For any queries, please contact us at support@fakemastershop.com",
-                FontFactory.getFont(FontFactory.HELVETICA, 9, Color.GRAY)));
+        footer.add(
+            new Chunk(
+                "Thank you for shopping with MASTERSHOP!\n",
+                FontFactory.getFont(FontFactory.HELVETICA, 10, PRIMARY_COLOR)
+            )
+        );
+        footer.add(
+            new Chunk(
+                "For any queries, please contact us at support@fakemastershop.com",
+                FontFactory.getFont(FontFactory.HELVETICA, 9, Color.GRAY)
+            )
+        );
 
         footerCell.addElement(footer);
         footerTable.addCell(footerCell);

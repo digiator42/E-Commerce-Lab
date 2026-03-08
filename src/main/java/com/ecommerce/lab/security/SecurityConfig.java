@@ -18,54 +18,66 @@ import jakarta.servlet.http.HttpServletResponse;
 public class SecurityConfig {
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+    public PasswordEncoder passwordEncoder() { return new BCryptPasswordEncoder(); }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(auth -> auth
-                        // MUST allow FORWARD dispatchers for the ExceptionHandler to work
-                        .dispatcherTypeMatchers(DispatcherType.FORWARD).permitAll()
+            .csrf(csrf -> csrf.disable())
+            .authorizeHttpRequests(
+                auth -> auth
+                    // MUST allow FORWARD dispatchers for the ExceptionHandler to work
+                    .dispatcherTypeMatchers(DispatcherType.FORWARD).permitAll()
 
-                        // Static Resources
-                        .requestMatchers("/", "/index.html", "/static/**", "/js/**", "/css/**", "/components/**",
-                                "/favicon.ico")
-                        .permitAll()
+                    // Static Resources
+                    .requestMatchers(
+                        "/", "/index.html", "/static/**", "/js/**", "/css/**", "/components/**",
+                        "/favicon.ico"
+                    )
+                    .permitAll()
 
-                        // Frontend Routes & Error Path
-                        .requestMatchers("/login", "/register", "/product/**", "/cart").permitAll()
+                    // Frontend Routes & Error Path
+                    .requestMatchers("/login", "/register", "/product/**", "/cart").permitAll()
 
-                        // API Rules
-                        .requestMatchers("/api/auth/**", "/api/2fa/**").permitAll()
+                    // API Rules
+                    .requestMatchers("/api/auth/**", "/api/2fa/**").permitAll()
 
-                        .requestMatchers(HttpMethod.GET, "/api/products/**", "/api/categories/**", "/api/reviews/**")
-                        .permitAll()
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                    .requestMatchers(
+                        HttpMethod.GET, "/api/products/**", "/api/categories/**", "/api/reviews/**"
+                    )
+                    .permitAll()
+                    .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
-                        // Catch-all
-                        .anyRequest().authenticated())
-                .formLogin(form -> form
-                        .loginPage("/login")
-                        .permitAll())
-                .oauth2Login(oauth2 -> oauth2
-                        .loginPage("/login")
-                        .defaultSuccessUrl("/api/auth/oauth2-success", true))
+                    // Catch-all
+                    .anyRequest().authenticated()
+            )
+            .formLogin(
+                form -> form
+                    .loginPage("/login")
+                    .permitAll()
+            )
+            .oauth2Login(
+                oauth2 -> oauth2
+                    .loginPage("/login")
+                    .defaultSuccessUrl("/api/auth/oauth2-success", true)
+            )
 
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
-                .exceptionHandling(exception -> exception
-                        .authenticationEntryPoint((request, response, authException) -> {
-                            // API request
-                            if (request.getRequestURI().startsWith("/api")) {
-                                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
-                            } else {
-                                // If a browser page fails
-                                request.getRequestDispatcher("/index.html").forward(request, response);
-                            }
-                        }));
+            .sessionManagement(
+                session -> session
+                    .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+            )
+            .exceptionHandling(
+                exception -> exception
+                    .authenticationEntryPoint((request, response, authException) -> {
+                        // API request
+                        if (request.getRequestURI().startsWith("/api")) {
+                            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+                        } else {
+                            // If a browser page fails
+                            request.getRequestDispatcher("/index.html").forward(request, response);
+                        }
+                    })
+            );
 
         return http.build();
     }

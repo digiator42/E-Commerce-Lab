@@ -24,7 +24,7 @@ public class PasswordResetService {
 
     public void createPasswordResetToken(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+            .orElseThrow(() -> new RuntimeException("User not found"));
 
         // Generate a unique UUID token
         String token = UUID.randomUUID().toString();
@@ -33,9 +33,9 @@ public class PasswordResetService {
         userRepository.save(user);
 
         String resetLink = ServletUriComponentsBuilder
-                .fromCurrentContextPath()
-                .path("/reset-password")
-                .queryParam("token", token).toUriString();
+            .fromCurrentContextPath()
+            .path("/reset-password")
+            .queryParam("token", token).toUriString();
         emailService.sendPasswordResetEmail(user.getEmail(), resetLink);
     }
 
@@ -44,7 +44,7 @@ public class PasswordResetService {
         PasswordResetService.validate(newPassword);
 
         User user = userRepository.findByResetToken(token)
-                .orElseThrow(() -> new RuntimeException("Invalid or expired token"));
+            .orElseThrow(() -> new RuntimeException("Invalid or expired token"));
 
         if (user.getResetTokenExpires().isBefore(LocalDateTime.now())) {
             user.setResetToken(null); // Clear the token so it can't be used again
@@ -59,8 +59,10 @@ public class PasswordResetService {
 
     public static void validate(String password) {
         if (password == null || !password.matches(PASSWORD_PATTERN)) {
-            throw new RuntimeException("Password must be at least 8 characters long, " +
-                    "include an uppercase letter, a lowercase letter, a digit, and a special character.");
+            throw new RuntimeException(
+                "Password must be at least 8 characters long, " +
+                    "include an uppercase letter, a lowercase letter, a digit, and a special character."
+            );
         }
     }
 }

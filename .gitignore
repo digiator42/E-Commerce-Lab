@@ -30,7 +30,6 @@ build/
 !**/src/test/**/build/
 
 ### VS Code ###
-.vscode/
 .env
 application-dev.yml
 /uploads

@@ -17,17 +17,19 @@ import jakarta.servlet.http.HttpServletRequest;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleValidation(MethodArgumentNotValidException ex) {
+    public ResponseEntity<Map<String, String>> handleValidation(
+        MethodArgumentNotValidException ex
+    ) {
         Map<String, String> errors = new HashMap<>();
         ex.getBindingResult().getFieldErrors()
-                .forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
+            .forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
     }
 
     @ExceptionHandler(ProductNotFoundException.class)
     public ResponseEntity<Map<String, String>> handleNotFound(ProductNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Map.of("message", ex.getMessage()));
+            .body(Map.of("message", ex.getMessage()));
     }
 
     @ExceptionHandler(NoResourceFoundException.class)
@@ -36,9 +38,12 @@ public class GlobalExceptionHandler {
 
         if (uri.startsWith("/api")) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of(
-                            "error", "Not Found",
-                            "message", "The requested API endpoint does not exist."));
+                .body(
+                    Map.of(
+                        "error", "Not Found",
+                        "message", "The requested API endpoint does not exist."
+                    )
+                );
         }
 
         if (uri.contains(".")) {
@@ -51,12 +56,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UserAlreadyExistsException.class)
     public ResponseEntity<Map<String, String>> handleUserExists(UserAlreadyExistsException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(Map.of("error", "Registration Failed", "message", ex.getMessage()));
+            .body(Map.of("error", "Registration Failed", "message", ex.getMessage()));
     }
 
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<Map<String, String>> handleAuth(AuthenticationException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(Map.of("error", "Registration/Login Failed", "message", ex.getMessage()));
+            .body(Map.of("error", "Registration/Login Failed", "message", ex.getMessage()));
     }
 }

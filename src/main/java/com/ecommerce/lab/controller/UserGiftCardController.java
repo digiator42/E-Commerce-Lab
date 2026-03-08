@@ -39,9 +39,12 @@ public class UserGiftCardController {
     private final BalanceTransactionRepository balanceTransactionRepository;
 
     @PostMapping("/purchase")
-    public ResponseEntity<?> purchaseGiftCard(@RequestBody GiftCardRequest request, Principal principal) {
+    public ResponseEntity<?> purchaseGiftCard(
+        @RequestBody GiftCardRequest request,
+        Principal principal
+    ) {
         User buyer = userRepository.findByEmail(principal.getName())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+            .orElseThrow(() -> new RuntimeException("User not found"));
 
         // Generate the Gift Card
         GiftCard giftCard = new GiftCard();
@@ -56,17 +59,21 @@ public class UserGiftCardController {
         giftCardRepository.save(giftCard);
 
         // Send the code via Email
-        emailService.sendGiftCardCode(giftCard.getRecipientEmail(), giftCard.getCode(), buyer.getName());
+        emailService
+            .sendGiftCardCode(giftCard.getRecipientEmail(), giftCard.getCode(), buyer.getName());
 
-        return ResponseEntity.ok(Map.of(
+        return ResponseEntity.ok(
+            Map.of(
                 "message", "Gift card purchased successfully!",
-                "codeSentTo", giftCard.getRecipientEmail()));
+                "codeSentTo", giftCard.getRecipientEmail()
+            )
+        );
     }
 
     private String generateSecureCode() {
         // Generates a format like: XXXX-XXXX-XXXX
         return UUID.randomUUID().toString().substring(0, 12).toUpperCase()
-                .replaceAll("(.{4})(?!$)", "$1-");
+            .replaceAll("(.{4})(?!$)", "$1-");
     }
 
     @PostMapping("/redeem")
@@ -76,7 +83,7 @@ public class UserGiftCardController {
         User user = userRepository.findByEmail(principal.getName()).orElseThrow();
 
         GiftCard card = giftCardRepository.findByCode(code)
-                .orElseThrow(() -> new RuntimeException("Gift card not found"));
+            .orElseThrow(() -> new RuntimeException("Gift card not found"));
 
         if (!card.isActive() || card.getBalance() <= 0) {
             throw new RuntimeException("This card has already been used or is inactive.");
@@ -111,9 +118,10 @@ public class UserGiftCardController {
     @GetMapping("/history")
     public ResponseEntity<?> getHistory(Principal principal) {
         User user = userRepository.findByEmail(principal.getName())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+            .orElseThrow(() -> new RuntimeException("User not found"));
 
-        List<BalanceTransaction> history = balanceTransactionRepository.findAllByUserOrderByDateDesc(user);
+        List<BalanceTransaction> history = balanceTransactionRepository
+            .findAllByUserOrderByDateDesc(user);
 
         List<Map<String, Object>> items = history.stream().map(tx -> {
             Map<String, Object> item = new HashMap<>();
@@ -124,8 +132,11 @@ public class UserGiftCardController {
             return item;
         }).collect(Collectors.toList());
 
-        return ResponseEntity.ok(Map.of(
+        return ResponseEntity.ok(
+            Map.of(
                 "userStoreBalance", user.getStoreBalance(),
-                "history", items));
+                "history", items
+            )
+        );
     }
 }

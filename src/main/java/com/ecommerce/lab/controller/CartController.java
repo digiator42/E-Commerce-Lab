@@ -42,7 +42,10 @@ public class CartController {
     }
 
     @PostMapping("/add-gift-card")
-    public ResponseEntity<?> addGiftCardToCart(@RequestBody GiftCardRequest gcRequest, Principal principal) {
+    public ResponseEntity<?> addGiftCardToCart(
+        @RequestBody GiftCardRequest gcRequest,
+        Principal principal
+    ) {
         if (principal == null)
             return ResponseEntity.status(401).body("Login required");
 

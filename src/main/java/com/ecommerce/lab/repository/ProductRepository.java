@@ -13,7 +13,8 @@ import org.springframework.stereotype.Repository;
 import com.ecommerce.lab.model.Product;
 
 @Repository
-public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
+public interface ProductRepository
+    extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
 
     boolean existsByName(String name);
 
@@ -25,7 +26,11 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
 
     Page<Product> findByNameContainingIgnoreCase(String name, Pageable pageable);
 
-    Page<Product> findByCategoryNameAndNameContainingIgnoreCase(String category, String name, Pageable pageable);
+    Page<Product> findByCategoryNameAndNameContainingIgnoreCase(
+        String category,
+        String name,
+        Pageable pageable
+    );
 
     Page<Product> findByCategoryName(String category, Pageable pageable);
 

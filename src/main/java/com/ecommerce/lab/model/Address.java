@@ -36,14 +36,12 @@ public class Address {
         Address that = (Address) o;
 
         return street.equals(that.street) &&
-                city.equals(that.city) &&
-                state.equals(that.state) &&
-                zipCode.equals(that.zipCode) &&
-                country.equals(that.country);
+            city.equals(that.city) &&
+            state.equals(that.state) &&
+            zipCode.equals(that.zipCode) &&
+            country.equals(that.country);
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(street, city, state, zipCode, country);
-    }
+    public int hashCode() { return Objects.hash(street, city, state, zipCode, country); }
 }

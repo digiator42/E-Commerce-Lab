@@ -12,22 +12,24 @@ public record UserResponseDTO(
         String profilePicture,
         String defaultAddress,
         String lastLogin,
-        String role) {
+        String role
+) {
 
-    public static UserResponseDTO fromEntity(User user) {
-        String roleName = (user.getRole() != null) ? user.getRole().name() : "ROLE_USER";
+        public static UserResponseDTO fromEntity(User user) {
+                String roleName = (user.getRole() != null) ? user.getRole().name() : "ROLE_USER";
 
-        String userLastLogin = user.getLastLogin() != null ? user.getLastLogin().toString()
-                : LocalDateTime.now().toString();
+                String userLastLogin = user.getLastLogin() != null ? user.getLastLogin().toString()
+                        : LocalDateTime.now().toString();
 
-        return new UserResponseDTO(
-                user.getId(),
-                user.getName(),
-                user.getUserName(),
-                user.getEmail(),
-                user.getProfilePicture(),
-                user.getAddress(),
-                userLastLogin,
-                roleName);
-    }
+                return new UserResponseDTO(
+                        user.getId(),
+                        user.getName(),
+                        user.getUserName(),
+                        user.getEmail(),
+                        user.getProfilePicture(),
+                        user.getAddress(),
+                        userLastLogin,
+                        roleName
+                );
+        }
 }

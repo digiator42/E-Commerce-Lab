@@ -18,13 +18,12 @@ public class UserController {
 
     private final UserService userService;
 
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
+    public UserController(UserService userService) { this.userService = userService; }
 
     @PutMapping("/profile")
     public ResponseEntity<?> updateProfile(@RequestBody UserUpdateDTO dto, Principal principal) {
-        if (principal == null) return ResponseEntity.status(401).build();
+        if (principal == null)
+            return ResponseEntity.status(401).build();
 
         try {
             userService.updateProfile(principal.getName(), dto);

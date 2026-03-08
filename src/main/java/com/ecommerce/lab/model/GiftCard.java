@@ -13,7 +13,7 @@ public class GiftCard {
     private Long id;
 
     @Column(unique = true, nullable = false)
-    private String code; // "GIFT-ABCD-1234"
+    private String code;
 
     private double balance; // Remaining money
     private double initialAmount; // Starting money for history/logs

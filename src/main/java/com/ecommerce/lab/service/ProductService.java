@@ -33,8 +33,10 @@ public class ProductService {
     private final OrderRepository orderRepository;
     private final ReviewRepository reviewRepository;
 
-    public ProductService(ProductRepository productRepository, OrderRepository orderRepository,
-            ReviewRepository reviewRepository) {
+    public ProductService(
+        ProductRepository productRepository, OrderRepository orderRepository,
+        ReviewRepository reviewRepository
+    ) {
         this.productRepository = productRepository;
         this.orderRepository = orderRepository;
         this.reviewRepository = reviewRepository;
@@ -42,16 +44,14 @@ public class ProductService {
 
     public Product findProductById(Long id) {
         return productRepository.findById(id)
-                .orElseThrow(() -> new ProductNotFoundException("Product Not Found"));
+            .orElseThrow(() -> new ProductNotFoundException("Product Not Found"));
     }
 
-    public List<Product> findAllProductsList() {
-        return productRepository.findAll();
-    }
+    public List<Product> findAllProductsList() { return productRepository.findAll(); }
 
     public Page<ProductResponseDTO> getAll(Pageable pageable) {
         return productRepository.findAll(pageable)
-                .map(ProductResponseDTO::fromEntity);
+            .map(ProductResponseDTO::fromEntity);
     }
 
     public Product createProduct(@Valid ProductRequestDTO dto) {
@@ -93,13 +93,19 @@ public class ProductService {
         return status;
     }
 
-    public Specification<Product> filterBy(String search, List<String> categories, Double minPrice,
-            Double maxPrice, Double minRating) {
+    public Specification<Product> filterBy(
+        String search,
+        List<String> categories,
+        Double minPrice,
+        Double maxPrice,
+        Double minRating
+    ) {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
             if (search != null && !search.isEmpty()) {
-                predicates.add(cb.like(cb.lower(root.get("name")), "%" + search.toLowerCase() + "%"));
+                predicates
+                    .add(cb.like(cb.lower(root.get("name")), "%" + search.toLowerCase() + "%"));
             }
 
             if (categories != null && !categories.isEmpty()) {
@@ -124,7 +130,7 @@ public class ProductService {
                 Subquery<Double> subquery = query.subquery(Double.class);
                 Root<Review> subRoot = subquery.from(Review.class);
                 subquery.select(cb.avg(subRoot.get("rating")))
-                        .where(cb.equal(subRoot.get("product"), root));
+                    .where(cb.equal(subRoot.get("product"), root));
 
                 predicates.add(cb.greaterThanOrEqualTo(subquery, minRating));
             }

@@ -42,10 +42,15 @@ public class OrderService {
     private final BalanceTransactionRepository balanceTransactionRepository;
 
     @Transactional(rollbackFor = Exception.class)
-    public void placeOrder(String email, String couponCode, boolean useStoreBalance, String shippingAddress)
-            throws Exception {
+    public void placeOrder(
+        String email,
+        String couponCode,
+        boolean useStoreBalance,
+        String shippingAddress
+    )
+        throws Exception {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+            .orElseThrow(() -> new RuntimeException("User not found"));
 
         List<CartItem> cartItems = cartRepository.findAllByUserEmail(email);
 
@@ -93,7 +98,9 @@ public class OrderService {
         double finalTotal = remainingPhysical + breakdown.giftCardTotal();
 
         // Persistence
-        Order savedOrder = this.createAndSaveOrder(user, shippingAddress, address, cartItems, finalTotal);
+        Order savedOrder = this.createAndSaveOrder(
+            user, shippingAddress, address, cartItems, finalTotal
+        );
 
         if (useStoreBalance && user.getStoreBalance() > 0) {
             if (amountToDeduct != 0)
@@ -124,14 +131,17 @@ public class OrderService {
 
     private void validateShippingAddress(User user) {
         if (user.getAddress() == null || user.getAddress().isBlank()) {
-            throw new RuntimeException("Please set a shipping address in your profile before checkout.");
+            throw new RuntimeException(
+                "Please set a shipping address in your profile before checkout."
+            );
         }
     }
 
-    public record OrderBreakdown(double physicalTotal, double giftCardTotal) {
-        public double getGrandTotal() {
-            return physicalTotal + giftCardTotal;
-        }
+    public record OrderBreakdown(
+        double physicalTotal,
+        double giftCardTotal
+    ) {
+        public double getGrandTotal() { return physicalTotal + giftCardTotal; }
     }
 
     private OrderBreakdown processItemsAndStock(List<CartItem> cartItems, String email) {
@@ -144,7 +154,9 @@ public class OrderService {
                 this.generateAndEmailGiftCard(ci, email);
             } else {
                 if (ci.getProduct().getStock() < ci.getQuantity()) {
-                    throw new RuntimeException("Insufficient stock for " + ci.getProduct().getName());
+                    throw new RuntimeException(
+                        "Insufficient stock for " + ci.getProduct().getName()
+                    );
                 }
                 ci.getProduct().setStock(ci.getProduct().getStock() - ci.getQuantity());
                 physicalTotal += (ci.getProduct().getPrice() * ci.getQuantity());
@@ -166,9 +178,10 @@ public class OrderService {
         giftCardRepository.save(gc);
 
         emailService.sendGiftCardCode(
-                ci.getRecipientEmail(),
-                gc.getCode(),
-                ci.getGiftCardMessage());
+            ci.getRecipientEmail(),
+            gc.getCode(),
+            ci.getGiftCardMessage()
+        );
     }
 
     private double applyCoupon(double total, String couponCode) {
@@ -177,7 +190,7 @@ public class OrderService {
         }
 
         Coupon coupon = couponRepository.findByCode(couponCode)
-                .orElseThrow(() -> new RuntimeException("Coupon not found"));
+            .orElseThrow(() -> new RuntimeException("Coupon not found"));
 
         validateCoupon(coupon);
 
@@ -190,7 +203,13 @@ public class OrderService {
         return total - discount;
     }
 
-    private Order createAndSaveOrder(User user, String shippingAddress, Address address, List<CartItem> cartItems, double finalTotal) {
+    private Order createAndSaveOrder(
+        User user,
+        String shippingAddress,
+        Address address,
+        List<CartItem> cartItems,
+        double finalTotal
+    ) {
         Order order = new Order();
         order.setUser(user);
         order.setOrderDate(LocalDateTime.now());
@@ -199,7 +218,9 @@ public class OrderService {
         order.setTotalAmount(Math.round(finalTotal * 100.0) / 100.0);
         order.setPaymentStatus("PAID");
         order.setStatus(OrderStatus.COMPLETED);
-        order.setPaymentTransactionId("FAKE-TX-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+        order.setPaymentTransactionId(
+            "FAKE-TX-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase()
+        );
 
         // Map CartItems to OrderItems
         for (CartItem ci : cartItems) {
@@ -231,9 +252,10 @@ public class OrderService {
 
         // Send to admin
         emailService.sendSimpleEmail(
-                "admin@admin.com",
-                "New Order Received!",
-                "Order #" + order.getId() + " was placed by " + user.getEmail());
+            "admin@admin.com",
+            "New Order Received!",
+            "Order #" + order.getId() + " was placed by " + user.getEmail()
+        );
     }
 
     public void validateCoupon(Coupon coupon) {

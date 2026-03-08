@@ -34,7 +34,10 @@ public class TwoFactorController {
 
     // Toggle 2FA status
     @PostMapping("/toggle")
-    public ResponseEntity<?> toggle2FA(Principal principal, @RequestBody Map<String, String> enabled) {
+    public ResponseEntity<?> toggle2FA(
+        Principal principal,
+        @RequestBody Map<String, String> enabled
+    ) {
         User user = userRepository.findByEmail(principal.getName()).get();
 
         if (enabled.get("enabled").equals("true")) {
@@ -52,7 +55,10 @@ public class TwoFactorController {
 
     // Verify TOTP or email code
     @PostMapping("/verify")
-    public ResponseEntity<?> verify2fa(@RequestBody Map<String, String> body, HttpServletRequest request) {
+    public ResponseEntity<?> verify2fa(
+        @RequestBody Map<String, String> body,
+        HttpServletRequest request
+    ) {
         HttpSession session = request.getSession(false);
         String email = (session != null) ? (String) session.getAttribute("PENDING_2FA_USER") : null;
 
@@ -91,7 +97,8 @@ public class TwoFactorController {
 
         LocalDateTime lastSent = (LocalDateTime) session.getAttribute("LAST_2FA_SENT");
         if (lastSent != null && lastSent.plusSeconds(60).isAfter(LocalDateTime.now())) {
-            return ResponseEntity.status(429).body("Please wait 60 seconds before requesting a new code.");
+            return ResponseEntity.status(429)
+                .body("Please wait 60 seconds before requesting a new code.");
         }
 
         // Trigger new code
@@ -107,7 +114,7 @@ public class TwoFactorController {
             return ResponseEntity.status(401).build();
 
         User user = userRepository.findByEmail(principal.getName())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+            .orElseThrow(() -> new RuntimeException("User not found"));
 
         // Return a DTO with just the status info
         Map<String, Object> status = new HashMap<>();

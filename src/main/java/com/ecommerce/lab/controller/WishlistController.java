@@ -17,7 +17,9 @@ public class WishlistController {
     private final WishlistService wishlistService;
     private final WishlistRepository wishlistRepository;
 
-    public WishlistController(WishlistService wishlistService, WishlistRepository wishlistRepository) {
+    public WishlistController(
+        WishlistService wishlistService, WishlistRepository wishlistRepository
+    ) {
         this.wishlistService = wishlistService;
         this.wishlistRepository = wishlistRepository;
     }

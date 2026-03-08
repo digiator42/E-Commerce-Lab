@@ -23,8 +23,10 @@ public class ReviewController {
     private final ReviewRepository reviewRepository;
     private final OrderService orderService;
 
-    public ReviewController(ProductRepository productRepository, UserRepository userRepository,
-            ReviewRepository reviewRepository, OrderService orderService) {
+    public ReviewController(
+        ProductRepository productRepository, UserRepository userRepository,
+        ReviewRepository reviewRepository, OrderService orderService
+    ) {
         this.productRepository = productRepository;
         this.userRepository = userRepository;
         this.reviewRepository = reviewRepository;
@@ -32,9 +34,11 @@ public class ReviewController {
     }
 
     @PostMapping("/{productId}")
-    public ResponseEntity<?> addReview(@PathVariable Long productId,
-            @RequestBody Review review,
-            Principal principal) {
+    public ResponseEntity<?> addReview(
+        @PathVariable Long productId,
+        @RequestBody Review review,
+        Principal principal
+    ) {
         if (principal == null)
             return ResponseEntity.status(401).body("Login required");
 
@@ -42,12 +46,14 @@ public class ReviewController {
 
         if (!orderService.hasUserPurchasedProduct(email, productId)) {
             return ResponseEntity.badRequest().body(
-                    Map.of("error", "You can only review products you have purchased."));
+                Map.of("error", "You can only review products you have purchased.")
+            );
         }
 
         if (reviewRepository.existsByUserEmailAndProductId(email, productId)) {
             return ResponseEntity.badRequest().body(
-                    Map.of("error", "You have already reviewed this product."));
+                Map.of("error", "You have already reviewed this product.")
+            );
         }
 
         Product product = productRepository.findById(productId).orElseThrow();

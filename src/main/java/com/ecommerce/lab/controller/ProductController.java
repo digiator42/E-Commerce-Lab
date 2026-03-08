@@ -45,7 +45,10 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ProductResponseDTO> getProductById(@PathVariable Long id, Principal principal) {
+    public ResponseEntity<ProductResponseDTO> getProductById(
+        @PathVariable Long id,
+        Principal principal
+    ) {
         Optional<Product> productOpt = productRepository.findById(id);
 
         if (productOpt.isEmpty()) {
@@ -65,14 +68,16 @@ public class ProductController {
 
     @GetMapping
     public ResponseEntity<Page<ProductResponseDTO>> getAllProducts(
-            @RequestParam(required = false) String search,
-            @RequestParam(required = false) String category,
-            Pageable pageable) {
+        @RequestParam(required = false) String search,
+        @RequestParam(required = false) String category,
+        Pageable pageable
+    ) {
 
         Page<Product> productPage;
 
         if (StringUtils.hasText(search) && StringUtils.hasText(category)) {
-            productPage = productRepository.findByCategoryNameAndNameContainingIgnoreCase(category, search, pageable);
+            productPage = productRepository
+                .findByCategoryNameAndNameContainingIgnoreCase(category, search, pageable);
         } else if (StringUtils.hasText(category)) {
             productPage = productRepository.findByCategoryName(category, pageable);
         } else if (StringUtils.hasText(search)) {
@@ -86,34 +91,37 @@ public class ProductController {
 
     @GetMapping("/custom")
     public ResponseEntity<Page<ProductResponseDTO>> getAllProducts(
-            @RequestParam(required = false) String search,
-            @RequestParam(required = false) List<String> category, // Handles multiple checkboxes
-            @RequestParam(required = false) Double minPrice,
-            @RequestParam(required = false) Double maxPrice,
-            @RequestParam(required = false) Double minRating,
-            @RequestParam(defaultValue = "newest") String sort, // newest, price_asc, price_desc, rating
-            Pageable pageable,
-            Principal principal) {
+        @RequestParam(required = false) String search,
+        @RequestParam(required = false) List<String> category, // Handles multiple checkboxes
+        @RequestParam(required = false) Double minPrice,
+        @RequestParam(required = false) Double maxPrice,
+        @RequestParam(required = false) Double minRating,
+        @RequestParam(defaultValue = "newest") String sort, // newest, price_asc, price_desc, rating
+        Pageable pageable,
+        Principal principal
+    ) {
 
         // Sorting
         Sort sortOrder = switch (sort) {
-            case "price_asc" -> Sort.by("price").ascending();
-            case "price_desc" -> Sort.by("price").descending();
-            case "name_asc" -> Sort.by("name").ascending();
-            case "name_desc" -> Sort.by("name").descending();
-            case "stock" -> Sort.by("stock").ascending();
-            case "newest" -> Sort.by("id").descending();
-            default -> Sort.unsorted();
+        case "price_asc" -> Sort.by("price").ascending();
+        case "price_desc" -> Sort.by("price").descending();
+        case "name_asc" -> Sort.by("name").ascending();
+        case "name_desc" -> Sort.by("name").descending();
+        case "stock" -> Sort.by("stock").ascending();
+        case "newest" -> Sort.by("id").descending();
+        default -> Sort.unsorted();
         };
 
-        Pageable updatedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sortOrder);
+        Pageable updatedPageable = PageRequest
+            .of(pageable.getPageNumber(), pageable.getPageSize(), sortOrder);
 
         Page<Product> productPage;
         if ("rating".equals(sort)) {
             // Special case for average rating sorting
             productPage = productRepository.findAllOrderByAverageRating(updatedPageable);
         } else {
-            Specification<Product> spec = service.filterBy(search, category, minPrice, maxPrice, minRating);
+            Specification<Product> spec = service
+                .filterBy(search, category, minPrice, maxPrice, minRating);
             productPage = productRepository.findAll(spec, updatedPageable);
         }
 
@@ -121,7 +129,8 @@ public class ProductController {
     }
 
     private ProductResponseDTO convertToDto(Product product, Principal principal) {
-        String status = (principal == null) ? "GUEST" : service.canReview(principal.getName(), product.getId());
+        String status = (principal == null) ? "GUEST"
+            : service.canReview(principal.getName(), product.getId());
         return ProductResponseDTO.fromEntity(product, status);
     }
 }

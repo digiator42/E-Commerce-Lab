@@ -26,7 +26,7 @@ public class PasswordResetController {
         try {
             resetService.createPasswordResetToken(email);
             return ResponseEntity.ok("If an account exists, a reset link has been sent.");
-            
+
         } catch (Exception e) {
             return ResponseEntity.ok("If an account exists, a reset link has been sent.");
         }

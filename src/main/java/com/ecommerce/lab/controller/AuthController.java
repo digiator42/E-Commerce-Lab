@@ -38,11 +38,13 @@ public class AuthController {
     private final TotpService totpService;
     private final UserRepository userRepository;
 
-    public AuthController(UserService userService,
-            PasswordEncoder passwordEncoder,
-            AuthService authService,
-            TotpService totpService,
-            UserRepository userRepository) {
+    public AuthController(
+        UserService userService,
+        PasswordEncoder passwordEncoder,
+        AuthService authService,
+        TotpService totpService,
+        UserRepository userRepository
+    ) {
         this.userService = userService;
         this.passwordEncoder = passwordEncoder;
         this.authService = authService;
@@ -55,7 +57,7 @@ public class AuthController {
 
         if (principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("isLoggedIn", false));
+                .body(Map.of("isLoggedIn", false));
         }
 
         User user = userService.findByEmail(principal.getName());
@@ -68,7 +70,10 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequestDTO loginReq, HttpServletRequest request) {
+    public ResponseEntity<?> login(
+        @RequestBody LoginRequestDTO loginReq,
+        HttpServletRequest request
+    ) {
 
         User user = userService.findByEmail(loginReq.email());
 
@@ -89,10 +94,16 @@ public class AuthController {
             HttpSession session = request.getSession(true);
             session.setAttribute("PENDING_2FA_USER", user.getEmail());
 
-            return ResponseEntity.ok(Map.of(
-                    "requires2FA", true,
-                    "qrCodeUrl", qrUrl,
-                    "message", "Verify using Google Authenticator or check your Email"));
+            return ResponseEntity.ok(
+                Map.of(
+                    "requires2FA",
+                    true,
+                    "qrCodeUrl",
+                    qrUrl,
+                    "message",
+                    "Verify using Google Authenticator or check your Email"
+                )
+            );
         }
 
         return authService.finalizeSession(user, request);

@@ -19,9 +19,10 @@ public class WishlistService {
     private final UserRepository userRepository;
 
     public WishlistService(
-            WishlistRepository wishlistRepository,
-            ProductRepository productRepository,
-            UserRepository userRepository) {
+        WishlistRepository wishlistRepository,
+        ProductRepository productRepository,
+        UserRepository userRepository
+    ) {
 
         this.wishlistRepository = wishlistRepository;
         this.productRepository = productRepository;
@@ -44,7 +45,7 @@ public class WishlistService {
 
     public List<ProductResponseDTO> getWishlist(String email) {
         return wishlistRepository.findByUserEmail(email).stream()
-                .map(item -> ProductResponseDTO.fromEntity(item.getProduct()))
-                .toList();
+            .map(item -> ProductResponseDTO.fromEntity(item.getProduct()))
+            .toList();
     }
 }

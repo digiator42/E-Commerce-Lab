@@ -26,14 +26,17 @@ public class CouponController {
     @GetMapping("/check")
     public ResponseEntity<?> checkCoupon(@RequestParam String code, Principal principal) {
         Coupon coupon = couponRepository.findByCode(code)
-                .orElseThrow(() -> new ProductNotFoundException("Coupon not found"));
+            .orElseThrow(() -> new ProductNotFoundException("Coupon not found"));
 
         // Call the same helper function used in placeOrder
         orderService.validateCoupon(coupon);
 
-        return ResponseEntity.ok(Map.of(
+        return ResponseEntity.ok(
+            Map.of(
                 "code", coupon.getCode(),
                 "discountPercentage", coupon.getDiscountPercentage(),
-                "message", "Coupon valid!"));
+                "message", "Coupon valid!"
+            )
+        );
     }
 }

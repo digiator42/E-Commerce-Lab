@@ -347,7 +347,8 @@ export class CartManager {
 
     async removeItem(event, itemId) {
         if (!this.authManager.isAuthenticated) {
-            const index = this.items.findIndex(item => item.isGiftCard === true);
+            const index = this.items.findIndex(item => item.isGiftCard === true || item.id == itemId.split("-")[2]);
+            console.log("====> ", index);
             if (index !== -1) {
                 const item = this.items[index];
                 this.items.splice(index, 1);
@@ -442,6 +443,8 @@ export class CartManager {
             this.updateBadge();
             return;
         }
+
+        console.log("-----> ", this.items);
 
         const html = this.items.map(product => {
             const imageUrl = product.isGiftCard

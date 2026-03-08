@@ -4,7 +4,8 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Min;
 
 public record GiftCardRequest(
-                @Min(value = 25, message = "Amount must be at least 25") Double amount,
-                @Email String recipientEmail,
-                String message) {
+    @Min(value = 25, message = "Amount must be at least 25") Double amount,
+    @Email String recipientEmail,
+    String message
+) {
 }

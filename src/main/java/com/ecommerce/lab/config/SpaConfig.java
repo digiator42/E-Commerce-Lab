@@ -14,28 +14,29 @@ public class SpaConfig implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/**")
-                .addResourceLocations("classpath:/static/", "classpath:/templates/")
-                .resourceChain(true)
-                .addResolver(new PathResourceResolver() {
-                    @Override
-                    protected Resource getResource(String resourcePath, Resource location) throws IOException {
-                        Resource requestedResource = location.createRelative(resourcePath);
+            .addResourceLocations("classpath:/static/", "classpath:/templates/")
+            .resourceChain(true)
+            .addResolver(new PathResourceResolver() {
+                @Override
+                protected Resource getResource(String resourcePath, Resource location)
+                    throws IOException {
+                    Resource requestedResource = location.createRelative(resourcePath);
 
-                        if (requestedResource.exists() && requestedResource.isReadable()) {
-                            return requestedResource;
-                        }
+                    if (requestedResource.exists() && requestedResource.isReadable()) {
+                        return requestedResource;
+                    }
 
-                        if (resourcePath.startsWith("api/") || resourcePath.startsWith("/api/")) {
-                            return null;
-                        }
-
-                        Resource index = location.createRelative("index.html");
-                        if (index.exists() && index.isReadable()) {
-                            return index;
-                        }
-
+                    if (resourcePath.startsWith("api/") || resourcePath.startsWith("/api/")) {
                         return null;
                     }
-                });
+
+                    Resource index = location.createRelative("index.html");
+                    if (index.exists() && index.isReadable()) {
+                        return index;
+                    }
+
+                    return null;
+                }
+            });
     }
 }

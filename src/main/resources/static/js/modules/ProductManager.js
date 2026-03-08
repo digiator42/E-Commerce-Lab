@@ -62,20 +62,8 @@ export class ProductManager {
             const data = await this.apiClient.fetch('/api/categories');
             console.log('Raw categories data:', data);
 
-            // Handle different data structures
             if (Array.isArray(data)) {
-                // If it's an array of strings
-                if (data.length > 0 && typeof data[0] === 'string') {
-                    this.categories = data;
-                }
-                // If it's an array of objects with name/id property
-                else if (data.length > 0 && typeof data[0] === 'object') {
-                    this.categories = data.map(cat => cat.name || cat.category || cat.title || String(cat));
-                }
-            }
-            // If it's an object with a categories property
-            else if (data && data.categories && Array.isArray(data.categories)) {
-                this.categories = data.categories.map(cat => cat.name || cat.category || cat.title || String(cat));
+                this.categories = data.map(cat => cat.name || cat.category || cat.title || String(cat));
             }
 
             console.log('Processed categories:', this.categories);

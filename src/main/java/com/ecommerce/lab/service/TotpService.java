@@ -23,7 +23,5 @@ public class TotpService {
     }
 
     // Verify the 6-digit code provided by the user
-    public boolean verifyCode(String secret, int code) {
-        return gAuth.authorize(secret, code);
-    }
+    public boolean verifyCode(String secret, int code) { return gAuth.authorize(secret, code); }
 }

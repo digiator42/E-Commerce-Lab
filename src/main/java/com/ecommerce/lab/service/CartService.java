@@ -22,8 +22,10 @@ public class CartService {
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
 
-    public CartService(CartRepository cartRepository, ProductRepository productRepository,
-            UserRepository userRepository) {
+    public CartService(
+        CartRepository cartRepository, ProductRepository productRepository,
+        UserRepository userRepository
+    ) {
         this.cartRepository = cartRepository;
         this.productRepository = productRepository;
         this.userRepository = userRepository;
@@ -32,9 +34,9 @@ public class CartService {
     @Transactional
     public void addItemToCart(Long productId, String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+            .orElseThrow(() -> new RuntimeException("User not found"));
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+            .orElseThrow(() -> new RuntimeException("Product not found"));
 
         Optional<CartItem> existingItem = cartRepository.findByUserAndProduct(user, product);
 
@@ -69,7 +71,7 @@ public class CartService {
         List<CartItem> entities = cartRepository.findAllByUserEmail(email);
 
         return entities.stream()
-                .map(CartItemResponseDTO::fromEntity)
-                .toList();
+            .map(CartItemResponseDTO::fromEntity)
+            .toList();
     }
 }

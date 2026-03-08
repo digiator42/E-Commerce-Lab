@@ -26,7 +26,7 @@ public class TotpController {
     @PostMapping("/setup")
     public ResponseEntity<?> setupTotp(Principal principal) {
         User user = userRepository.findByEmail(principal.getName()).get();
-        
+
         // Generate and save secret
         String secret = totpService.generateSecret();
         user.setTotpSecret(secret);
@@ -38,7 +38,10 @@ public class TotpController {
     }
 
     @PostMapping("/confirm")
-    public ResponseEntity<?> confirmTotp(@RequestBody Map<String, Integer> request, Principal principal) {
+    public ResponseEntity<?> confirmTotp(
+        @RequestBody Map<String, Integer> request,
+        Principal principal
+    ) {
         User user = userRepository.findByEmail(principal.getName()).get();
         boolean isValid = totpService.verifyCode(user.getTotpSecret(), request.get("code"));
 

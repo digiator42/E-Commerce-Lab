@@ -48,13 +48,14 @@ public class GiftCardService {
         giftCardRepository.save(giftCard);
 
         // Send the code via Email
-        emailService.sendGiftCardCode(giftCard.getRecipientEmail(), giftCard.getCode(), buyer.getName());
+        emailService
+            .sendGiftCardCode(giftCard.getRecipientEmail(), giftCard.getCode(), buyer.getName());
 
     }
 
     private String generateSecureCode() {
         // Generates a format like: XXXX-XXXX-XXXX
         return "GIFT-" + UUID.randomUUID().toString().substring(0, 12).toUpperCase()
-                .replaceAll("(.{4})(?!$)", "$1-");
+            .replaceAll("(.{4})(?!$)", "$1-");
     }
 }

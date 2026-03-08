@@ -5,8 +5,6 @@ import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.Principal;
-import java.util.Base64;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -22,9 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -44,7 +40,6 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 import org.springframework.web.bind.annotation.RequestBody;
 
 import com.ecommerce.lab.dto.ProductRequestDTO;
-import com.ecommerce.lab.dto.ProductResponseDTO;
 import com.ecommerce.lab.dto.UserResponseDTO;
 import com.ecommerce.lab.model.Category;
 import com.ecommerce.lab.model.Coupon;
@@ -328,7 +323,7 @@ public class AdminController {
                 .limit(5)
                 .collect(Collectors.toList());
 
-        if (topCoupons.size() == 0) {
+        if (topCoupons.isEmpty()) {
             topCoupons = couponRepository.findAll();
         }
         return ResponseEntity.ok(topCoupons);

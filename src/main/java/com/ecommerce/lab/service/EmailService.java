@@ -25,9 +25,10 @@ public class EmailService {
     private final InvoiceService invoiceService;
 
     public EmailService(
-            JavaMailSender mailSender,
-            TemplateEngine templateEngine,
-            InvoiceService invoiceService) {
+        JavaMailSender mailSender,
+        TemplateEngine templateEngine,
+        InvoiceService invoiceService
+    ) {
         this.mailSender = mailSender;
         this.templateEngine = templateEngine;
         this.invoiceService = invoiceService;
@@ -47,7 +48,12 @@ public class EmailService {
         }
     }
 
-    private void sendTemplateEmail(String to, String subject, String templateName, Context context) {
+    private void sendTemplateEmail(
+        String to,
+        String subject,
+        String templateName,
+        Context context
+    ) {
         try {
             String htmlContent = templateEngine.process(templateName, context);
             MimeMessage message = mailSender.createMimeMessage();
@@ -106,8 +112,10 @@ public class EmailService {
             invoiceService.generateInvoice(order, outputStream);
 
             byte[] pdfBytes = outputStream.toByteArray();
-            helper.addAttachment("Invoice_Order_" + order.getId() + ".pdf",
-                    new ByteArrayResource(pdfBytes));
+            helper.addAttachment(
+                "Invoice_Order_" + order.getId() + ".pdf",
+                new ByteArrayResource(pdfBytes)
+            );
 
             mailSender.send(message);
 
@@ -125,14 +133,18 @@ public class EmailService {
     public void sendGiftCardCode(String email, String code, String name) {
         Context context = new Context();
         context.setVariable("name", name);
-        sendTemplateEmail(email, "Thanks for purchasing Gift Card " + code, "welcome-email", context);
+        sendTemplateEmail(
+            email, "Thanks for purchasing Gift Card " + code, "welcome-email", context
+        );
     }
 
     public void sendPasswordResetEmail(String email, String resetLink) {
         Context context = new Context();
         context.setVariable("resetLink", resetLink);
         System.out.println("======> " + resetLink);
-        sendTemplateEmail(email, "Reset your password through this link", "password-reset", context);
+        sendTemplateEmail(
+            email, "Reset your password through this link", "password-reset", context
+        );
 
     }
 

@@ -27,7 +27,7 @@ public class AuthService {
 
     public void generateAndSend2FACode(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+            .orElseThrow(() -> new RuntimeException("User not found"));
 
         // Generate a random 6-digit code
         String code = String.valueOf(new Random().nextInt(899999) + 100000);
@@ -42,11 +42,11 @@ public class AuthService {
 
     public boolean verify2FACode(String email, String code) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+            .orElseThrow(() -> new RuntimeException("User not found"));
 
         if (user.getTwoFactorCode() != null &&
-                user.getTwoFactorCode().equals(code) &&
-                user.getTwoFactorCodeExpires().isAfter(LocalDateTime.now())) {
+            user.getTwoFactorCode().equals(code) &&
+            user.getTwoFactorCodeExpires().isAfter(LocalDateTime.now())) {
 
             // Clear code after successful verification
             user.setTwoFactorCode(null);
@@ -69,7 +69,7 @@ public class AuthService {
 
         // Clear any pending 2FA data
         session.removeAttribute("PENDING_2FA_USER");
-        
+
         user.setLastLogin(LocalDateTime.now());
         userRepository.save(user);
 

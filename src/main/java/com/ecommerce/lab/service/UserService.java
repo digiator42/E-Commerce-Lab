@@ -21,15 +21,15 @@ public class UserService {
     private EmailService emailService;
     private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository, EmailService emailService, PasswordEncoder passwordEncoder) {
+    public UserService(
+        UserRepository userRepository, EmailService emailService, PasswordEncoder passwordEncoder
+    ) {
         this.userRepository = userRepository;
         this.emailService = emailService;
         this.passwordEncoder = passwordEncoder;
     }
 
-    public User createUser(User user) {
-        return userRepository.save(user);
-    }
+    public User createUser(User user) { return userRepository.save(user); }
 
     public User getUserById(Long id) {
         return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException());
@@ -37,12 +37,10 @@ public class UserService {
 
     public User findByEmail(String email) {
         return userRepository.findByEmail(email)
-                .orElseThrow(() -> new AuthenticationException("User not found"));
+            .orElseThrow(() -> new AuthenticationException("User not found"));
     }
 
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
-    }
+    public List<User> getAllUsers() { return userRepository.findAll(); }
 
     public User updateUser(Long id, User user) {
         User existingUser = getUserById(id);
@@ -58,7 +56,7 @@ public class UserService {
     public UserResponseDTO login(LoginRequestDTO dto) {
 
         User user = userRepository.findByEmail(dto.email())
-                .orElseThrow(() -> new AuthenticationException("Invalid  email or password"));
+            .orElseThrow(() -> new AuthenticationException("Invalid  email or password"));
 
         if (!passwordEncoder.matches(dto.password(), user.getPassword())) {
             throw new AuthenticationException("Invalid email or password");
@@ -88,9 +86,10 @@ public class UserService {
         user = userRepository.save(user);
 
         emailService.sendSimpleEmail(
-                user.getEmail(),
-                "Welcome to Commerce Lab!",
-                "Hi " + user.getName() + ",\n\nYour account has been created successfully!");
+            user.getEmail(),
+            "Welcome to Commerce Lab!",
+            "Hi " + user.getName() + ",\n\nYour account has been created successfully!"
+        );
 
         return UserResponseDTO.fromEntity(user);
     }
@@ -98,7 +97,7 @@ public class UserService {
     @Transactional
     public void updateProfile(String email, UserUpdateDTO dto) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+            .orElseThrow(() -> new RuntimeException("User not found"));
 
         if (dto.displayName() != null)
             user.setName(dto.displayName());
@@ -125,7 +124,5 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public void deleteUser(Long id) {
-        userRepository.deleteById(id);
-    }
+    public void deleteUser(Long id) { userRepository.deleteById(id); }
 }

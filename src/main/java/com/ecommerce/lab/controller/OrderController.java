@@ -32,7 +32,10 @@ public class OrderController {
     private final OrderRepository orderRepository;
     private final InvoiceService invoiceService;
 
-    public OrderController(OrderService orderService, OrderRepository orderRepository, InvoiceService invoiceService) {
+    public OrderController(
+        OrderService orderService, OrderRepository orderRepository,
+        InvoiceService invoiceService
+    ) {
         this.orderService = orderService;
         this.orderRepository = orderRepository;
         this.invoiceService = invoiceService;
@@ -40,8 +43,9 @@ public class OrderController {
 
     @PostMapping("/place")
     public ResponseEntity<?> placeOrder(
-            Authentication authentication,
-            @RequestBody OrderRequest orderRequest) {
+        Authentication authentication,
+        @RequestBody OrderRequest orderRequest
+    ) {
 
         if (authentication == null || !authentication.isAuthenticated()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Please login to checkout.");
@@ -49,10 +53,11 @@ public class OrderController {
 
         try {
             orderService.placeOrder(
-                    authentication.getName(),
-                    orderRequest.couponCode(),
-                    orderRequest.useStoreBalance(),
-                    orderRequest.shippingAddress().toString());
+                authentication.getName(),
+                orderRequest.couponCode(),
+                orderRequest.useStoreBalance(),
+                orderRequest.shippingAddress()
+            );
 
             return ResponseEntity.ok(Map.of("message", "Order successfully created"));
         } catch (RuntimeException e) {
@@ -65,15 +70,18 @@ public class OrderController {
 
     @GetMapping("/my-orders")
     public ResponseEntity<List<OrderResponseDTO>> getMyOrders(Principal principal) {
-        if (principal == null)
+        if (principal == null) {
             return ResponseEntity.status(401).build();
+        }
 
-        List<Order> orders = orderRepository.findByUserEmailOrderByOrderDateDesc(principal.getName());
+        List<Order> orders = orderRepository
+            .findByUserEmailOrderByOrderDateDesc(principal.getName());
         return ResponseEntity.ok(orders.stream().map(OrderResponseDTO::fromEntity).toList());
     }
 
     @GetMapping("/{orderId}/download-invoice")
-    public void downloadInvoice(@PathVariable Long orderId, HttpServletResponse response) throws IOException {
+    public void downloadInvoice(@PathVariable Long orderId, HttpServletResponse response)
+        throws IOException {
         Order order = orderRepository.getOrderById(orderId);
 
         response.setContentType("application/pdf");
