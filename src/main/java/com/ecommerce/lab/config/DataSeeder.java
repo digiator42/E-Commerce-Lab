@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
@@ -14,11 +15,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import com.ecommerce.lab.model.Category;
 import com.ecommerce.lab.model.Coupon;
 import com.ecommerce.lab.model.Product;
+import com.ecommerce.lab.model.Review;
 import com.ecommerce.lab.model.Role;
 import com.ecommerce.lab.model.User;
 import com.ecommerce.lab.repository.CategoryRepository;
 import com.ecommerce.lab.repository.CouponRepository;
 import com.ecommerce.lab.repository.ProductRepository;
+import com.ecommerce.lab.repository.ReviewRepository;
 import com.ecommerce.lab.repository.UserRepository;
 import com.ecommerce.lab.service.EmailService;
 
@@ -26,6 +29,11 @@ import com.ecommerce.lab.service.EmailService;
 public class DataSeeder {
 
     private EmailService emailService;
+
+    String[] reviewComments = {
+            "Excellent quality!", "Highly recommend.", "Good value for money.",
+            "Satisfied with the purchase.", "Exactly as described."
+    };
 
     public DataSeeder(EmailService emailService) { this.emailService = emailService; }
 
@@ -35,12 +43,15 @@ public class DataSeeder {
         CategoryRepository categoryRepo,
         UserRepository userRepo,
         PasswordEncoder passwordEncoder,
-        CouponRepository couponRepository
+        CouponRepository couponRepository,
+        ReviewRepository reviewRepository
     ) {
 
         return args -> {
 
-            createAdminUser(userRepo, passwordEncoder);
+            User admin = createAdminUser(userRepo, passwordEncoder);
+            List<User> users = createMockUsers(userRepo, passwordEncoder);
+
             createValidCoupons(couponRepository);
 
             if (productRepo.count() > 0) {
@@ -87,15 +98,34 @@ public class DataSeeder {
                     .get(categoryName);
                 List<String> descriptionsForCat = ProductDetails.descriptions.get(categoryName);
 
-                for (int i = 0; i < 5; i++) {
-                    // reviews.add(new Review)
-                }
-
                 int index = 0;
                 for (String productName : itemsInormation.keySet()) {
                     Product p = new Product();
                     p.setName(productName);
                     p.setCategory(currentCategory);
+
+                    // Set Price and Stock
+                    double price = generatePriceByCategory(categoryName, index);
+                    p.setPrice(Math.round(price * 100.0) / 100.0);
+                    p.setStock(generateStockByCategory(categoryName, index));
+
+                    List<Review> reviews = new ArrayList<>();
+                    p = productRepo.save(p);
+
+                    Random random = new Random();
+                    int maxIteration = random.nextInt(5) + 1;
+
+                    for (int i = 0; i < maxIteration; i++) {
+                        int maxRate = random.nextInt(5) + 1;
+                        Review review = new Review();
+                        review.setRating(maxRate);
+                        review.setComment(reviewComments[i % reviewComments.length]);
+                        review.setProduct(p);
+                        review.setUser(users.get(maxRate - 1));
+                        // reviewRepository.save(review);
+                        reviews.add(review);
+                    }
+                    p.setReviews(reviews);
 
                     // Set Image (Directly from the map we are looping through)
                     String imageUrl = itemsInormation.get(productName);
@@ -104,7 +134,6 @@ public class DataSeeder {
                             : CategoryImages.getFallbackImageUrl(categoryName)
                     );
 
-                    // p.s
                     // Set Description (Cycle through descriptions if you have fewer descriptions
                     // than products)
                     if (descriptionsForCat != null && !descriptionsForCat.isEmpty()) {
@@ -114,11 +143,6 @@ public class DataSeeder {
                                 + (index % 2 == 0 ? "Limited edition." : "Best seller.")
                         );
                     }
-
-                    // Set Price and Stock
-                    double price = generatePriceByCategory(categoryName, index);
-                    p.setPrice(Math.round(price * 100.0) / 100.0);
-                    p.setStock(generateStockByCategory(categoryName, index));
 
                     products.add(p);
                     index++;
@@ -170,15 +194,15 @@ public class DataSeeder {
         };
     }
 
-    private void createAdminUser(UserRepository userRepo, PasswordEncoder passwordEncoder) {
-        this.emailService.sendSimpleEmail(
-            "aimlive2013@gmail.com",
-            "Testing",
-            "This is a test email\n"
-        );
+    private User createAdminUser(UserRepository userRepo, PasswordEncoder passwordEncoder) {
+        // this.emailService.sendSimpleEmail(
+        // "aimlive2013@gmail.com",
+        // "Testing",
+        // "This is a test email\n"
+        // );
 
         if (userRepo.count() > 0) {
-            return;
+            return null;
         }
 
         User admin = new User();
@@ -188,6 +212,45 @@ public class DataSeeder {
         admin.setRole(Role.ROLE_ADMIN);
         userRepo.save(admin);
         System.out.println("==> Created admin user successfully.");
+
+        return admin;
+    }
+
+    private List<User> createMockUsers(UserRepository userRepo, PasswordEncoder passwordEncoder) {
+        String[] names = {
+                "Ahmed Zaki", "Sarah Connor", "John Doe", "Layla Hassan", "Mike Ross"
+        };
+        String[] emails = {
+                "ahmed@example.com", "sarah@example.com", "john@example.com", "layla@example.com",
+                "mike@example.com"
+        };
+
+        List<User> mockUsers = new ArrayList<>();
+
+        for (int i = 0; i < names.length; i++) {
+            // Only create if the user doesn't already exist
+            if (userRepo.findByEmail(emails[i]).isEmpty()) {
+                User user = new User();
+                user.setName(names[i]);
+                user.setUserName(names[i].split(" ")[0] + "o");
+                user.setEmail(emails[i]);
+                user.setPassword(passwordEncoder.encode("password123"));
+
+                user.setRole(Role.ROLE_USER);
+
+                user.setAddress(
+                    "{\"street\":\"Main St " + i
+                        + "\",\"city\":\"Cairo\",\"state\":\"EG\",\"zipCode\":\"12345\",\"country\":\"Egypt\"}"
+                );
+
+                mockUsers.add(user);
+            }
+        }
+
+        userRepo.saveAll(mockUsers);
+        System.out.println("====> Inserted " + mockUsers.size() + " mock users.");
+
+        return mockUsers;
     }
 
     private void createValidCoupons(CouponRepository couponRepository) {
