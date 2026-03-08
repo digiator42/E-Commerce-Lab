@@ -1,9 +1,7 @@
 package com.ecommerce.lab.config;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -21,9 +19,15 @@ import com.ecommerce.lab.repository.CategoryRepository;
 import com.ecommerce.lab.repository.CouponRepository;
 import com.ecommerce.lab.repository.ProductRepository;
 import com.ecommerce.lab.repository.UserRepository;
+import com.ecommerce.lab.service.EmailService;
 
 @Configuration
 public class DataSeeder {
+    private EmailService emailService;
+
+    public DataSeeder(EmailService emailService) {
+        this.emailService = emailService;
+    }
 
     @Bean
     CommandLineRunner initDatabase(
@@ -47,64 +51,64 @@ public class DataSeeder {
                     createCat("Clothing", "👕"),
                     createCat("Home & Garden", "🏡"),
                     createCat("Books", "📚"),
-                    createCat("Sports", "⚽"));
+                    createCat("Sports", "⚽"),
+                    createCat("Ramadan", "🕌")
+                );
             categoryRepo.saveAll(categories);
 
             // Generate 50 products
             List<Product> products = new ArrayList<>();
 
-            for (int i = 1; i <= 200; i++) {
-                Product p = new Product();
+            // Initialize all images
+            CategoryImages.setBooksImages();
+            CategoryImages.setClothingImages();
+            CategoryImages.setElectronicsImages();
+            CategoryImages.setHomeGardenImages();
+            CategoryImages.setSportsImages();
+            CategoryImages.setRamadanImages();
 
-                // Get category based on index
-                Category category = categories.get(i % categories.size());
-                String categoryName = category.getName();
+            // Iterate through each category
+            for (String categoryName : CategoryImages.categoryImageUrls.keySet()) {
 
-                // Get product name from the category's list
-                List<String> namesForCategory = ProductDetails.productNames.get(categoryName);
-                String baseProductName = namesForCategory.get(i % namesForCategory.size());
+                // Find the actual Category object from your 'categories' list
+                Category currentCategory = categories.stream()
+                        .filter(c -> c.getName().equals(categoryName))
+                        .findFirst()
+                        .orElse(null);
 
-                // Add version number for products beyond the base list
-                String productName = baseProductName;
-                // if (i > namesForCategory.size()) {
-                // int version = (i / namesForCategory.size()) + 1;
-                // productName = baseProductName + " v" + version;
-                // }
-                p.setName(productName);
+                if (currentCategory == null)
+                    continue;
 
-                // Set realistic description
-                List<String> descForCategory = ProductDetails.descriptions.get(categoryName);
-                String description = descForCategory.get(i % descForCategory.size());
-                description += ". Perfect for everyday use. " + (i % 2 == 0 ? "Limited edition." : "Best seller.");
-                p.setDescription(description);
+                // Loop through every product for this category
+                Map<String, String> itemsInormation = CategoryImages.categoryImageUrls.get(categoryName);
+                List<String> descriptionsForCat = ProductDetails.descriptions.get(categoryName);
 
-                // Set realistic price based on category
-                double price = generatePriceByCategory(categoryName, i);
-                p.setPrice(Math.round(price * 100.0) / 100.0);
+                int index = 0;
+                for (String productName : itemsInormation.keySet()) {
+                    Product p = new Product();
+                    p.setName(productName);
+                    p.setCategory(currentCategory);
 
-                // Set realistic stock
-                p.setStock(generateStockByCategory(categoryName, i));
+                    // Set Image (Directly from the map we are looping through)
+                    String imageUrl = itemsInormation.get(productName);
+                    p.setImageUrl(imageUrl != null ? imageUrl : CategoryImages.getFallbackImageUrl(categoryName));
 
-                CategoryImages.setBooksImages();
-                CategoryImages.setClothingImages();
-                CategoryImages.setElectronicsImages();
-                CategoryImages.setHomeGardenImages();
-                CategoryImages.setSportsImages();
+                    // Set Description (Cycle through descriptions if you have fewer descriptions
+                    // than products)
+                    if (descriptionsForCat != null && !descriptionsForCat.isEmpty()) {
+                        String desc = descriptionsForCat.get(index % descriptionsForCat.size());
+                        p.setDescription(desc + ". Perfect for everyday use. "
+                                + (index % 2 == 0 ? "Limited edition." : "Best seller."));
+                    }
 
-                // Set image URL from our mappings
-                Map<String, String> categoryImages = CategoryImages.categoryImageUrls.get(categoryName);
-                System.out.println("==> " + baseProductName + " | " + categoryImages.containsKey(baseProductName));
-                if (categoryImages != null && categoryImages.get(baseProductName) != null) {
-                    p.setImageUrl(categoryImages.get(baseProductName));
-                } else {
-                    // Fallback image if not found
-                    p.setImageUrl(CategoryImages.getFallbackImageUrl(categoryName));
+                    // Set Price and Stock
+                    double price = generatePriceByCategory(categoryName, index);
+                    p.setPrice(Math.round(price * 100.0) / 100.0);
+                    p.setStock(generateStockByCategory(categoryName, index));
+
+                    products.add(p);
+                    index++;
                 }
-
-                // Assign category
-                p.setCategory(category);
-
-                products.add(p);
             }
 
             productRepo.saveAll(products);
@@ -157,6 +161,8 @@ public class DataSeeder {
     }
 
     private void createAdminUser(UserRepository userRepo, PasswordEncoder passwordEncoder) {
+        this.emailService.sendSimpleEmail("aimlive2013@gmail.com", "Testing", "This is a test email\n");
+
         if (userRepo.count() > 0)
             return;
 

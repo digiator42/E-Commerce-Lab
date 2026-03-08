@@ -3,6 +3,7 @@ import { UIManager } from './UIManager.js';
 import { CartManager } from './CartManager.js';
 import { WishlistManager } from './WishlistManager.js';
 import { Product } from '../models/Product.js';
+import { Constants } from '../config/Constants.js';
 
 export class ProductManager {
     static instance = null;
@@ -54,7 +55,7 @@ export class ProductManager {
                 `).join('')}
             </div>
         `;
-
+        container.className += ' py-4 px-2';
         container.innerHTML = categoryLoadingHtml;
 
         try {
@@ -199,28 +200,32 @@ export class ProductManager {
         }
 
         container.innerHTML = `
-            <!-- All Categories option -->
-            <div onclick="window.productManager.toggleCategoryFilter(null)"
-                 class="m-2 px-3 py-2 rounded-xl cursor-pointer transition text-md font-bold mb-2
-                        ${this.selectedCategories.size === 0
-                ? 'bg-blue-100 text-blue-700 font-medium ring-1 ring-blue-300'
+                <div onclick="window.productManager.toggleCategoryFilter(null)"
+                    class="m-2 px-3 py-2 rounded-xl cursor-pointer transition flex items-center gap-2 text-md font-bold mb-4
+                            ${this.selectedCategories.size === 0
+                ? 'bg-blue-100 text-blue-700 ring-1 ring-blue-300'
                 : 'bg-gray-50 text-gray-700 hover:bg-gray-100'}">
-                All Categories
-            </div>
-            ${this.categories.map(category => {
-                    // Ensure category is a string
+                    <span class="opacity-70">${Constants.CATEGORY_ICONS["Default"]}</span>
+                    <span>All Categories</span>
+                </div>
+
+                ${this.categories.map(category => {
                     const categoryStr = String(category);
+                    // Get the mapped icon or use default if backend name doesn't match exactly
+                    const icon = Constants.CATEGORY_ICONS[categoryStr] || Constants.CATEGORY_ICONS["Default"];
+
                     return `
-                    <div onclick="window.productManager.toggleCategoryFilter('${categoryStr.replace(/'/g, "\\'")}')"
-                         class="m-2 px-3 py-2 rounded-xl cursor-pointer transition text-sm
-                                ${this.selectedCategories.has(categoryStr)
+                        <div onclick="window.productManager.toggleCategoryFilter('${categoryStr.replace(/'/g, "\\'")}')"
+                            class="mt-2 mb-4 px-3 py-2 rounded-xl cursor-pointer transition flex items-center gap-3 text-sm
+                                    ${this.selectedCategories.has(categoryStr)
                             ? 'bg-blue-100 text-blue-700 font-medium ring-1 ring-blue-300'
                             : 'bg-gray-50 text-gray-700 hover:bg-gray-100'}">
-                        ${categoryStr}
-                    </div>
-                `;
+                            <span class="flex-shrink-0">${icon}</span>
+                            <span class="truncate">${categoryStr}</span>
+                        </div>
+                    `;
                 }).join('')}
-        `;
+            `;
     }
 
     // Update URL with current filters
