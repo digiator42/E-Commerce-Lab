@@ -57,7 +57,6 @@ public class InvoiceService {
             // Add logo
             String imagePath = getClass().getResource(LOGO_PATH).getPath();
             Image logo = Image.getInstance(imagePath);
-            System.out.println("====> " + logo);
             logo.scaleToFit(100, 60);
             PdfPCell logoCell = new PdfPCell(logo);
             logoCell.setBorder(Rectangle.NO_BORDER);

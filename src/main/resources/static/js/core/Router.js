@@ -246,7 +246,6 @@ export class Router {
 
                 // Get order data from history state
                 const orderData = window.history.state || {};
-                console.log("====> ", orderData);
                 return await this.orderManager.renderOrderSuccess(orderData);
             },
 
@@ -595,7 +594,59 @@ export class Router {
             },
 
             '/login': async () => {
-                return await this.componentStore.load('login');
+
+                let template = await this.componentStore.load('login');
+
+                const testingUsers = Constants.TESTING_USERS.map(user => `
+                        <button onclick="window.authManager.fillMockCredentials('${user}')" 
+                            class="text-left px-3 py-2 text-sm text-gray-700 hover:bg-purple-100 rounded-lg transition flex items-center justify-between group">
+                            <span>${user}</span>
+                            <span class="text-xs text-purple-500 opacity-0 group-hover:opacity-100 transition">Click to fill</span>
+                        </button>
+                    `
+                ).join('');
+
+                console.log(typeof template, typeof testingUsers);
+
+                template = template.replace("{{testing_users}}", testingUsers);
+                
+                window.authManager.mockUsersVisible = false;
+                
+                window.authManager.toggleMockUsers = function() {
+                    const dropdown = document.getElementById('mock-users-dropdown');
+                    const chevron = document.getElementById('mock-users-chevron');
+                    
+                    if (dropdown.classList.contains('hidden')) {
+                        dropdown.classList.remove('hidden');
+                        chevron.style.transform = 'rotate(180deg)';
+                    } else {
+                        dropdown.classList.add('hidden');
+                        chevron.style.transform = 'rotate(0deg)';
+                    }
+                };
+                
+                window.authManager.fillMockCredentials = function(email) {
+                    const emailInput = document.getElementById('login-email');
+                    const passwordInput = document.getElementById('login-password');
+                    
+                    if (emailInput) {
+                        emailInput.value = email;
+                        // Trigger input event for any listeners
+                        emailInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    }
+                    
+                    if (passwordInput) {
+                        passwordInput.value = 'password123';
+                        passwordInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    }
+                    
+                    // Auto-hide dropdown after selection
+                    const dropdown = document.getElementById('mock-users-dropdown');
+                    const chevron = document.getElementById('mock-users-chevron');
+                    dropdown.classList.add('hidden');
+                    chevron.style.transform = 'rotate(0deg)';
+                };
+                return template;
             },
 
             '/register': async () => {

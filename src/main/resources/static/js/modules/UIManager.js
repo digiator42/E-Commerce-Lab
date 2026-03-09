@@ -184,7 +184,6 @@ export class UIManager {
 
         if (type === undefined || type == null) {
             type = document.title.split("|")[1].trim().toLocaleLowerCase();
-            console.log("===> ", type);
         }
 
         const container = document.getElementById(containerId);

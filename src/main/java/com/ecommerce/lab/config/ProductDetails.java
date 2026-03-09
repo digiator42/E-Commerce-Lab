@@ -30,7 +30,7 @@ public class ProductDetails {
                         "Leather Jacket",
                         "Summer Dress",
                         "Wool Sweater",
-                        "Sports Bra",
+                        "Sports Mat",
                         "Yoga Pants",
                         "Denim Jacket",
                         "Polo Shirt",

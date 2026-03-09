@@ -253,7 +253,7 @@ public class CategoryImages {
                         "https://images.pexels.com/photos/459486/pexels-photo-459486.jpeg"
                 );
                 clothingImages.put(
-                        "Sports Bra",
+                        "Sports Mat",
                         "https://images.pexels.com/photos/4498551/pexels-photo-4498551.jpeg"
                 );
                 clothingImages.put(

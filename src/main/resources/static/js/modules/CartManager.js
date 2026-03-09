@@ -65,7 +65,6 @@ export class CartManager {
     loadFromLocalStorage() {
         try {
             const savedCart = localStorage.getItem(this.storageKey);
-            console.log("=====> saved ", savedCart);
             if (savedCart) {
                 const rawItems = JSON.parse(savedCart);
                 // Convert each raw item to a Product instance
@@ -213,7 +212,6 @@ export class CartManager {
 
         try {
             const serverItems = await this.apiClient.fetch('/api/cart') || [];
-            console.log("===> Server cart response:", serverItems);
 
             // IMPORTANT: Convert each server item to Product instance
             this.items = serverItems.map(item => Product.fromCartItem(item));
@@ -266,7 +264,7 @@ export class CartManager {
                     existingItem.quantity += 1;
                 } else {
                     product.quantity = 1;
-                    product.cartItemId = `temp-${Date.now()}-${productId}`;
+                    product.cartItemId = productId;
                     this.items.push(product);
                 }
 
@@ -346,8 +344,7 @@ export class CartManager {
 
     async removeItem(event, itemId) {
         if (!this.authManager.isAuthenticated) {
-            const index = this.items.findIndex(item => item.isGiftCard === true || item.id == itemId.split("-")[2]);
-            console.log("====> ", index);
+            const index = this.items.findIndex(item => item.isGiftCard === true || item.id == itemId);
             if (index !== -1) {
                 const item = this.items[index];
                 this.items.splice(index, 1);

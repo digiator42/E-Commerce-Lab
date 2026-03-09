@@ -176,7 +176,6 @@ export class WishlistManager {
 
         try {
             this.items = await this.apiClient.fetch('/api/wishlist') || [];
-            console.log("===> Server wishlist response:", this.items);
             this.updateBadge();
             this.renderDrawer();
             return this.items;

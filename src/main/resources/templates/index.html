@@ -99,36 +99,34 @@
             <div class="flex justify-between items-center h-16">
                 <!-- Logo -->
                 <div class="flex-shrink-0">
-                    <h1 class="text-2xl font-bold text-blue-600">
+                    <h1 class="text-2xl font-black text-blue-600 tracking-tight">
                         <a href="/" onclick="window.router.route(event)">
-                            MASTER<span class="text-gray-700">SHOP</span>
+                            MASTER<span class="text-gray-900">SHOP</span>
                         </a>
                     </h1>
                 </div>
 
                 <!-- Desktop Navigation -->
-                <div class="hidden md:flex md:items-center md:space-x-6">
-                    <!-- Main Nav Links -->
+                <div class="hidden md:flex md:items-center md:space-x-8">
+                    <!-- Main Nav Links - BOLDER -->
                     <a href="/" onclick="window.router.route(event)"
-                        class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
-                        Home
+                        class="text-gray-900 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-extrabold tracking-wide transition-colors">
+                        HOME
                     </a>
                     <a href="/products" onclick="window.router.route(event)"
-                        class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
-                        Store
+                        class="text-gray-900 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-extrabold tracking-wide transition-colors">
+                        STORE
                     </a>
 
                     <!-- Wishlist Icon -->
                     <div class="relative">
                         <button onclick="window.wishlistManager.toggleDrawer()"
-                            class="p-2 text-gray-600 hover:text-red-500 transition-colors relative group">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
-                                </path>
+                            class="p-2 text-gray-700 hover:text-red-500 transition-colors relative group">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                             </svg>
                             <span id="wishlist-count-desktop"
-                                class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+                                class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
                                 0
                             </span>
                         </button>
@@ -137,13 +135,12 @@
                     <!-- Cart Icon -->
                     <div class="relative">
                         <button onclick="window.cartManager.toggle()"
-                            class="p-2 text-gray-600 hover:text-blue-600 transition-colors relative group">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                            class="p-2 text-gray-700 hover:text-blue-600 transition-colors relative group">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                             </svg>
                             <span id="cart-count-desktop"
-                                class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+                                class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
                                 0
                             </span>
                         </button>
@@ -152,12 +149,12 @@
                     <!-- Auth Buttons (shown when NOT authenticated) -->
                     <div id="desktop-auth-buttons" class="flex items-center space-x-3">
                         <a href="/login" onclick="window.router.route(event)"
-                            class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm">
-                            Login
+                            class="bg-blue-600 text-white px-5 py-2.5 rounded-lg text-sm font-extrabold tracking-wide hover:bg-blue-700 transition-colors shadow-md">
+                            LOGIN
                         </a>
                         <a href="/register" onclick="window.router.route(event)"
-                            class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">
-                            Register
+                            class="bg-gray-100 text-gray-900 px-5 py-2.5 rounded-lg text-sm font-extrabold tracking-wide hover:bg-gray-200 transition-colors">
+                            REGISTER
                         </a>
                     </div>
 
@@ -165,15 +162,14 @@
                     <div id="desktop-user-menu" class="hidden relative">
                         <button id="user-menu-button" class="flex items-center space-x-2 focus:outline-none group">
                             <div
-                                class="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md group-hover:shadow-lg transition-shadow">
+                                class="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-black text-sm shadow-md group-hover:shadow-lg transition-shadow">
                                 <span id="user-initials">U</span>
                             </div>
                             <span id="user-name-display"
-                                class="text-sm font-medium text-gray-700 max-w-[100px] truncate">User</span>
-                            <svg class="w-4 h-4 text-gray-500 group-hover:text-gray-700 transition-colors" fill="none"
-                                stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M19 9l-7 7-7-7"></path>
+                                class="text-sm font-black text-gray-900 max-w-[100px] truncate tracking-wide">User</span>
+                            <svg class="w-4 h-4 text-gray-600 group-hover:text-gray-900 transition-colors" fill="none"
+                                stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                             </svg>
                         </button>
 
@@ -181,34 +177,29 @@
                         <div id="user-dropdown"
                             class="hidden absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50">
                             <a href="/profile" onclick="window.router.route(event)"
-                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                                class="block px-4 py-2.5 text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors">
                                 <span class="flex items-center">
-                                    <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z">
-                                        </path>
+                                    <svg class="w-4 h-4 mr-3 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                     </svg>
                                     My Profile
                                 </span>
                             </a>
                             <a href="/orders" onclick="window.router.route(event)"
-                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                                class="block px-4 py-2.5 text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors">
                                 <span class="flex items-center">
-                                    <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                                    <svg class="w-4 h-4 mr-3 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                                     </svg>
                                     My Orders
                                 </span>
                             </a>
                             <div class="border-t border-gray-100 my-2"></div>
                             <button onclick="window.authManager.logout()"
-                                class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                                class="block w-full text-left px-4 py-2.5 text-sm font-bold text-red-600 hover:bg-red-50 transition-colors">
                                 <span class="flex items-center">
-                                    <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
-                                        </path>
+                                    <svg class="w-4 h-4 mr-3 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                                     </svg>
                                     Sign Out
                                 </span>
@@ -217,37 +208,39 @@
                     </div>
                 </div>
 
-                <!-- Mobile menu button -->
-                <div class="flex items-center space-x-4 md:hidden">
-                    <!-- Cart Icon (Mobile) -->
+                <!-- Mobile menu button & icons -->
+                <div class="flex items-center space-x-2 md:hidden">
+                    <!-- Wishlist Icon (Mobile) -->
                     <div class="relative">
                         <button onclick="window.wishlistManager.toggleDrawer()"
-                            class="p-2 text-gray-600 hover:text-red-500 transition-colors relative group">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
-                                </path>
+                            class="p-2 text-gray-700 hover:text-red-500 transition-colors">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                             </svg>
                             <span id="wishlist-count-mobile"
-                                class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+                                class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
                                 0
                             </span>
                         </button>
-                        <button onclick="window.cartManager.toggle()" class="p-2 text-gray-600">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                    </div>
+                    
+                    <!-- Cart Icon (Mobile) -->
+                    <div class="relative">
+                        <button onclick="window.cartManager.toggle()" class="p-2 text-gray-700">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                             </svg>
                             <span id="cart-count-mobile"
-                                class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">0</span>
+                                class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+                                0
+                            </span>
                         </button>
                     </div>
 
                     <!-- Hamburger -->
-                    <button id="mobile-menu-btn" class="text-gray-700 focus:outline-none p-2">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M4 6h16M4 12h16M4 18h16"></path>
+                    <button id="mobile-menu-btn" class="text-gray-900 focus:outline-none p-2">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
                         </svg>
                     </button>
                 </div>
@@ -255,33 +248,76 @@
         </div>
 
         <!-- Mobile Menu Dropdown -->
-        <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-gray-100 px-4 py-4 space-y-3">
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-gray-100 px-6 py-4 space-y-3">
             <a href="/" onclick="window.router.route(event)"
-                class="block py-2 text-gray-700 hover:text-blue-600 font-medium">Home</a>
+                class="block py-3 text-gray-900 hover:text-blue-600 font-extrabold tracking-wide border-b border-gray-50 flex items-center">
+                <svg class="w-5 h-5 mr-3 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                HOME
+            </a>
             <a href="/products" onclick="window.router.route(event)"
-                class="block py-2 text-gray-700 hover:text-blue-600 font-medium">Store</a>
+                class="block py-3 text-gray-900 hover:text-blue-600 font-extrabold tracking-wide border-b border-gray-50 flex items-center">
+                <svg class="w-5 h-5 mr-3 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+                STORE
+            </a>
 
             <!-- Mobile Auth Section -->
-            <div id="mobile-auth-buttons">
+            <div id="mobile-auth-buttons" class="space-y-2 pt-2">
                 <a href="/login" onclick="window.router.route(event)"
-                    class="block py-2 text-gray-700 hover:text-blue-600 font-medium">Login</a>
+                    class="block py-3 text-gray-900 hover:text-blue-600 font-extrabold tracking-wide flex items-center">
+                    <svg class="w-5 h-5 mr-3 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                    </svg>
+                    LOGIN
+                </a>
                 <a href="/register" onclick="window.router.route(event)"
-                    class="block py-2 text-gray-700 hover:text-blue-600 font-medium">Register</a>
+                    class="block py-3 text-gray-900 hover:text-blue-600 font-extrabold tracking-wide flex items-center">
+                    <svg class="w-5 h-5 mr-3 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                    </svg>
+                    REGISTER
+                </a>
             </div>
 
             <!-- Mobile User Menu -->
-            <div id="mobile-user-menu" class="hidden">
-                <div class="py-2 text-gray-700 font-medium border-b border-gray-100 pb-2">Hello, <span
-                        id="mobile-user-name"></span></div>
+            <div id="mobile-user-menu" class="hidden space-y-2 pt-2">
+                <div class="py-3 text-gray-900 font-extrabold tracking-wide border-b border-gray-100 flex items-center">
+                    <svg class="w-5 h-5 mr-3 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Hello, <span id="mobile-user-name" class="ml-1 text-blue-600"></span>
+                </div>
                 <a href="/profile" onclick="window.router.route(event)"
-                    class="block py-2 text-gray-600 hover:text-blue-600 pl-4">👤 My Profile</a>
+                    class="block py-3 text-gray-700 hover:text-blue-600 font-bold flex items-center">
+                    <svg class="w-5 h-5 mr-3 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    My Profile
+                </a>
                 <a href="/orders" onclick="window.router.route(event)"
-                    class="block py-2 text-gray-600 hover:text-blue-600 pl-4">📦 My Orders</a>
+                    class="block py-3 text-gray-700 hover:text-blue-600 font-bold flex items-center">
+                    <svg class="w-5 h-5 mr-3 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                    </svg>
+                    My Orders
+                </a>
                 <a href="#" onclick="window.wishlistManager.toggleDrawer()"
-                    class="block py-2 text-gray-600 hover:text-blue-600 pl-4">❤️ Wishlist</a>
+                    class="block py-3 text-gray-700 hover:text-blue-600 font-bold flex items-center">
+                    <svg class="w-5 h-5 mr-3 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                    Wishlist
+                </a>
                 <button onclick="window.authManager.logout()"
-                    class="block w-full text-left py-2 text-red-600 hover:text-red-800 font-medium pl-4">🚪 Sign
-                    Out</button>
+                    class="block w-full text-left py-3 text-red-600 hover:text-red-800 font-bold flex items-center">
+                    <svg class="w-5 h-5 mr-3 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    SIGN OUT
+                </button>
             </div>
         </div>
     </nav>
