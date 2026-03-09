@@ -3,6 +3,7 @@ import { UIManager } from './UIManager.js';
 import { CartManager } from './CartManager.js';
 import { Constants } from '../config/Constants.js';
 import { Router } from '../core/Router.js';
+import { AuthManager } from './AuthManager.js';
 
 export class OrderManager {
     static instance = null;
@@ -13,6 +14,7 @@ export class OrderManager {
         this.uiManager = UIManager.getInstance();
         this.cartManager = CartManager.getInstance(apiClient);
         this.router = Router.getInstance();
+        this.authManager = AuthManager.getInstance();
         this.statusColors = Constants.STATUS_COLORS;
         this.appliedCoupon = null;
         this.discountedTotal = null;
@@ -75,7 +77,7 @@ export class OrderManager {
         const template = await this.componentStore.load('checkout');
 
         // Get user data
-        const user = window.authManager.user || JSON.parse(localStorage.getItem('user')) || {};
+        const user = this.authManager.user || JSON.parse(localStorage.getItem('user')) || {};
         let html = template.replace('{{userEmail}}', user.email);
 
         // Parse HTML to manipulate
@@ -192,7 +194,7 @@ export class OrderManager {
 
         if (this.useSavedAddress) {
             // Get saved address from user
-            const user = window.authManager.user || {};
+            const user = this.authManager.user || {};
             if (!user.defaultAddress) {
                 this.uiManager.showToast('No saved address found. Please add a new address.', 'error');
                 return;

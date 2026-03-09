@@ -254,9 +254,12 @@ export class CartManager {
                 // For guest users, fetch product details
                 const productData = await this.apiClient.fetch(`/api/products/${productId}`);
                 product = Product.fromProductResponse(productData);
-            }
 
-            if (!this.authManager.isAuthenticated) {
+                if (product.stock === 0) {
+                    this.uiManager.showToast('Product is out of stock!', 'info', 3000);
+                    return;
+                }
+
                 // Guest user - add to localStorage
                 const existingItem = this.items.find(item => item.id === productId);
 
