@@ -370,7 +370,6 @@ export class AuthManager {
         window.location.href = '/oauth2/authorization/google';
     }
 
-    // In AuthManager.js handleLogin method
     async handleLogin(event) {
         event.preventDefault();
 
@@ -657,17 +656,12 @@ export class AuthManager {
         const enabled = checkbox.checked;
 
         try {
-            const response = await fetch('/api/2fa/toggle', {
+            const data = await this.apiClient.fetch('/api/2fa/toggle', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ "enabled": enabled })
             });
 
-            if (!response.ok) {
-                throw new Error('Failed to update 2FA settings');
-            }
-
-            const data = await response.text();
             this.uiManager.showToast(data.message || `2FA ${enabled ? 'enabled' : 'disabled'} successfully!`);
 
             // Update status display
@@ -687,8 +681,7 @@ export class AuthManager {
 
     async check2FAStatus() {
         try {
-            const response = await fetch('/api/2fa/status');
-            const data = await response.json();
+            const data = await this.apiClient.fetch('/api/2fa/status');
 
             const checkbox = document.getElementById('2fa-toggle');
             const statusEl = document.getElementById('2fa-status');

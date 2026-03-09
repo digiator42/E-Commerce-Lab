@@ -254,8 +254,7 @@ export class CartManager {
 
             if (!this.authManager.isAuthenticated) {
                 // For guest users, fetch product details
-                const response = await fetch(`/api/products/${productId}`);
-                const productData = await response.json();
+                const productData = await this.apiClient.fetch(`/api/products/${productId}`);
                 product = Product.fromProductResponse(productData);
             }
 
@@ -392,8 +391,8 @@ export class CartManager {
     // Helper method to get product details
     async getProductDetails(productId) {
         try {
-            const response = await fetch(`/api/products/${productId}`);
-            return await response.json();
+            const data = await this.apiClient.fetch(`/api/products/${productId}`);
+            return data;
         } catch (error) {
             console.error('Error fetching product details:', error);
             return null;

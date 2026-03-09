@@ -45,12 +45,12 @@ public class TwoFactorController {
             // authService.generateAndSend2FACode(user.getEmail());
             user.set2faEnabled(true);
             userRepository.save(user);
-            return ResponseEntity.ok("2FA is enabled.");
+            return ResponseEntity.ok().body("2FA is enabled.");
         } else {
             user.set2faEnabled(false);
             user.setTwoFactorCode(null);
             userRepository.save(user);
-            return ResponseEntity.ok("2FA has been disabled.");
+            return ResponseEntity.ok().body("2FA has been disabled.");
         }
     }
 

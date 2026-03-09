@@ -614,6 +614,7 @@ export class ProductManager {
                 .replace(/{{reviewCount}}/g, p.totalReviews)
                 .replace(/{{reviewStatus}}/g, p.reviewStatus || '')
                 .replace(/{{reviewStatusDisplay}}/g, hasReviewStatus ? 'block' : 'none')
+                .replace(/{{productId}}/g, p.id)
                 .replace(/{{wishlistClass}}/g, isInWishlist ? 'text-red-500 fill-current' : 'text-gray-400')
                 .replace(/{{wishlistFill}}/g, isInWishlist ? 'currentColor' : 'none');
         }).join('');
@@ -926,8 +927,7 @@ export class ProductManager {
 
     async loadCategoryProducts(category, containerId) {
         try {
-            const response = await fetch(`/api/products/custom?category=${category}&page=0&size=4`);
-            const data = await response.json();
+            const data = await this.apiClient.fetch(`/api/products/custom?category=${category}&page=0&size=4`);
 
             const container = document.getElementById(containerId);
             if (!container) return;

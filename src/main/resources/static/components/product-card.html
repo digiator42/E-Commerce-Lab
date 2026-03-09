@@ -3,7 +3,7 @@
     <!-- Wishlist Heart Icon -->
     <button onclick="event.preventDefault(); window.wishlistManager.toggleItem(event, {{id}})"
         class="absolute top-4 right-4 z-10 bg-white/90 backdrop-blur p-2 rounded-full shadow-md hover:scale-110 transition-transform duration-200">
-        <svg class="w-5 h-5 {{wishlistClass}}" fill="{{wishlistFill}}" stroke="currentColor" viewBox="0 0 24 24">
+        <svg data-product-id="{{productId}}" id="wishlist-heart-{{productId}}" class="w-5 h-5 {{wishlistClass}}" fill="{{wishlistFill}}" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
             </path>

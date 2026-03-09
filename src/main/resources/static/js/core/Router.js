@@ -212,7 +212,7 @@ export class Router {
                             }
                         }
                         // Handle 2fa status
-                        await window.authManager.check2FAStatus();
+                        await this.authManager.check2FAStatus();
                     }
                 }, 0);
 

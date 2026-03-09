@@ -27,9 +27,14 @@ export class ApiClient {
         const contentLength = response.headers.get('content-length');
         if (response.status === 204 || contentLength === '0') return null;
 
-        const contentType = response.headers.get('content-type');
+        let contentType = response.headers.get('content-type');
         if (contentType && contentType.includes('application/json')) {
             return await response.json();
+        }
+
+        contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('text/plain')) {
+            return await response.text();
         }
 
         return null;

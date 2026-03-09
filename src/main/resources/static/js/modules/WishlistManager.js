@@ -209,8 +209,7 @@ export class WishlistManager {
                 }
 
                 // Fetch product details
-                const response = await fetch(`/api/products/${productId}`);
-                const productData = await response.json();
+                const productData = await this.apiClient.fetch(`/api/products/${productId}`);
 
                 // Add to local wishlist
                 const wishlistItem = {
@@ -267,7 +266,6 @@ export class WishlistManager {
                 this.saveToLocalStorage();
                 this.updateBadge();
                 this.renderDrawer();
-                this.uiManager.showToast(`${item.name} removed from wishlist`, 'success');
 
                 // Update heart icon if visible
                 this.updateHeartIcon(productId, false);
@@ -289,7 +287,6 @@ export class WishlistManager {
 
             this.items = this.items.filter(item => item.id !== productId);
             this.updateBadge();
-            this.uiManager.showToast('Removed from wishlist', 'success');
 
             // Update heart icon if visible
             this.updateHeartIcon(productId, false);
@@ -309,9 +306,14 @@ export class WishlistManager {
     }
 
     async toggleItem(event, productId) {
+
+        const heartIcon = event.currentTarget.querySelector('svg');
+
         if (this.isInWishlist(productId)) {
+            // Remove from wishlist
             await this.removeItem(event, productId);
         } else {
+            // Add to wishlist
             await this.addItem(productId);
         }
     }
@@ -321,7 +323,8 @@ export class WishlistManager {
     }
 
     updateHeartIcon(productId, isInWishlist) {
-        const heartIcon = document.querySelector(`.wishlist-heart[data-product-id="${productId}"]`);
+        const heartIcon = document.querySelector(`svg[data-product-id="${productId}"]`);
+        
         if (heartIcon) {
             if (isInWishlist) {
                 heartIcon.classList.add('text-red-500', 'fill-current');
