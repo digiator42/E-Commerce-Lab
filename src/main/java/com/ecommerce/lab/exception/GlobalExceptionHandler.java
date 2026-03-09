@@ -77,7 +77,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<Map<String, String>> handleAuth(AuthenticationException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-            .body(Map.of("error", "Registration/Login Failed", "message", ex.getMessage()));
+            .body(Map.of("error", "UNAUTHORIZED", "message", ex.getMessage()));
     }
 
     private ResponseEntity<ErrorResponseDTO> buildResponse(HttpStatus status, String message) {

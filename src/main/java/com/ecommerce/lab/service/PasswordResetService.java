@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import com.ecommerce.lab.exception.AuthenticationException;
 import com.ecommerce.lab.exception.ResourceNotFoundException;
 import com.ecommerce.lab.model.User;
 import com.ecommerce.lab.repository.UserRepository;
@@ -45,11 +46,11 @@ public class PasswordResetService {
         PasswordResetService.validate(newPassword);
 
         User user = userRepository.findByResetToken(token)
-            .orElseThrow(() -> new RuntimeException("Invalid or expired token"));
+            .orElseThrow(() -> new AuthenticationException("Invalid or expired token"));
 
         if (user.getResetTokenExpires().isBefore(LocalDateTime.now())) {
             user.setResetToken(null); // Clear the token so it can't be used again
-            throw new RuntimeException("Token has expired");
+            throw new AuthenticationException("Token has expired");
         }
 
         user.setPassword(passwordEncoder.encode(newPassword));
@@ -60,7 +61,7 @@ public class PasswordResetService {
 
     public static void validate(String password) {
         if (password == null || !password.matches(PASSWORD_PATTERN)) {
-            throw new RuntimeException(
+            throw new AuthenticationException(
                 "Password must be at least 8 characters long, " +
                     "include an uppercase letter, a lowercase letter, a digit, and a special character."
             );

@@ -41,6 +41,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import com.ecommerce.lab.dto.ProductRequestDTO;
 import com.ecommerce.lab.dto.UserResponseDTO;
+import com.ecommerce.lab.exception.BusinessLogicException;
 import com.ecommerce.lab.exception.ResourceNotFoundException;
 import com.ecommerce.lab.model.Category;
 import com.ecommerce.lab.model.Coupon;
@@ -100,7 +101,7 @@ public class AdminController {
         ProductRequestDTO dto = mapper.readValue(productJson, ProductRequestDTO.class);
 
         Category category = categoryRepository.findByName(dto.categoryName())
-            .orElseThrow(() -> new RuntimeException("Category not found"));
+            .orElseThrow(() -> new BusinessLogicException("Category not found"));
 
         Product product = new Product();
         product.setName(dto.name());
@@ -145,7 +146,7 @@ public class AdminController {
         return productRepository.findById(id).map(product -> {
 
             Category category = categoryRepository.findByName(dto.categoryName())
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+                .orElseThrow(() -> new BusinessLogicException("Category not found"));
 
             product.setName(dto.name());
             product.setPrice(dto.price());
@@ -314,14 +315,13 @@ public class AdminController {
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
-    // Update Existing Coupon
     @PutMapping("/coupons/{id}")
     public ResponseEntity<?> updateCoupon(
         @PathVariable Long id,
         @RequestBody Coupon couponDetails
     ) {
         Coupon coupon = couponRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Coupon not found"));
+            .orElseThrow(() -> new BusinessLogicException("Coupon not found"));
 
         coupon.setCode(couponDetails.getCode());
         coupon.setDiscountPercentage(couponDetails.getDiscountPercentage());

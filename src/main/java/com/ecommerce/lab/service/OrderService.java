@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
+import com.ecommerce.lab.exception.BusinessLogicException;
 import com.ecommerce.lab.exception.ResourceNotFoundException;
 import com.ecommerce.lab.model.Address;
 import com.ecommerce.lab.model.BalanceTransaction;
@@ -56,7 +57,7 @@ public class OrderService {
         List<CartItem> cartItems = cartRepository.findAllByUserEmail(email);
 
         if (cartItems.isEmpty()) {
-            throw new RuntimeException("Cart is empty");
+            throw new BusinessLogicException("Cart is empty");
         }
 
         Address address = null;
@@ -132,7 +133,7 @@ public class OrderService {
 
     private void validateShippingAddress(User user) {
         if (user.getAddress() == null || user.getAddress().isBlank()) {
-            throw new RuntimeException(
+            throw new BusinessLogicException(
                 "Please set a shipping address in your profile before checkout."
             );
         }
@@ -155,7 +156,7 @@ public class OrderService {
                 this.generateAndEmailGiftCard(ci, email);
             } else {
                 if (ci.getProduct().getStock() < ci.getQuantity()) {
-                    throw new RuntimeException(
+                    throw new BusinessLogicException(
                         "Insufficient stock for " + ci.getProduct().getName()
                     );
                 }
@@ -191,7 +192,7 @@ public class OrderService {
         }
 
         Coupon coupon = couponRepository.findByCode(couponCode)
-            .orElseThrow(() -> new RuntimeException("Coupon not found"));
+            .orElseThrow(() -> new BusinessLogicException("Coupon not found"));
 
         validateCoupon(coupon);
 
@@ -261,13 +262,13 @@ public class OrderService {
 
     public void validateCoupon(Coupon coupon) {
         if (!coupon.isActive()) {
-            throw new RuntimeException("Coupon is disabled.");
+            throw new BusinessLogicException("Coupon is disabled.");
         }
         if (coupon.getExpiryDate().isBefore(LocalDate.now())) {
-            throw new RuntimeException("Coupon has expired.");
+            throw new BusinessLogicException("Coupon has expired.");
         }
         if (coupon.getTimesUsed() >= coupon.getUsageLimit()) {
-            throw new RuntimeException("Coupon usage limit reached.");
+            throw new BusinessLogicException("Coupon usage limit reached.");
         }
     }
 

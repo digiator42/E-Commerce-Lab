@@ -39,9 +39,13 @@ export class AuthManager {
 
     clearStorage() {
         this.isAuthenticated = false;
+
         localStorage.removeItem('user');
         localStorage.removeItem('cartCount');
         localStorage.removeItem('wishlistCount');
+
+        localStorage.removeItem('cart_sync_completed');
+        localStorage.removeItem('wishlist_sync_completed');
     }
 
     set2FAData(data) {
@@ -239,7 +243,7 @@ export class AuthManager {
             }
 
             localStorage.setItem('user', JSON.stringify(this.user));
-
+            
             return this.isAuthenticated;
         } catch (error) {
             console.error('Auth check failed:', error);

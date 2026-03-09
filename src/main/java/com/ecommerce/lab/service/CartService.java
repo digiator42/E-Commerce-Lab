@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 
 import com.ecommerce.lab.dto.CartItemResponseDTO;
 import com.ecommerce.lab.dto.GiftCardRequest;
+import com.ecommerce.lab.exception.BusinessLogicException;
+import com.ecommerce.lab.exception.ProductNotFoundException;
 import com.ecommerce.lab.exception.ResourceNotFoundException;
 import com.ecommerce.lab.model.CartItem;
 import com.ecommerce.lab.model.Product;
@@ -37,10 +39,10 @@ public class CartService {
         User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         Product product = productRepository.findById(productId)
-            .orElseThrow(() -> new RuntimeException("Product not found"));
+            .orElseThrow(() -> new ProductNotFoundException("Product not found"));
 
         if (product.getStock() == 0) {
-            throw new RuntimeException("Product is out of stock");
+            throw new BusinessLogicException("Product is out of stock");
         }
 
         Optional<CartItem> existingItem = cartRepository.findByUserAndProduct(user, product);

@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ecommerce.lab.dto.GiftCardRequest;
+import com.ecommerce.lab.exception.BusinessLogicException;
+import com.ecommerce.lab.exception.ProductNotFoundException;
 import com.ecommerce.lab.exception.ResourceNotFoundException;
 import com.ecommerce.lab.model.BalanceTransaction;
 import com.ecommerce.lab.model.GiftCard;
@@ -84,14 +86,14 @@ public class UserGiftCardController {
         User user = userRepository.findByEmail(principal.getName()).orElseThrow();
 
         GiftCard card = giftCardRepository.findByCode(code)
-            .orElseThrow(() -> new RuntimeException("Gift card not found"));
+            .orElseThrow(() -> new ProductNotFoundException("Gift card not found"));
 
         if (!card.isActive() || card.getBalance() <= 0) {
-            throw new RuntimeException("This card has already been used or is inactive.");
+            throw new BusinessLogicException("This card has already been used or is inactive.");
         }
 
         if (card.getExpiryDate().isBefore(LocalDateTime.now())) {
-            throw new RuntimeException("This gift card has expired.");
+            throw new BusinessLogicException("This gift card has expired.");
         }
 
         // Transfer money to user profile

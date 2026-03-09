@@ -108,15 +108,15 @@ public class UserService {
         if (dto.newPassword() != null && !dto.newPassword().isBlank()) {
 
             if (dto.currentPassword() == null || dto.currentPassword().isBlank()) {
-                throw new RuntimeException("Current password is required to set a new password");
+                throw new AuthenticationException("Current password is required to set a new password");
             }
 
             if (!passwordEncoder.matches(dto.currentPassword(), user.getPassword())) {
-                throw new RuntimeException("The current password you entered is incorrect");
+                throw new AuthenticationException("The current password you entered is incorrect");
             }
 
             if (dto.newPassword().length() < 8) {
-                throw new RuntimeException("New password must be at least 8 characters long");
+                throw new AuthenticationException("New password must be at least 8 characters long");
             }
 
             user.setPassword(passwordEncoder.encode(dto.newPassword()));
