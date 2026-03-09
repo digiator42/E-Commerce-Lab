@@ -291,7 +291,7 @@ export class CartManager {
             }
         } catch (error) {
             console.error('Error adding item to cart:', error);
-            this.uiManager.showToast('Error adding item to cart', 'error');
+            this.uiManager.showToast(error, 'error');
         }
     }
 

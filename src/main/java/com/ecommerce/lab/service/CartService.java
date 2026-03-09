@@ -38,6 +38,10 @@ public class CartService {
         Product product = productRepository.findById(productId)
             .orElseThrow(() -> new RuntimeException("Product not found"));
 
+        if (product.getStock() == 0) {
+            throw new RuntimeException("Product is out of stock");
+        }
+
         Optional<CartItem> existingItem = cartRepository.findByUserAndProduct(user, product);
 
         if (existingItem.isPresent()) {
