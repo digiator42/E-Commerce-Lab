@@ -121,17 +121,16 @@ public class ProductService {
             }
 
             if (minRating != null && minRating > 0) {
-                // Join with reviews to calculate the average
-                Join<Product, Review> reviewsJoin = root.join("reviews", JoinType.LEFT);
 
-                // We need to group by product ID to calculate the average correctly
-                query.groupBy(root.get("id"));
-
+                // Create the subquery AVG(rating) WHERE review.product_id = product.id
                 Subquery<Double> subquery = query.subquery(Double.class);
                 Root<Review> subRoot = subquery.from(Review.class);
+
+                // Define the AVG calculation
                 subquery.select(cb.avg(subRoot.get("rating")))
                     .where(cb.equal(subRoot.get("product"), root));
 
+                // Add the result as a filter condition
                 predicates.add(cb.greaterThanOrEqualTo(subquery, minRating));
             }
 
