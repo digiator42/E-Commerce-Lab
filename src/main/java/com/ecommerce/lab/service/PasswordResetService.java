@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import com.ecommerce.lab.exception.ResourceNotFoundException;
 import com.ecommerce.lab.model.User;
 import com.ecommerce.lab.repository.UserRepository;
 
@@ -24,7 +25,7 @@ public class PasswordResetService {
 
     public void createPasswordResetToken(String email) {
         User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         // Generate a unique UUID token
         String token = UUID.randomUUID().toString();

@@ -1,5 +1,6 @@
 package com.ecommerce.lab.exception;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -10,6 +11,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
+
+import com.ecommerce.lab.dto.ErrorResponseDTO;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -30,6 +33,18 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleNotFound(ProductNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
             .body(Map.of("message", ex.getMessage()));
+    }
+
+    // Handles Category not found, User not found.
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ErrorResponseDTO> handleNotFound(ResourceNotFoundException ex) {
+        return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
+    // Handles Out of stock, Expired gift card, Empty cart, Coupon disabled
+    @ExceptionHandler(BusinessLogicException.class)
+    public ResponseEntity<ErrorResponseDTO> handleBusinessError(BusinessLogicException ex) {
+        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
     @ExceptionHandler(NoResourceFoundException.class)
@@ -64,4 +79,14 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
             .body(Map.of("error", "Registration/Login Failed", "message", ex.getMessage()));
     }
+
+    private ResponseEntity<ErrorResponseDTO> buildResponse(HttpStatus status, String message) {
+        ErrorResponseDTO error = new ErrorResponseDTO(
+            LocalDateTime.now(),
+            status.value(),
+            message
+        );
+        return new ResponseEntity<>(error, status);
+    }
+
 }

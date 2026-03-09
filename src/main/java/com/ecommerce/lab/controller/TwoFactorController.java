@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ecommerce.lab.exception.ResourceNotFoundException;
 import com.ecommerce.lab.model.User;
 import com.ecommerce.lab.repository.UserRepository;
 import com.ecommerce.lab.service.AuthService;
@@ -114,7 +115,7 @@ public class TwoFactorController {
             return ResponseEntity.status(401).build();
 
         User user = userRepository.findByEmail(principal.getName())
-            .orElseThrow(() -> new RuntimeException("User not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         // Return a DTO with just the status info
         Map<String, Object> status = new HashMap<>();

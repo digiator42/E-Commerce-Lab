@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ecommerce.lab.dto.GiftCardRequest;
+import com.ecommerce.lab.exception.ResourceNotFoundException;
 import com.ecommerce.lab.model.BalanceTransaction;
 import com.ecommerce.lab.model.GiftCard;
 import com.ecommerce.lab.model.User;
@@ -44,7 +45,7 @@ public class UserGiftCardController {
         Principal principal
     ) {
         User buyer = userRepository.findByEmail(principal.getName())
-            .orElseThrow(() -> new RuntimeException("User not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         // Generate the Gift Card
         GiftCard giftCard = new GiftCard();
@@ -118,7 +119,7 @@ public class UserGiftCardController {
     @GetMapping("/history")
     public ResponseEntity<?> getHistory(Principal principal) {
         User user = userRepository.findByEmail(principal.getName())
-            .orElseThrow(() -> new RuntimeException("User not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         List<BalanceTransaction> history = balanceTransactionRepository
             .findAllByUserOrderByDateDesc(user);

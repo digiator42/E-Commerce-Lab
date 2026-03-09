@@ -41,6 +41,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import com.ecommerce.lab.dto.ProductRequestDTO;
 import com.ecommerce.lab.dto.UserResponseDTO;
+import com.ecommerce.lab.exception.ResourceNotFoundException;
 import com.ecommerce.lab.model.Category;
 import com.ecommerce.lab.model.Coupon;
 import com.ecommerce.lab.model.Order;
@@ -75,27 +76,31 @@ public class AdminController {
         long totalOrders = orderRepository.count();
         // Summing all order totals for revenue
         double totalRevenue = orderRepository.findAll().stream()
-                .mapToDouble(Order::getTotalAmount).sum();
+            .mapToDouble(Order::getTotalAmount).sum();
 
         List<Coupon> coupons = couponRepository.findAll();
 
-        return ResponseEntity.ok(Map.of(
+        return ResponseEntity.ok(
+            Map.of(
                 "products", totalProducts,
                 "orders", totalOrders,
                 "revenue", totalRevenue,
-                "coupons", coupons));
+                "coupons", coupons
+            )
+        );
     }
 
     @PostMapping(value = "/products", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createProduct(
-            @RequestPart("product") String productJson,
-            @RequestPart(value = "file", required = false) MultipartFile file) throws IOException {
+        @RequestPart("product") String productJson,
+        @RequestPart(value = "file", required = false) MultipartFile file
+    ) throws IOException {
 
         ObjectMapper mapper = new ObjectMapper();
         ProductRequestDTO dto = mapper.readValue(productJson, ProductRequestDTO.class);
 
         Category category = categoryRepository.findByName(dto.categoryName())
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+            .orElseThrow(() -> new RuntimeException("Category not found"));
 
         Product product = new Product();
         product.setName(dto.name());
@@ -133,11 +138,14 @@ public class AdminController {
     }
 
     @PutMapping("/products/{id}")
-    public ResponseEntity<?> updateProduct(@PathVariable Long id, @RequestBody ProductRequestDTO dto) {
+    public ResponseEntity<?> updateProduct(
+        @PathVariable Long id,
+        @RequestBody ProductRequestDTO dto
+    ) {
         return productRepository.findById(id).map(product -> {
 
             Category category = categoryRepository.findByName(dto.categoryName())
-                    .orElseThrow(() -> new RuntimeException("Category not found"));
+                .orElseThrow(() -> new RuntimeException("Category not found"));
 
             product.setName(dto.name());
             product.setPrice(dto.price());
@@ -152,11 +160,15 @@ public class AdminController {
 
     @GetMapping("/orders")
     public ResponseEntity<List<Order>> getAllOrders() {
-        return ResponseEntity.ok(orderRepository.findAll(Sort.by(Sort.Direction.DESC, "orderDate")));
+        return ResponseEntity
+            .ok(orderRepository.findAll(Sort.by(Sort.Direction.DESC, "orderDate")));
     }
 
     @PatchMapping("/orders/{id}/status")
-    public ResponseEntity<?> updateOrderStatus(@PathVariable Long id, @RequestParam OrderStatus status) {
+    public ResponseEntity<?> updateOrderStatus(
+        @PathVariable Long id,
+        @RequestParam OrderStatus status
+    ) {
         Order order = orderRepository.findById(id).orElseThrow();
         order.setStatus(status);
         orderRepository.save(order);
@@ -165,17 +177,20 @@ public class AdminController {
 
     @GetMapping("/users")
     public ResponseEntity<List<UserResponseDTO>> getAllUsers() {
-        return ResponseEntity.ok(userRepository.findAll().stream()
+        return ResponseEntity.ok(
+            userRepository.findAll().stream()
                 .map(u -> {
                     return UserResponseDTO.fromEntity(u);
                 })
-                .toList());
+                .toList()
+        );
     }
 
     @PatchMapping("/users/{id}/role")
     public ResponseEntity<?> updateUserRole(
-            @PathVariable Long id,
-            @RequestParam Role role) {
+        @PathVariable Long id,
+        @RequestParam Role role
+    ) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
@@ -186,14 +201,14 @@ public class AdminController {
         String loggedInIdentifier = auth.getName();
 
         User targetUser = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         if ((Objects.equals(targetUser.getUserName(), loggedInIdentifier) ||
-                Objects.equals(targetUser.getEmail(), loggedInIdentifier)) &&
-                role != Role.ROLE_ADMIN) {
+            Objects.equals(targetUser.getEmail(), loggedInIdentifier)) &&
+            role != Role.ROLE_ADMIN) {
 
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", "Self-downgrade protected."));
+                .body(Map.of("error", "Self-downgrade protected."));
         }
 
         targetUser.setRole(role);
@@ -204,7 +219,10 @@ public class AdminController {
     private final String UPLOAD_DIR = "uploads/";
 
     @PostMapping("/products/{id}/upload-image")
-    public ResponseEntity<?> uploadImage(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
+    public ResponseEntity<?> uploadImage(
+        @PathVariable Long id,
+        @RequestParam("file") MultipartFile file
+    ) {
         try {
             // Validate File
             String contentType = file.getContentType();
@@ -233,45 +251,47 @@ public class AdminController {
     }
 
     @GetMapping("/api/images/{filename}")
-    public ResponseEntity<Resource> getImage(@PathVariable String filename) throws MalformedURLException {
+    public ResponseEntity<Resource> getImage(@PathVariable String filename)
+        throws MalformedURLException {
         Path path = Paths.get("uploads/" + filename);
         Resource resource = new UrlResource(path.toUri());
 
         return ResponseEntity.ok()
-                .contentType(MediaType.IMAGE_JPEG)
-                .header(HttpHeaders.CONTENT_DISPOSITION, "inline")
-                .body(resource);
+            .contentType(MediaType.IMAGE_JPEG)
+            .header(HttpHeaders.CONTENT_DISPOSITION, "inline")
+            .body(resource);
     }
 
     @GetMapping("/routes")
     public ResponseEntity<List<Map<String, Object>>> getAllRoutes() {
         List<Map<String, Object>> routes = handlerMapping.getHandlerMethods()
-                .entrySet().stream()
-                .map(entry -> {
-                    RequestMappingInfo info = entry.getKey();
-                    HandlerMethod method = entry.getValue();
+            .entrySet().stream()
+            .map(entry -> {
+                RequestMappingInfo info = entry.getKey();
+                HandlerMethod method = entry.getValue();
 
-                    java.util.Set<String> patterns = java.util.Collections.emptySet();
+                java.util.Set<String> patterns = java.util.Collections.emptySet();
 
-                    if (info.getPathPatternsCondition() != null) {
-                        patterns = info.getPathPatternsCondition().getPatternValues();
-                    } else if (info.getPatternsCondition() != null) {
-                        patterns = info.getPatternsCondition().getPatterns();
-                    }
+                if (info.getPathPatternsCondition() != null) {
+                    patterns = info.getPathPatternsCondition().getPatternValues();
+                } else if (info.getPatternsCondition() != null) {
+                    patterns = info.getPatternsCondition().getPatterns();
+                }
 
-                    ResponseStatus statusAnnotation = method.getMethodAnnotation(ResponseStatus.class);
-                    String status = (statusAnnotation != null) ? statusAnnotation.value().toString()
-                            : "200 OK (Default)";
+                ResponseStatus statusAnnotation = method.getMethodAnnotation(ResponseStatus.class);
+                String status = (statusAnnotation != null) ? statusAnnotation.value().toString()
+                    : "200 OK (Default)";
 
-                    return Map.of(
-                            "path", patterns,
-                            "methods", info.getMethodsCondition().getMethods().stream()
-                                    .map(Enum::name)
-                                    .collect(Collectors.toList()),
-                            "handler", method.getShortLogMessage(),
-                            "expectedStatus", status);
-                })
-                .collect(Collectors.toList());
+                return Map.of(
+                    "path", patterns,
+                    "methods", info.getMethodsCondition().getMethods().stream()
+                        .map(Enum::name)
+                        .collect(Collectors.toList()),
+                    "handler", method.getShortLogMessage(),
+                    "expectedStatus", status
+                );
+            })
+            .collect(Collectors.toList());
 
         return ResponseEntity.ok(routes);
     }
@@ -296,9 +316,12 @@ public class AdminController {
 
     // Update Existing Coupon
     @PutMapping("/coupons/{id}")
-    public ResponseEntity<?> updateCoupon(@PathVariable Long id, @RequestBody Coupon couponDetails) {
+    public ResponseEntity<?> updateCoupon(
+        @PathVariable Long id,
+        @RequestBody Coupon couponDetails
+    ) {
         Coupon coupon = couponRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Coupon not found"));
+            .orElseThrow(() -> new RuntimeException("Coupon not found"));
 
         coupon.setCode(couponDetails.getCode());
         coupon.setDiscountPercentage(couponDetails.getDiscountPercentage());
@@ -319,9 +342,9 @@ public class AdminController {
     @GetMapping("/coupons/stats")
     public ResponseEntity<?> getCouponStats() {
         List<Coupon> topCoupons = couponRepository.findAll().stream()
-                .sorted(Comparator.comparingInt(Coupon::getTimesUsed).reversed())
-                .limit(5)
-                .collect(Collectors.toList());
+            .sorted(Comparator.comparingInt(Coupon::getTimesUsed).reversed())
+            .limit(5)
+            .collect(Collectors.toList());
 
         if (topCoupons.isEmpty()) {
             topCoupons = couponRepository.findAll();

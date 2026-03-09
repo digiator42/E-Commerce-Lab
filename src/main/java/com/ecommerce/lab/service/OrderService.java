@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
+import com.ecommerce.lab.exception.ResourceNotFoundException;
 import com.ecommerce.lab.model.Address;
 import com.ecommerce.lab.model.BalanceTransaction;
 import com.ecommerce.lab.model.CartItem;
@@ -50,7 +51,7 @@ public class OrderService {
     )
         throws Exception {
         User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         List<CartItem> cartItems = cartRepository.findAllByUserEmail(email);
 

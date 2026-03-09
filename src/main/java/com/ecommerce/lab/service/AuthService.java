@@ -11,6 +11,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.ecommerce.lab.dto.UserResponseDTO;
+import com.ecommerce.lab.exception.ResourceNotFoundException;
 import com.ecommerce.lab.model.User;
 import com.ecommerce.lab.repository.UserRepository;
 
@@ -27,7 +28,7 @@ public class AuthService {
 
     public void generateAndSend2FACode(String email) {
         User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         // Generate a random 6-digit code
         String code = String.valueOf(new Random().nextInt(899999) + 100000);
@@ -42,7 +43,7 @@ public class AuthService {
 
     public boolean verify2FACode(String email, String code) {
         User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         if (user.getTwoFactorCode() != null &&
             user.getTwoFactorCode().equals(code) &&

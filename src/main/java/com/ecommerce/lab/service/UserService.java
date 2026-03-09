@@ -10,6 +10,7 @@ import com.ecommerce.lab.dto.RegisterRequestDTO;
 import com.ecommerce.lab.dto.UserResponseDTO;
 import com.ecommerce.lab.dto.UserUpdateDTO;
 import com.ecommerce.lab.exception.AuthenticationException;
+import com.ecommerce.lab.exception.ResourceNotFoundException;
 import com.ecommerce.lab.exception.UserAlreadyExistsException;
 import com.ecommerce.lab.exception.UserNotFoundException;
 import com.ecommerce.lab.model.User;
@@ -97,7 +98,7 @@ public class UserService {
     @Transactional
     public void updateProfile(String email, UserUpdateDTO dto) {
         User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         if (dto.displayName() != null)
             user.setName(dto.displayName());
