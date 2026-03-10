@@ -2,7 +2,9 @@ package com.ecommerce.lab.service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -78,8 +80,11 @@ public class OrderService {
             userRepository.save(user);
         }
 
+        // To be linked to orderitem
+        List<GiftCard> giftCards = new ArrayList<>();
+
         // Process Items & Stock
-        OrderBreakdown breakdown = this.processItemsAndStock(cartItems, email);
+        OrderBreakdown breakdown = this.processItemsAndStock(cartItems, giftCards, email);
 
         // Apply Discount only to physical items
         double discountedPhysical = this.applyCoupon(breakdown.physicalTotal(), couponCode);
@@ -101,7 +106,7 @@ public class OrderService {
 
         // Persistence
         Order savedOrder = this.createAndSaveOrder(
-            user, shippingAddress, address, cartItems, finalTotal
+            user, shippingAddress, address, cartItems, giftCards, finalTotal
         );
 
         if (useStoreBalance && user.getStoreBalance() > 0) {
@@ -146,14 +151,18 @@ public class OrderService {
         public double getGrandTotal() { return physicalTotal + giftCardTotal; }
     }
 
-    private OrderBreakdown processItemsAndStock(List<CartItem> cartItems, String email) {
+    private OrderBreakdown processItemsAndStock(
+        List<CartItem> cartItems,
+        List<GiftCard> giftCards,
+        String email
+    ) {
         double physicalTotal = 0;
         double giftCardTotal = 0;
 
         for (CartItem ci : cartItems) {
             if (ci.isGiftCard()) {
                 giftCardTotal += ci.getGiftCardAmount();
-                this.generateAndEmailGiftCard(ci, email);
+                giftCards.add(this.generateAndEmailGiftCard(ci, email));
             } else {
                 if (ci.getProduct().getStock() < ci.getQuantity()) {
                     throw new BusinessLogicException(
@@ -167,7 +176,7 @@ public class OrderService {
         return new OrderBreakdown(physicalTotal, giftCardTotal);
     }
 
-    private void generateAndEmailGiftCard(CartItem ci, String buyerEmail) {
+    private GiftCard generateAndEmailGiftCard(CartItem ci, String buyerEmail) {
 
         GiftCard gc = new GiftCard();
         gc.setCode(UUID.randomUUID().toString().substring(0, 12).toUpperCase());
@@ -177,13 +186,15 @@ public class OrderService {
         gc.setExpiryDate(LocalDateTime.now().plusYears(1));
         gc.setActive(true);
 
-        giftCardRepository.save(gc);
+        gc = giftCardRepository.save(gc);
 
         emailService.sendGiftCardCode(
             ci.getRecipientEmail(),
             gc.getCode(),
             ci.getGiftCardMessage()
         );
+
+        return gc;
     }
 
     private double applyCoupon(double total, String couponCode) {
@@ -210,6 +221,7 @@ public class OrderService {
         String shippingAddress,
         Address address,
         List<CartItem> cartItems,
+        List<GiftCard> giftcards,
         double finalTotal
     ) {
         Order order = new Order();
@@ -225,12 +237,13 @@ public class OrderService {
         );
 
         // Map CartItems to OrderItems
+        int gcIndex = 0;
         for (CartItem ci : cartItems) {
             OrderItem oi = new OrderItem();
 
             if (ci.isGiftCard()) {
-                // Handle Virtual Item (Gift Card)
                 oi.setProduct(null); // No physical product link
+                oi.setGiftCard(giftcards.get(gcIndex++));
                 oi.setProductName("Digital Gift Card (To: " + ci.getRecipientEmail() + ")");
                 oi.setPriceAtPurchase(ci.getGiftCardAmount());
                 oi.setQuantity(ci.getQuantity());
@@ -241,7 +254,7 @@ public class OrderService {
                 oi.setPriceAtPurchase(ci.getProduct().getPrice());
                 oi.setQuantity(ci.getQuantity());
             }
-
+            oi.setOrder(order);
             order.getItems().add(oi);
         }
 
@@ -253,11 +266,11 @@ public class OrderService {
         emailService.sendOrderConfirmationWithInvoice(order);
 
         // Send to admin
-        emailService.sendSimpleEmail(
-            "admin@admin.com",
-            "New Order Received!",
-            "Order #" + order.getId() + " was placed by " + user.getEmail()
-        );
+        // emailService.sendSimpleEmail(
+        //     "admin@admin.com",
+        //     "New Order Received!",
+        //     "Order #" + order.getId() + " was placed by " + user.getEmail()
+        // );
     }
 
     public void validateCoupon(Coupon coupon) {

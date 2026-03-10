@@ -19,7 +19,7 @@ public record OrderItemDTO(
             oi.getProductName(),
             BigDecimal.valueOf(oi.getPriceAtPurchase()),
             oi.getQuantity(),
-            ProductResponseDTO.simpleFromEntity(oi.getProduct())
+            ProductResponseDTO.simpleFromEntity(oi)
         );
     }
 }

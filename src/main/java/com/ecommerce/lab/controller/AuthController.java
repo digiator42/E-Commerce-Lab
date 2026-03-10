@@ -96,12 +96,9 @@ public class AuthController {
 
             return ResponseEntity.ok(
                 Map.of(
-                    "requires2FA",
-                    true,
-                    "qrCodeUrl",
-                    qrUrl,
-                    "message",
-                    "Verify using Google Authenticator or check your Email"
+                    "requires2FA", true,
+                    "qrCodeUrl", qrUrl,
+                    "message", "Verify using Google Authenticator or check your Email"
                 )
             );
         }

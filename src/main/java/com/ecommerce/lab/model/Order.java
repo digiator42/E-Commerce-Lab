@@ -23,7 +23,7 @@ public class Order {
     @ManyToOne
     private User user;
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<OrderItem> items = new ArrayList<>();
 
     private String paymentTransactionId;

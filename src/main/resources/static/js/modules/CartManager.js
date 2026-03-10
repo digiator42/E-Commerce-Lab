@@ -181,7 +181,7 @@ export class CartManager {
                         })
                     });
                 } else {
-                    while(++i < item.quantity) {
+                    while (++i < item.quantity) {
                         await this.apiClient.fetch(`/api/cart/add/${item.id}`, {
                             method: 'POST'
                         });

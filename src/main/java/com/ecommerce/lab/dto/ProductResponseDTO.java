@@ -2,6 +2,8 @@ package com.ecommerce.lab.dto;
 
 import java.util.List;
 
+import com.ecommerce.lab.model.GiftCard;
+import com.ecommerce.lab.model.OrderItem;
 import com.ecommerce.lab.model.Product;
 import com.ecommerce.lab.model.Review;
 
@@ -56,7 +58,26 @@ public record ProductResponseDTO(
                 );
         }
 
-        public static ProductResponseDTO simpleFromEntity(Product product) {
+        public static ProductResponseDTO simpleFromEntity(OrderItem oi) {
+                Product product = oi.getProduct();
+
+                if (product == null) {
+                        GiftCard gc = oi.getGiftCard();
+                        return new ProductResponseDTO(
+                                gc.getId(),
+                                String.valueOf(gc.getBalance()),
+                                gc.getMessage(),
+                                gc.getBalance(),
+                                -1,
+                                "GiftCard",
+                                null,
+                                null,
+                                null,
+                                null,
+                                null
+                        );
+                }
+
                 return new ProductResponseDTO(
                         product.getId(),
                         product.getName(),
