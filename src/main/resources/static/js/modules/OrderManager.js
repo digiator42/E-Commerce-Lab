@@ -948,9 +948,13 @@ export class OrderManager {
                                     <span class="font-medium text-gray-900">${item.productName}</span>
                                     ${item.product?.category ? `
                                         <span class="ml-2 text-xs bg-gray-100 px-2 py-0.5 rounded-full">
-                                            ${item.product.category}
+                                            ${item.product?.category}
                                         </span>
-                                    ` : ''}
+                                    ` : `
+                                        <span class="ml-2 text-xs bg-gray-100 px-2 py-0.5 rounded-full">
+                                            ${item.type[0] + item.type.substring(1, item.type.length).toLowerCase()}
+                                        </span>
+                                    `}
                                 </div>
                                 <div class="flex items-center mt-1 text-xs text-gray-500">
                                     <span>Qty: ${item.quantity}</span>

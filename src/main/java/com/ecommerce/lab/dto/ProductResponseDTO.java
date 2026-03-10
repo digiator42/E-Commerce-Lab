@@ -58,26 +58,8 @@ public record ProductResponseDTO(
                 );
         }
 
-        public static ProductResponseDTO simpleFromEntity(OrderItem oi) {
-                Product product = oi.getProduct();
-
-                if (product == null) {
-                        GiftCard gc = oi.getGiftCard();
-                        return new ProductResponseDTO(
-                                gc.getId(),
-                                String.valueOf(gc.getBalance()),
-                                gc.getMessage(),
-                                gc.getBalance(),
-                                -1,
-                                "GiftCard",
-                                null,
-                                null,
-                                null,
-                                null,
-                                null
-                        );
-                }
-
+        public static ProductResponseDTO simpleFromEntity(Product product) {
+                
                 return new ProductResponseDTO(
                         product.getId(),
                         product.getName(),

@@ -21,7 +21,7 @@ public class GiftCard {
     private LocalDateTime expiryDate;
     private boolean isActive = true;
 
-    // link it to a specific user or (anyone can use)
+    // link it to a specific user
     private String recipientEmail;
 
     private String message;
