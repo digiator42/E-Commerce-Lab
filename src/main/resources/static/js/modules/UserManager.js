@@ -103,10 +103,10 @@ export class UserManager {
             selectedTab.classList.remove('hidden');
 
             // If it's the redeem tab, refresh the balance
-            // if (tabName === 'redeem') {
-            // await this.loadStoreBalance();
-            await this.loadRedeemHistory();
-            // }
+            if (tabName === 'redeem') {
+                // await this.loadStoreBalance();
+                await this.loadRedeemHistory();
+            }
         }
     }
 

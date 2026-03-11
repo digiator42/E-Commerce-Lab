@@ -45,6 +45,17 @@ public class OrderService {
     private final GiftCardRepository giftCardRepository;
     private final BalanceTransactionRepository balanceTransactionRepository;
 
+    private double remainingPhysical;
+    private double discountedPhysical;
+    private double amountToDeduct;
+    private double finalTotal;
+
+    private record OrderBreakdown(
+        double physicalTotal,
+        double giftCardTotal
+    ) {
+    }
+
     @Transactional(rollbackFor = Exception.class)
     public void placeOrder(
         String email,
@@ -62,6 +73,54 @@ public class OrderService {
             throw new BusinessLogicException("Cart is empty");
         }
 
+        // Validate and set new address
+        Address address = handleAddress(shippingAddress, user);
+
+        // To be linked to orderitem
+        List<GiftCard> giftCards = new ArrayList<>();
+
+        // Process Items & Stock
+        OrderBreakdown breakdown = this.processItemsAndStock(cartItems, giftCards, email);
+
+        // Apply Discount only to physical items
+        this.discountedPhysical = this.applyCoupon(breakdown.physicalTotal(), couponCode);
+
+        // Apply Store Balance ONLY to the physical discounted total
+        this.handleUserStoreBalance(useStoreBalance, user);
+
+        this.finalTotal = this.remainingPhysical + breakdown.giftCardTotal();
+
+        // Persistence
+        Order savedOrder = this.createAndSaveOrder(
+            user, shippingAddress, address, cartItems, giftCards
+        );
+
+        if (useStoreBalance && user.getStoreBalance() > 0) {
+            if (amountToDeduct != 0)
+                this.createUsageTX(user, amountToDeduct, savedOrder);
+        }
+
+        cartRepository.deleteAll(cartItems);
+
+        // Async (Emails)
+        // this.sendNotifications(savedOrder, user);
+    }
+
+    private void handleUserStoreBalance(boolean useStoreBalance, User user) {
+        this.remainingPhysical = this.discountedPhysical;
+
+        if (useStoreBalance && user.getStoreBalance() > 0) {
+            this.amountToDeduct = Math.min(this.discountedPhysical, user.getStoreBalance());
+            this.remainingPhysical = this.discountedPhysical - amountToDeduct;
+
+            // Deduct from user profile
+            user.setStoreBalance(user.getStoreBalance() - amountToDeduct);
+
+            userRepository.save(user);
+        }
+    }
+
+    private Address handleAddress(String shippingAddress, User user) {
         Address address = null;
         // Core Validation
         if (shippingAddress == null) {
@@ -79,45 +138,7 @@ public class OrderService {
             user.getAddressObjects().add(address);
             userRepository.save(user);
         }
-
-        // To be linked to orderitem
-        List<GiftCard> giftCards = new ArrayList<>();
-
-        // Process Items & Stock
-        OrderBreakdown breakdown = this.processItemsAndStock(cartItems, giftCards, email);
-
-        // Apply Discount only to physical items
-        double discountedPhysical = this.applyCoupon(breakdown.physicalTotal(), couponCode);
-
-        // Apply Store Balance ONLY to the physical discounted total
-        double remainingPhysical = discountedPhysical;
-        double amountToDeduct = 0;
-        if (useStoreBalance && user.getStoreBalance() > 0) {
-            amountToDeduct = Math.min(discountedPhysical, user.getStoreBalance());
-            remainingPhysical = discountedPhysical - amountToDeduct;
-
-            // Deduct from user profile
-            user.setStoreBalance(user.getStoreBalance() - amountToDeduct);
-
-            userRepository.save(user);
-        }
-
-        double finalTotal = remainingPhysical + breakdown.giftCardTotal();
-
-        // Persistence
-        Order savedOrder = this.createAndSaveOrder(
-            user, shippingAddress, address, cartItems, giftCards, finalTotal
-        );
-
-        if (useStoreBalance && user.getStoreBalance() > 0) {
-            if (amountToDeduct != 0)
-                this.createUsageTX(user, amountToDeduct, savedOrder);
-        }
-
-        cartRepository.deleteAll(cartItems);
-
-        // Async/External Tasks (Emails)
-        this.sendNotifications(savedOrder, user);
+        return address;
     }
 
     private void createUsageTX(User user, double amountToDeduct, Order savedOrder) {
@@ -142,13 +163,6 @@ public class OrderService {
                 "Please set a shipping address in your profile before checkout."
             );
         }
-    }
-
-    public record OrderBreakdown(
-        double physicalTotal,
-        double giftCardTotal
-    ) {
-        public double getGrandTotal() { return physicalTotal + giftCardTotal; }
     }
 
     private OrderBreakdown processItemsAndStock(
@@ -221,15 +235,14 @@ public class OrderService {
         String shippingAddress,
         Address address,
         List<CartItem> cartItems,
-        List<GiftCard> giftcards,
-        double finalTotal
+        List<GiftCard> giftcards
     ) {
         Order order = new Order();
         order.setUser(user);
         order.setOrderDate(LocalDateTime.now());
         // A snapshot of shipping address, current order address
         order.setShippingAddress(shippingAddress != null ? shippingAddress : address.toString());
-        order.setTotalAmount(Math.round(finalTotal * 100.0) / 100.0);
+        order.setTotalAmount(Math.round(this.finalTotal * 100.0) / 100.0);
         order.setPaymentStatus("PAID");
         order.setStatus(OrderStatus.COMPLETED);
         order.setPaymentTransactionId(
@@ -266,11 +279,11 @@ public class OrderService {
         emailService.sendOrderConfirmationWithInvoice(order);
 
         // Send to admin
-        // emailService.sendSimpleEmail(
-        //     "admin@admin.com",
-        //     "New Order Received!",
-        //     "Order #" + order.getId() + " was placed by " + user.getEmail()
-        // );
+        emailService.sendSimpleEmail(
+        "admin@admin.com",
+        "New Order Received!",
+        "Order #" + order.getId() + " was placed by " + user.getEmail()
+        );
     }
 
     public void validateCoupon(Coupon coupon) {

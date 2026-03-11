@@ -2,8 +2,6 @@ package com.ecommerce.lab.dto;
 
 import java.util.List;
 
-import com.ecommerce.lab.model.GiftCard;
-import com.ecommerce.lab.model.OrderItem;
 import com.ecommerce.lab.model.Product;
 import com.ecommerce.lab.model.Review;
 
