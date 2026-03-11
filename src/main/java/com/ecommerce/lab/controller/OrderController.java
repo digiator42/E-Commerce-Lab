@@ -56,7 +56,8 @@ public class OrderController {
                 authentication.getName(),
                 orderRequest.couponCode(),
                 orderRequest.useStoreBalance(),
-                orderRequest.shippingAddress()
+                orderRequest.shippingAddress(),
+                orderRequest.giftCards()
             );
 
             return ResponseEntity.ok(Map.of("message", "Order successfully created"));

@@ -49,7 +49,7 @@ public class GiftCardService {
 
         // Send the code via Email
         emailService
-            .sendGiftCardCode(giftCard.getRecipientEmail(), giftCard.getCode(), buyer.getName());
+            .sendGiftCardCode(giftCard.getRecipientEmail(), giftCard.getCode(), giftCard.getInitialAmount(), buyer.getName());
 
     }
 

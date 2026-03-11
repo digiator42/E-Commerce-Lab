@@ -4,11 +4,11 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
+import com.ecommerce.lab.dto.GiftCardRequest;
 import com.ecommerce.lab.exception.BusinessLogicException;
 import com.ecommerce.lab.exception.ResourceNotFoundException;
 import com.ecommerce.lab.model.Address;
@@ -61,13 +61,16 @@ public class OrderService {
         String email,
         String couponCode,
         boolean useStoreBalance,
-        String shippingAddress
+        String shippingAddress,
+        List<GiftCardRequest> giftCards
     )
         throws Exception {
         User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         List<CartItem> cartItems = cartRepository.findAllByUserEmail(email);
+        // To be linked to orderitem
+        List<GiftCard> internalGiftCards = new ArrayList<>();
 
         if (cartItems.isEmpty()) {
             throw new BusinessLogicException("Cart is empty");
@@ -76,11 +79,8 @@ public class OrderService {
         // Validate and set new address
         Address address = handleAddress(shippingAddress, user);
 
-        // To be linked to orderitem
-        List<GiftCard> giftCards = new ArrayList<>();
-
         // Process Items & Stock
-        OrderBreakdown breakdown = this.processItemsAndStock(cartItems, giftCards, email);
+        OrderBreakdown breakdown = this.processItemsAndStock(cartItems, internalGiftCards, giftCards, email);
 
         // Apply Discount only to physical items
         this.discountedPhysical = this.applyCoupon(breakdown.physicalTotal(), couponCode);
@@ -92,7 +92,7 @@ public class OrderService {
 
         // Persistence
         Order savedOrder = this.createAndSaveOrder(
-            user, shippingAddress, address, cartItems, giftCards
+            user, shippingAddress, address, cartItems, internalGiftCards
         );
 
         if (useStoreBalance && user.getStoreBalance() > 0) {
@@ -103,7 +103,7 @@ public class OrderService {
         cartRepository.deleteAll(cartItems);
 
         // Async (Emails)
-        // this.sendNotifications(savedOrder, user);
+        this.sendNotifications(savedOrder, user);
     }
 
     private void handleUserStoreBalance(boolean useStoreBalance, User user) {
@@ -167,16 +167,21 @@ public class OrderService {
 
     private OrderBreakdown processItemsAndStock(
         List<CartItem> cartItems,
-        List<GiftCard> giftCards,
+        List<GiftCard> internalGiftCards,
+        List<GiftCardRequest> gcRequest,
         String email
     ) {
         double physicalTotal = 0;
         double giftCardTotal = 0;
 
+        int gcIndex = 0;
+
         for (CartItem ci : cartItems) {
             if (ci.isGiftCard()) {
                 giftCardTotal += ci.getGiftCardAmount();
-                giftCards.add(this.generateAndEmailGiftCard(ci, email));
+                String giftedEmail = gcRequest.get(gcIndex++).recipientEmail();
+                System.out.println("=======>> " + giftedEmail);
+                internalGiftCards.add(this.generateAndEmailGiftCard(ci, giftedEmail));
             } else {
                 if (ci.getProduct().getStock() < ci.getQuantity()) {
                     throw new BusinessLogicException(
@@ -190,22 +195,23 @@ public class OrderService {
         return new OrderBreakdown(physicalTotal, giftCardTotal);
     }
 
-    private GiftCard generateAndEmailGiftCard(CartItem ci, String buyerEmail) {
+    private GiftCard generateAndEmailGiftCard(CartItem ci, String recipientEmail) {
 
         GiftCard gc = new GiftCard();
         gc.setCode(UUID.randomUUID().toString().substring(0, 12).toUpperCase());
         gc.setBalance(ci.getGiftCardAmount());
         gc.setInitialAmount(ci.getGiftCardAmount());
-        gc.setRecipientEmail(ci.getRecipientEmail());
+        gc.setRecipientEmail(recipientEmail);
         gc.setExpiryDate(LocalDateTime.now().plusYears(1));
         gc.setActive(true);
 
         gc = giftCardRepository.save(gc);
 
         emailService.sendGiftCardCode(
-            ci.getRecipientEmail(),
+            recipientEmail,
             gc.getCode(),
-            ci.getGiftCardMessage()
+            gc.getInitialAmount(),
+            ci.getUser().getName()
         );
 
         return gc;
@@ -235,7 +241,7 @@ public class OrderService {
         String shippingAddress,
         Address address,
         List<CartItem> cartItems,
-        List<GiftCard> giftcards
+        List<GiftCard> internalGiftCards
     ) {
         Order order = new Order();
         order.setUser(user);
@@ -256,7 +262,7 @@ public class OrderService {
 
             if (ci.isGiftCard()) {
                 oi.setProduct(null); // No physical product link
-                oi.setGiftCard(giftcards.get(gcIndex++));
+                oi.setGiftCard(internalGiftCards.get(gcIndex++));
                 oi.setProductName("Digital Gift Card (To: " + ci.getRecipientEmail() + ")");
                 oi.setPriceAtPurchase(ci.getGiftCardAmount());
                 oi.setQuantity(ci.getQuantity());
@@ -279,11 +285,11 @@ public class OrderService {
         emailService.sendOrderConfirmationWithInvoice(order);
 
         // Send to admin
-        emailService.sendSimpleEmail(
-        "admin@admin.com",
-        "New Order Received!",
-        "Order #" + order.getId() + " was placed by " + user.getEmail()
-        );
+        // emailService.sendSimpleEmail(
+        // "admin@admin.com",
+        // "New Order Received!",
+        // "Order #" + order.getId() + " was placed by " + user.getEmail()
+        // );
     }
 
     public void validateCoupon(Coupon coupon) {

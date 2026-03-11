@@ -2,6 +2,7 @@ package com.ecommerce.lab.service;
 
 import java.io.ByteArrayOutputStream;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -24,6 +25,9 @@ public class EmailService {
     private final TemplateEngine templateEngine;
     private final InvoiceService invoiceService;
 
+    @Value("${spring.mail.username}")
+    private String fromEmail;
+
     public EmailService(
         JavaMailSender mailSender,
         TemplateEngine templateEngine,
@@ -37,7 +41,7 @@ public class EmailService {
     public void sendSimpleEmail(String to, String subject, String text) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom("42pongos@gmail.com");
+            message.setFrom(this.fromEmail);
             message.setTo(to);
             message.setSubject(subject);
             message.setText(text);
@@ -58,7 +62,7 @@ public class EmailService {
             String htmlContent = templateEngine.process(templateName, context);
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-            helper.setFrom("42pongos@gmail.com");
+            helper.setFrom(this.fromEmail);
             helper.setTo(to);
             helper.setSubject(subject);
             helper.setText(htmlContent, true);
@@ -102,7 +106,7 @@ public class EmailService {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-            helper.setFrom("42pongos@gmail.com");
+            helper.setFrom(this.fromEmail);
             helper.setTo(order.getUser().getEmail());
             helper.setSubject("Your Order Confirmation #" + order.getId());
             helper.setText(htmlContent, true); // Set HTML body
@@ -130,11 +134,13 @@ public class EmailService {
         sendTemplateEmail(user.getEmail(), "Welcome to Commerce Lab!", "welcome-email", context);
     }
 
-    public void sendGiftCardCode(String email, String code, String name) {
+    public void sendGiftCardCode(String email, String code, double amount, String name) {
         Context context = new Context();
         context.setVariable("name", name);
+        context.setVariable("code", code);
+        context.setVariable("amount", amount);
         sendTemplateEmail(
-            email, "Thanks for purchasing Gift Card " + code, "welcome-email", context
+            email, "Thanks for purchasing Gift Card", "giftcard-purchase", context
         );
     }
 

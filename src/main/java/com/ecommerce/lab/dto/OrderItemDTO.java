@@ -17,7 +17,7 @@ public record OrderItemDTO(
     public static OrderItemDTO fromEntity(OrderItem oi) {
 
         String type = (oi.getGiftCard() != null) ? "VIRTUAL" : "PHYSICAL";
-        
+
         ProductResponseDTO productDTO = oi.getProduct() != null
             ? ProductResponseDTO.simpleFromEntity(oi.getProduct())
             : null;
@@ -25,9 +25,13 @@ public record OrderItemDTO(
             ? GiftCardResponseDTO.fromEntity(oi.getGiftCard())
             : null;
 
+        String name = oi.getGiftCard() != null
+            ? "Digital Gift Card (To: " + oi.getGiftCard().getRecipientEmail() + ")"
+            : oi.getProduct().getName();
+
         return new OrderItemDTO(
             oi.getId(),
-            oi.getProductName(),
+            name,
             BigDecimal.valueOf(oi.getPriceAtPurchase()),
             oi.getQuantity(),
             type,
