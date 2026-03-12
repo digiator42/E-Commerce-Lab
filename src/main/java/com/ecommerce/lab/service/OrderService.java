@@ -180,7 +180,6 @@ public class OrderService {
             if (ci.isGiftCard()) {
                 giftCardTotal += ci.getGiftCardAmount();
                 String giftedEmail = gcRequest.get(gcIndex++).recipientEmail();
-                System.out.println("=======>> " + giftedEmail);
                 internalGiftCards.add(this.generateAndEmailGiftCard(ci, giftedEmail));
             } else {
                 if (ci.getProduct().getStock() < ci.getQuantity()) {
@@ -198,6 +197,7 @@ public class OrderService {
     private GiftCard generateAndEmailGiftCard(CartItem ci, String recipientEmail) {
 
         GiftCard gc = new GiftCard();
+        gc.setName("Digital Gift Card (To: " + recipientEmail + ")");
         gc.setCode(UUID.randomUUID().toString().substring(0, 12).toUpperCase());
         gc.setBalance(ci.getGiftCardAmount());
         gc.setInitialAmount(ci.getGiftCardAmount());
@@ -262,8 +262,8 @@ public class OrderService {
 
             if (ci.isGiftCard()) {
                 oi.setProduct(null); // No physical product link
-                oi.setGiftCard(internalGiftCards.get(gcIndex++));
-                oi.setProductName("Digital Gift Card (To: " + ci.getRecipientEmail() + ")");
+                oi.setGiftCard(internalGiftCards.get(gcIndex));
+                oi.setProductName("Digital Gift Card (To: " + internalGiftCards.get(gcIndex++).getRecipientEmail() + ")");
                 oi.setPriceAtPurchase(ci.getGiftCardAmount());
                 oi.setQuantity(ci.getQuantity());
             } else {

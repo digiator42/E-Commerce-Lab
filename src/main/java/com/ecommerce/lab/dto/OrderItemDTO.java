@@ -25,13 +25,10 @@ public record OrderItemDTO(
             ? GiftCardResponseDTO.fromEntity(oi.getGiftCard())
             : null;
 
-        String name = oi.getGiftCard() != null
-            ? "Digital Gift Card (To: " + oi.getGiftCard().getRecipientEmail() + ")"
-            : oi.getProduct().getName();
 
         return new OrderItemDTO(
             oi.getId(),
-            name,
+            oi.getProductName();,
             BigDecimal.valueOf(oi.getPriceAtPurchase()),
             oi.getQuantity(),
             type,

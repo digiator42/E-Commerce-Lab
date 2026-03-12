@@ -15,6 +15,8 @@ public class GiftCard {
     @Column(unique = true, nullable = false)
     private String code;
 
+    private String name;
+
     private double balance; // Remaining money
     private double initialAmount; // Starting money for history/logs
 
