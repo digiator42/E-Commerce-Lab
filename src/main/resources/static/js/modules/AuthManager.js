@@ -243,7 +243,7 @@ export class AuthManager {
             }
 
             localStorage.setItem('user', JSON.stringify(this.user));
-            
+
             return this.isAuthenticated;
         } catch (error) {
             console.error('Auth check failed:', error);
@@ -255,36 +255,97 @@ export class AuthManager {
     async handleRegister(event) {
         event.preventDefault();
 
+        // Clear all previous errors
+        this.clearAllErrors();
+
         const formData = new FormData(event.target);
         const password = formData.get('password');
         const confirmPassword = formData.get('confirmPassword');
 
-        // Validate passwords match
-        if (password !== confirmPassword) {
-            this.uiManager.showToast('Passwords do not match', 'error');
-            return;
+        let hasErrors = false;
+
+        // Frontend validation
+        // Username validation
+        const username = formData.get('username');
+        if (!username || username.trim() === '') {
+            this.showFieldError('username', 'Username is required');
+            hasErrors = true;
+        } else if (username.length < 5 || username.length > 20) {
+            this.showFieldError('username', 'Username must be between 5 and 20 characters');
+            hasErrors = true;
         }
 
-        // Validate password length
-        if (password.length < 8) {
-            this.uiManager.showToast('Password must be at least 8 characters', 'error');
-            return;
+        // Display name validation
+        const displayName = formData.get('displayName');
+        if (!displayName || displayName.trim() === '') {
+            this.showFieldError('displayName', 'Display name is required');
+            hasErrors = true;
         }
 
-        // Validate age
+        // Email validation
+        const email = formData.get('email');
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!email || email.trim() === '') {
+            this.showFieldError('email', 'Email is required');
+            hasErrors = true;
+        } else if (!emailRegex.test(email)) {
+            this.showFieldError('email', 'Please enter a valid email address');
+            hasErrors = true;
+        }
+
+        // Age validation
         const age = parseInt(formData.get('age'));
-        if (age < 13 || age > 120) {
-            this.uiManager.showToast('Please enter a valid age', 'error');
+        if (!age || isNaN(age)) {
+            this.showFieldError('age', 'Age is required');
+            hasErrors = true;
+        } else if (age < 13 || age > 120) {
+            this.showFieldError('age', 'Please enter a valid age between 13 and 120');
+            hasErrors = true;
+        }
+
+        // Address validation
+        const address = formData.get('address');
+        if (!address || address.trim() === '') {
+            this.showFieldError('address', 'Address is required');
+            hasErrors = true;
+        }
+
+        // Password validation
+        if (!password || password === '') {
+            this.showFieldError('password', 'Password is required');
+            hasErrors = true;
+        } else if (password.length < 8) {
+            this.showFieldError('password', 'Password must be at least 8 characters');
+            hasErrors = true;
+        }
+
+        // Confirm password validation
+        if (!confirmPassword || confirmPassword === '') {
+            this.showFieldError('confirmPassword', 'Please confirm your password');
+            hasErrors = true;
+        } else if (password !== confirmPassword) {
+            this.showFieldError('confirmPassword', 'Passwords do not match');
+            hasErrors = true;
+        }
+
+        // Terms validation
+        const terms = formData.get('terms');
+        if (!terms) {
+            this.showFieldError('terms', 'You must agree to the terms and conditions');
+            hasErrors = true;
+        }
+
+        if (hasErrors) {
             return;
         }
 
         const registerData = {
-            username: formData.get('username'),
-            displayName: formData.get('displayName'),
-            email: formData.get('email'),
+            username: username.trim(),
+            displayName: displayName.trim(),
+            email: email.trim(),
             password: password,
             age: age,
-            address: formData.get('address')
+            address: address.trim()
         };
 
         // Show loading state
@@ -301,22 +362,97 @@ export class AuthManager {
             });
 
             if (!response.ok) {
-                const error = await response.text();
-                throw new Error(error || 'Registration failed');
+                const errorData = await response.json();
+
+                // Handle field-specific errors from backend
+                if (errorData && typeof errorData === 'object') {
+                    let hasBackendErrors = false;
+
+                    // Loop through each field error
+                    Object.entries(errorData).forEach(([field, message]) => {
+                        // Map backend field names to form field IDs if needed
+                        const fieldMap = {
+                            'username': 'username',
+                            'displayName': 'displayName',
+                            'email': 'email',
+                            'age': 'age',
+                            'address': 'address',
+                            'password': 'password'
+                        };
+
+                        const formField = fieldMap[field];
+                        if (formField) {
+                            this.showFieldError(formField, message);
+                            hasBackendErrors = true;
+                        }
+                    });
+
+                    if (hasBackendErrors) {
+                        return;
+                    }
+                }
+
+                // If no field-specific errors, show general error
+                throw new Error(errorData.message || 'Registration failed');
             }
 
             const user = await response.json();
             this.user = user;
-            this.router.navigate('/login');
-            this.uiManager.showToast('Registration successful! Welcome!');
+            this.uiManager.showToast('Registration successful! Please login.', 'success');
+            setTimeout(() => {
+                this.router.navigate('/login');
+            }, 1500);
 
         } catch (error) {
-            this.uiManager.showToast(error.message, 'error');
+            console.error('Registration error:', error);
+            this.uiManager.showToast(error.message || 'Registration failed', 'error');
         } finally {
             // Restore button
             submitBtn.innerHTML = originalText;
             submitBtn.disabled = false;
         }
+    }
+
+    showFieldError(fieldId, message) {
+        const field = document.getElementById(fieldId);
+        const errorDiv = document.getElementById(`${fieldId}-error`);
+        const formGroup = field?.closest('.form-group');
+
+        if (field && errorDiv) {
+            // Add error class to form group
+            if (formGroup) {
+                formGroup.classList.add('error');
+            }
+
+            // Add error class to field
+            field.classList.add('border-red-500', 'bg-red-50');
+
+            // Show error message
+            errorDiv.textContent = message;
+            errorDiv.classList.remove('hidden');
+
+            // Scroll to first error
+            if (!document.querySelector('.form-group.error:not(.scrolled-to)')) {
+                field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                formGroup?.classList.add('scrolled-to');
+            }
+        }
+    }
+
+    clearAllErrors() {
+        // Remove all error classes and hide error messages
+        document.querySelectorAll('.form-group.error').forEach(group => {
+            group.classList.remove('error', 'scrolled-to');
+        });
+
+        document.querySelectorAll('.border-red-500.bg-red-50').forEach(field => {
+            field.classList.remove('border-red-500', 'bg-red-50');
+        });
+
+        document.querySelectorAll('[id$="-error"]').forEach(errorDiv => {
+            errorDiv.classList.add('hidden');
+            errorDiv.textContent = '';
+        });
     }
 
     async autoLogin() {
