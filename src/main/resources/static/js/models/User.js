@@ -1,6 +1,7 @@
 export class User {
     constructor(data = {}) {
         this.id = data.id || null;
+        this.token = data.token || '';
         this.email = data.email || '';
         this.displayName = data.displayName || '';
         this.userName = data.userName || '';

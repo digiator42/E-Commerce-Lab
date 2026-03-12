@@ -5,6 +5,14 @@ export class ApiClient {
     }
 
     async fetch(url, options = {}) {
+        if (!options.headers) {
+            options.headers = {};
+        }
+        
+        if (!options.headers['Authorization']) {
+            options.headers['Authorization'] = `Bearer ${this.authManager.user.token}`;
+        }
+
         const response = await fetch(url, options);
 
         if (response.status === 401) {
@@ -12,7 +20,7 @@ export class ApiClient {
             await this.router.navigate('/login');
             throw new Error('Unauthorized');
         }
-        
+
         if (response.status === 403) {
             await this.router.navigate('/products');
             throw new Error('Unauthorized');

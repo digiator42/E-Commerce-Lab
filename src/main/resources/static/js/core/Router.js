@@ -609,13 +609,13 @@ export class Router {
                 console.log(typeof template, typeof testingUsers);
 
                 template = template.replace("{{testing_users}}", testingUsers);
-                
+
                 window.authManager.mockUsersVisible = false;
-                
-                window.authManager.toggleMockUsers = function() {
+
+                window.authManager.toggleMockUsers = function () {
                     const dropdown = document.getElementById('mock-users-dropdown');
                     const chevron = document.getElementById('mock-users-chevron');
-                    
+
                     if (dropdown.classList.contains('hidden')) {
                         dropdown.classList.remove('hidden');
                         chevron.style.transform = 'rotate(180deg)';
@@ -624,22 +624,22 @@ export class Router {
                         chevron.style.transform = 'rotate(0deg)';
                     }
                 };
-                
-                window.authManager.fillMockCredentials = function(email) {
+
+                window.authManager.fillMockCredentials = function (email) {
                     const emailInput = document.getElementById('login-email');
                     const passwordInput = document.getElementById('login-password');
-                    
+
                     if (emailInput) {
                         emailInput.value = email;
                         // Trigger input event for any listeners
                         emailInput.dispatchEvent(new Event('input', { bubbles: true }));
                     }
-                    
+
                     if (passwordInput) {
                         passwordInput.value = 'password123';
                         passwordInput.dispatchEvent(new Event('input', { bubbles: true }));
                     }
-                    
+
                     // Auto-hide dropdown after selection
                     const dropdown = document.getElementById('mock-users-dropdown');
                     const chevron = document.getElementById('mock-users-chevron');
@@ -876,7 +876,7 @@ export class Router {
         if (routeAction) {
             try {
                 const html = await routeAction();
-
+                // route() might be called after async, which returns undefined, this solves the issue for now
                 if (html === undefined || history.state?.isManuallySet) {
                     const isManuallyState = { ...history.state, isManuallySet: false };
                     history.replaceState(isManuallyState, '', location.href);
@@ -886,7 +886,8 @@ export class Router {
                 window.scrollTo(0, 0);
             } catch (error) {
                 console.error('Routing error:', error);
-                document.getElementById('content').innerHTML = '<h1>Error loading content</h1>';
+                const html = await this.routes['/error']();
+                document.getElementById('content').innerHTML = html;
             }
             return;
         }
