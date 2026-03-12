@@ -35,7 +35,7 @@ This lab documents the core business logic and architectural patterns used to bu
 
 
 - [✓] Role-Based Access Control (RBAC)
-  > Admin routes (/api/admin/**) are guarded by hasRole('ADMIN').
+  > Admin routes (/api/admin/**) are guarded by hasRole('ADMIN') and JWT token.
 
 - [✓] **Image & Asset Management**  
   - Pattern: Virtual Path Mapping, Files are saved to `uploads/`.  
