@@ -8,10 +8,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import com.ecommerce.lab.dto.UserResponseDTO;
 import com.ecommerce.lab.exception.ResourceNotFoundException;
+import com.ecommerce.lab.filter.JwtUtils;
 import com.ecommerce.lab.model.User;
 import com.ecommerce.lab.repository.UserRepository;
 
@@ -25,6 +27,7 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final EmailService emailService;
+    private final JwtUtils jwtUtils;
 
     public void generateAndSend2FACode(String email) {
         User user = userRepository.findByEmail(email)
@@ -68,9 +71,13 @@ public class AuthService {
         HttpSession session = request.getSession(true);
         session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
 
+        // Generate the token
+        String token = jwtUtils.generateToken(user.getEmail());
+
         // Clear any pending 2FA data
         session.removeAttribute("PENDING_2FA_USER");
 
+        user.setToken(token);
         user.setLastLogin(LocalDateTime.now());
         userRepository.save(user);
 

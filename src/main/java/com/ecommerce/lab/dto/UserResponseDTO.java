@@ -6,6 +6,7 @@ import com.ecommerce.lab.model.User;
 
 public record UserResponseDTO(
         Long id,
+        String token,
         String displayName,
         String userName,
         String email,
@@ -23,6 +24,7 @@ public record UserResponseDTO(
 
                 return new UserResponseDTO(
                         user.getId(),
+                        user.getToken(),
                         user.getName(),
                         user.getUserName(),
                         user.getEmail(),
