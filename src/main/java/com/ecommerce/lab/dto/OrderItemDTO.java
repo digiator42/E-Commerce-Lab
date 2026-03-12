@@ -28,7 +28,7 @@ public record OrderItemDTO(
 
         return new OrderItemDTO(
             oi.getId(),
-            oi.getProductName();,
+            oi.getProductName(),
             BigDecimal.valueOf(oi.getPriceAtPurchase()),
             oi.getQuantity(),
             type,
