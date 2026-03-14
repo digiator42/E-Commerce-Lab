@@ -1,22 +1,33 @@
 package com.ecommerce.lab.service;
 
 import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.List;
 import java.util.Random;
 
+import org.apache.commons.codec.binary.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.stereotype.Service;
+import org.springframework.util.DigestUtils;
 
+import com.ecommerce.lab.dto.LoginRequestDTO;
 import com.ecommerce.lab.dto.UserResponseDTO;
 import com.ecommerce.lab.exception.ResourceNotFoundException;
 import com.ecommerce.lab.filter.JwtUtils;
+import com.ecommerce.lab.model.Role;
 import com.ecommerce.lab.model.User;
 import com.ecommerce.lab.repository.UserRepository;
 
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
@@ -27,6 +38,9 @@ public class AuthService {
     private final UserRepository userRepository;
     private final EmailService emailService;
     private final JwtUtils jwtUtils;
+    @Autowired
+    private final RememberMeServices rememberMeServices;
+    private final CustomUserDetailsService userDetailsService;
 
     public void generateAndSend2FACode(String email) {
         User user = userRepository.findByEmail(email)
@@ -61,17 +75,47 @@ public class AuthService {
         return false;
     }
 
-    public ResponseEntity<UserResponseDTO> finalizeSession(User user, HttpServletRequest request) {
-        String role = user.getRole() != null ? user.getRole().name() : "ROLE_USER";
+    public ResponseEntity<UserResponseDTO> finalizeSession(
+        User user,
+        LoginRequestDTO loginReq,
+        HttpServletRequest request,
+        HttpServletResponse response
+    ) {
+        String role = user.getRole() != null ? user.getRole().toString()
+            : Role.ROLE_USER.toString();
+
+        UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
+
         var authorities = List.of(new SimpleGrantedAuthority(role));
-        var auth = new UsernamePasswordAuthenticationToken(user.getEmail(), null, authorities);
+        var auth = new UsernamePasswordAuthenticationToken(
+            userDetails, userDetails.getPassword(), authorities
+        );
 
         SecurityContextHolder.getContext().setAuthentication(auth);
         HttpSession session = request.getSession(true);
         session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
 
+        final boolean isRememberMe = StringUtils.equals(loginReq.rememberMe(), "on");
+
         // Generate the token
-        String token = jwtUtils.generateToken(user.getEmail());
+        String token = jwtUtils.generateToken(
+            user.getEmail(),
+            isRememberMe
+        );
+
+        if (isRememberMe) {
+            System.out.println(
+                "DEBUG: Triggering RememberMe for user:===>> " + auth.getName()
+                    + userDetails.getPassword()
+            );
+            UsernamePasswordAuthenticationToken rememberMeAuth = new UsernamePasswordAuthenticationToken(
+                userDetails,
+                userDetails.getPassword(),
+                userDetails.getAuthorities()
+            );
+
+            rememberMeServices.loginSuccess(request, response, rememberMeAuth);
+        }
 
         // Clear any pending 2FA data
         session.removeAttribute("PENDING_2FA_USER");

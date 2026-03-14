@@ -18,6 +18,7 @@ import com.ecommerce.lab.service.TotpService;
 import com.ecommerce.lab.service.UserService;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 
@@ -72,7 +73,8 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(
         @RequestBody LoginRequestDTO loginReq,
-        HttpServletRequest request
+        HttpServletRequest request,
+        HttpServletResponse response
     ) {
 
         User user = userService.findByEmail(loginReq.email());
@@ -103,7 +105,7 @@ public class AuthController {
             );
         }
 
-        return authService.finalizeSession(user, request);
+        return authService.finalizeSession(user, loginReq, request, response);
     }
 
     @PostMapping("/register")

@@ -20,6 +20,7 @@ import com.ecommerce.lab.service.TotpService;
 import com.ecommerce.lab.service.UserService;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
@@ -58,7 +59,8 @@ public class TwoFactorController {
     @PostMapping("/verify")
     public ResponseEntity<?> verify2fa(
         @RequestBody Map<String, String> body,
-        HttpServletRequest request
+        HttpServletRequest request,
+        HttpServletResponse response
     ) {
         HttpSession session = request.getSession(false);
         String email = (session != null) ? (String) session.getAttribute("PENDING_2FA_USER") : null;
@@ -73,7 +75,7 @@ public class TwoFactorController {
         try {
             int totpCode = Integer.parseInt(inputCode);
             if (totpService.verifyCode(user.getTotpSecret(), totpCode)) {
-                return authService.finalizeSession(user, request);
+                // return authService.finalizeSession(user, request, response);
             }
         } catch (NumberFormatException e) {
             // Not a valid number, so it's definitely not a TOTP code
@@ -81,7 +83,7 @@ public class TwoFactorController {
 
         // Method B: Email Code
         if (authService.verify2FACode(email, inputCode)) {
-            return authService.finalizeSession(user, request);
+            // return authService.finalizeSession(user, request);
         }
 
         return ResponseEntity.status(401).body("Invalid code");

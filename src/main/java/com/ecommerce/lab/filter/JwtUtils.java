@@ -22,12 +22,15 @@ public class JwtUtils {
         this.userDetailsService = userDetailsService;
     }
 
-    public String generateToken(String email) {
+    public String generateToken(String email, boolean rememberMe) {
+
+        long expiration = rememberMe ? (1000L * 60 * 60 * 24 * 30) : (60_000); // 30 days vs 1 day
 
         return Jwts.builder()
             .setSubject(email)
             .setIssuedAt(new Date())
-            .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24))
+            .setExpiration(new Date(System.currentTimeMillis() + expiration)) // 6 mins // 1000 * 60 *
+                                                                           // 60 * 24
             .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
             .compact();
     }
@@ -52,10 +55,14 @@ public class JwtUtils {
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
-        final Claims claims = Jwts.parser()
-            .setSigningKey(SECRET_KEY)
-            .parseClaimsJws(token)
-            .getBody();
-        return claimsResolver.apply(claims);
+        try {
+            final Claims claims = Jwts.parser()
+                .setSigningKey(SECRET_KEY)
+                .parseClaimsJws(token)
+                .getBody();
+            return claimsResolver.apply(claims);
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

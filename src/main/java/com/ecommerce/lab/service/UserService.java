@@ -13,6 +13,7 @@ import com.ecommerce.lab.exception.AuthenticationException;
 import com.ecommerce.lab.exception.ResourceNotFoundException;
 import com.ecommerce.lab.exception.UserAlreadyExistsException;
 import com.ecommerce.lab.exception.UserNotFoundException;
+import com.ecommerce.lab.model.Role;
 import com.ecommerce.lab.model.User;
 import java.util.List;
 
@@ -82,6 +83,7 @@ public class UserService {
         user.setAddress(dto.address());
         user.setAge(dto.age());
         user.setEmail(dto.email());
+        user.setRole(Role.ROLE_USER);
         user.setPassword(passwordEncoder.encode(dto.password()));
 
         user = userRepository.save(user);

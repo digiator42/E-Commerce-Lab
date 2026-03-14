@@ -13,7 +13,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.rememberme.TokenBasedRememberMeServices;
 
 import com.ecommerce.lab.filter.JwtAuthenticationFilter;
 import com.ecommerce.lab.repository.UserRepository;
@@ -28,14 +30,30 @@ public class SecurityConfig {
     @Autowired
     private JwtAuthenticationFilter jwtAuthFilter;
 
+    private final UserRepository userRepository;
+    private final String REMEMBER_ME_KEY = "a2V5MTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTI=";
+
+    public SecurityConfig(UserRepository userRepository) { this.userRepository = userRepository; }
+
     @Bean
-    public UserDetailsService userDetailsService(UserRepository userRepository) {
+    public RememberMeServices rememberMeServices() {
+        TokenBasedRememberMeServices services = new TokenBasedRememberMeServices(
+            REMEMBER_ME_KEY, userDetailsService()
+        );
+        // This tells the service to skip the request.getParameter("remember-me") check
+        // and just trust that if loginSuccess is called.
+        services.setAlwaysRemember(true);
+        return services;
+    }
+
+    @Bean
+    public UserDetailsService userDetailsService() {
         return email -> userRepository.findByEmail(email)
             .map(
                 user -> (UserDetails) org.springframework.security.core.userdetails.User
                     .withUsername(user.getEmail())
                     .password(user.getPassword())
-                    .authorities("ROLE_" + user.getRole())
+                    .authorities(user.getRole().toString())
                     .build()
             )
             .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
@@ -78,6 +96,20 @@ public class SecurityConfig {
             .formLogin(
                 form -> form
                     .loginPage("/login")
+                    .permitAll()
+            )
+            .rememberMe(
+                remember -> remember
+                    .key(REMEMBER_ME_KEY)
+                    .tokenValiditySeconds(2592000) // 30 days
+                    .rememberMeParameter("remember-me")
+                    .userDetailsService(userDetailsService())
+                    .rememberMeServices(rememberMeServices())
+            )
+            .logout(
+                logout -> logout
+                    .logoutUrl("/api/auth/logout")
+                    .logoutSuccessUrl("/login")
                     .permitAll()
             )
             .oauth2Login(
