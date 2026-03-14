@@ -23,20 +23,25 @@ public class JwtUtils {
     }
 
     public String generateToken(String email, boolean rememberMe) {
-
+        System.out.println("====>> " + email + " " + rememberMe);
         long expiration = rememberMe ? (1000L * 60 * 60 * 24 * 30) : (60_000); // 30 days vs 1 day
 
         return Jwts.builder()
             .setSubject(email)
             .setIssuedAt(new Date())
-            .setExpiration(new Date(System.currentTimeMillis() + expiration)) // 6 mins // 1000 * 60 *
-                                                                           // 60 * 24
+            .setExpiration(new Date(System.currentTimeMillis() + expiration)) // 6 mins // 1000 * 60
+                                                                              // *
+                                                                              // 60 * 24
             .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
             .compact();
     }
 
     public Boolean validateToken(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
+        // System.out.println(
+        //     "======> " + username.equals(userDetails.getUsername()) + username + " "
+        //         + userDetails.getUsername()
+        // );
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
 
@@ -57,11 +62,13 @@ public class JwtUtils {
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         try {
             final Claims claims = Jwts.parser()
-                .setSigningKey(SECRET_KEY)
+                .setSigningKey(SECRET_KEY) // Ensure this is the EXACT same string/byte array
                 .parseClaimsJws(token)
                 .getBody();
             return claimsResolver.apply(claims);
         } catch (Exception e) {
+            // If it's Expired, Malformed, or SignatureException
+            System.err.println("JWT Extraction Error: " + e.getMessage());
             return null;
         }
     }

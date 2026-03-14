@@ -1,7 +1,6 @@
 package com.ecommerce.lab.service;
 
 import java.time.LocalDateTime;
-import java.util.Base64;
 import java.util.List;
 import java.util.Random;
 
@@ -9,13 +8,11 @@ import org.apache.commons.codec.binary.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.stereotype.Service;
-import org.springframework.util.DigestUtils;
 
 import com.ecommerce.lab.dto.LoginRequestDTO;
 import com.ecommerce.lab.dto.UserResponseDTO;
@@ -25,7 +22,6 @@ import com.ecommerce.lab.model.Role;
 import com.ecommerce.lab.model.User;
 import com.ecommerce.lab.repository.UserRepository;
 
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -104,10 +100,7 @@ public class AuthService {
         );
 
         if (isRememberMe) {
-            System.out.println(
-                "DEBUG: Triggering RememberMe for user:===>> " + auth.getName()
-                    + userDetails.getPassword()
-            );
+
             UsernamePasswordAuthenticationToken rememberMeAuth = new UsernamePasswordAuthenticationToken(
                 userDetails,
                 userDetails.getPassword(),

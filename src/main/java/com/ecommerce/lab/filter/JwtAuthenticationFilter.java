@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -38,8 +39,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
 
         // Sensitive API and header is missing
-        if (path.startsWith("/api/admin")
-        ) {
+        if (path.startsWith("/api/admin")) {
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
                 response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                 response.getWriter().write("Unauthorized");
@@ -49,9 +49,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
-            String email = jwtUtils.extractEmail(token);
+            String email = jwtUtils.extractUsername(token);
 
-            if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            System.out.println(
+                "========> " + email + " " + SecurityContextHolder.getContext().getAuthentication()
+            );
+            System.out.println("DEBUG: Raw Token received: " + token);
+            // email = "ahmed@example.com";
+
+            if (email == null) {
+                // The token was present but invalid (signature mismatch or expired)
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("Invalid or Expired Token");
+                return; // STOP the filter chain here
+            }
+
+            Authentication existingAuth = SecurityContextHolder.getContext()
+                .getAuthentication();
+
+            // Only skip if the current user is already the SAME user (optional check)
+            if (existingAuth == null || !existingAuth.getName().equals(email)) {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
                 if (jwtUtils.validateToken(token, userDetails)) {
@@ -61,7 +78,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     authToken
                         .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-                    // This logs the user in for the duration of this specific request
+                    // Overwrite or set the authentication
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             }

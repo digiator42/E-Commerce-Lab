@@ -101,16 +101,9 @@ public class SecurityConfig {
             .rememberMe(
                 remember -> remember
                     .key(REMEMBER_ME_KEY)
-                    .tokenValiditySeconds(2592000) // 30 days
                     .rememberMeParameter("remember-me")
                     .userDetailsService(userDetailsService())
                     .rememberMeServices(rememberMeServices())
-            )
-            .logout(
-                logout -> logout
-                    .logoutUrl("/api/auth/logout")
-                    .logoutSuccessUrl("/login")
-                    .permitAll()
             )
             .oauth2Login(
                 oauth2 -> oauth2

@@ -3,10 +3,13 @@ package com.ecommerce.lab.controller;
 import java.security.Principal;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,18 +42,23 @@ public class AuthController {
     private final TotpService totpService;
     private final UserRepository userRepository;
 
+    @Autowired
+    private final RememberMeServices rememberMeServices;
+
     public AuthController(
         UserService userService,
         PasswordEncoder passwordEncoder,
         AuthService authService,
         TotpService totpService,
-        UserRepository userRepository
+        UserRepository userRepository,
+        RememberMeServices rememberMeServices
     ) {
         this.userService = userService;
         this.passwordEncoder = passwordEncoder;
         this.authService = authService;
         this.totpService = totpService;
         this.userRepository = userRepository;
+        this.rememberMeServices = rememberMeServices;
     }
 
     @GetMapping("is-logged-in")
@@ -114,14 +122,15 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(Principal principal, HttpServletRequest request) {
+    public ResponseEntity<?> logout(HttpServletRequest request) {
 
+        // Clear Security Context & Invalidate Session
         SecurityContextHolder.clearContext();
-
-        HttpSession session = request.getSession(true);
-        session.invalidate();
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
 
         return ResponseEntity.ok(Map.of("message", "Logged out successfully"));
-
     }
 }
