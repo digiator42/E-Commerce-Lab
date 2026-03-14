@@ -1,6 +1,7 @@
 package com.ecommerce.lab.filter;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -9,6 +10,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.ecommerce.lab.model.User;
@@ -24,6 +26,22 @@ import jakarta.servlet.http.HttpServletResponse;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
+    private final String[] PUBLIC_PATHS = {
+            "/",
+            "/index.html",
+            "/static/**",
+            "/js/**",
+            "/css/**",
+            "/components",
+            "/favicon.ico",
+            "/api/auth/**",
+            "/api/products/**",
+            "/api/categories/**",
+            "/api/reviews/**",
+            "/api/2fa/verify",
+            "/api/2fa/resend"
+    };
+
     @Autowired
     private JwtUtils jwtUtils;
 
@@ -35,6 +53,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Autowired
     private UserRepository userRepository;
+
+    private final AntPathMatcher pathMatcher = new AntPathMatcher();
+
+    // SKIP JWT validation for permitAll paths
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getServletPath();
+        return Arrays.stream(PUBLIC_PATHS)
+            .anyMatch(pattern -> pathMatcher.match(pattern, path));
+    }
 
     @Override
     protected void doFilterInternal(
@@ -65,7 +93,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 return;
             }
 
-            String email = jwtUtils.extractUsername(token);
+            String email = jwtUtils.extractUsername(token, request);
 
             // Toke is expired, signature errors
             if (email == null) {
@@ -79,27 +107,28 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 .getAuthentication();
 
             // Only skip if the current user is already the SAME user
-            // if (existingAuth == null || !existingAuth.getName().equals(email)) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-            User user = userRepository.findByEmail(email).orElse(null);
+            if (existingAuth == null || !existingAuth.getName().equals(email)) {
+                UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+                User user = userRepository.findByEmail(email).orElse(null);
 
-            System.out.println("===> Is the same token ? " + token.equals(user.getToken()));
+                System.out.println("===> Is the same token ? " + token.equals(user.getToken()));
 
-            if (jwtUtils.validateToken(token, userDetails) && token.equals(user.getToken())) {
-                var authToken = new UsernamePasswordAuthenticationToken(
-                    userDetails, null, userDetails.getAuthorities()
-                );
-                authToken
-                    .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                if (jwtUtils.validateToken(token, userDetails, request)
+                    && token.equals(user.getToken())) {
+                    var authToken = new UsernamePasswordAuthenticationToken(
+                        userDetails, null, userDetails.getAuthorities()
+                    );
+                    authToken
+                        .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-                // Overwrite or set the authentication
-                SecurityContextHolder.getContext().setAuthentication(authToken);
-            } else {
-                // If the token in the DB is null or different, the user has logged out
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                return;
+                    // Overwrite or set the authentication
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                } else {
+                    // If the token in the DB is null or different, the user has logged out
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    return;
+                }
             }
-            // }
         }
         filterChain.doFilter(request, response);
     }

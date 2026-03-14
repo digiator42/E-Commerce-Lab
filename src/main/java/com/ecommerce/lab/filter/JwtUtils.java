@@ -3,6 +3,8 @@ package com.ecommerce.lab.filter;
 import java.util.Date;
 import java.util.function.Function;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
@@ -11,6 +13,8 @@ import com.ecommerce.lab.service.CustomUserDetailsService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 
 @Component
 public class JwtUtils {
@@ -36,30 +40,36 @@ public class JwtUtils {
             .compact();
     }
 
-    public Boolean validateToken(String token, UserDetails userDetails) {
-        final String username = extractUsername(token);
-        // System.out.println(
-        //     "======> " + username.equals(userDetails.getUsername()) + username + " "
-        //         + userDetails.getUsername()
-        // );
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+    public Boolean validateToken(
+        String token,
+        UserDetails userDetails,
+        HttpServletRequest request
+    ) {
+        final String username = extractUsername(token, request);
+        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token, request));
     }
 
-    public String extractUsername(String token) { return extractClaim(token, Claims::getSubject); }
-
-    private Boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
+    public String extractUsername(String token, HttpServletRequest request) {
+        return extractClaim(token, Claims::getSubject, request);
     }
 
-    private Date extractExpiration(String token) {
-        return extractClaim(token, Claims::getExpiration);
+    private Boolean isTokenExpired(String token, HttpServletRequest request) {
+        return extractExpiration(token, request).before(new Date());
     }
 
-    public String extractEmail(String token) {
-        return extractClaim(token, claims -> claims.get("email", String.class));
+    private Date extractExpiration(String token, HttpServletRequest request) {
+        return extractClaim(token, Claims::getExpiration, request);
     }
 
-    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+    public String extractEmail(String token, HttpServletRequest request) {
+        return extractClaim(token, claims -> claims.get("email", String.class), request);
+    }
+
+    public <T> T extractClaim(
+        String token,
+        Function<Claims, T> claimsResolver,
+        HttpServletRequest request
+    ) {
         try {
             final Claims claims = Jwts.parser()
                 .setSigningKey(SECRET_KEY) // Ensure this is the EXACT same string/byte array
@@ -67,6 +77,14 @@ public class JwtUtils {
                 .getBody();
             return claimsResolver.apply(claims);
         } catch (Exception e) {
+            // Delete session and spring context holder
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            // User user = userre.findByEmail(auth.getName());
+            SecurityContextHolder.clearContext();
+            HttpSession session = request.getSession(false);
+            if (session != null) {
+                session.invalidate();
+            }
             // If it's Expired, Malformed, or SignatureException
             System.err.println("JWT Extraction Error: " + e.getMessage());
             return null;

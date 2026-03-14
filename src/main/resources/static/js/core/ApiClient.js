@@ -8,15 +8,21 @@ export class ApiClient {
         if (!options.headers) {
             options.headers = {};
         }
-        
+
         if (!options.headers['Authorization']) {
-            options.headers['Authorization'] = `Bearer ${this.authManager.user.token}`;
+            options.headers['Authorization'] = `Bearer ${this.authManager.user?.token}`;
         }
 
         const response = await fetch(url, options);
 
         if (response.status === 401) {
-            await this.authManager.logout();
+            this.authManager.user = null;
+            this.authManager.isAuthenticated = false;
+            // this.uiManager.toggleAuthButtons(false);
+
+            // this will clear all stored data
+            localStorage.clear();
+            // await this.authManager.logout();
             await this.router.navigate('/login');
             throw new Error('Unauthorized');
         }

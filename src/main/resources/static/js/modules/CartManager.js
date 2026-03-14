@@ -275,7 +275,7 @@ export class CartManager {
                 this.render();
                 this.updateBadge();
                 this.wishlistManager?.closeDrawer();
-                this.open();
+                await this.open();
                 // this.uiManager.showToast(`${product.name} added to cart!`, 'success');
 
             } else {
@@ -399,7 +399,7 @@ export class CartManager {
         }
     }
 
-    toggle() {
+    async toggle() {
         this.isOpen = !this.isOpen;
         const drawer = document.getElementById('cart-drawer');
         const overlay = document.getElementById('cart-overlay');
@@ -414,13 +414,22 @@ export class CartManager {
             overlay.classList.remove('opacity-100');
             setTimeout(() => overlay.classList.add('hidden'), 300);
         }
+
+        try {
+            if (this.items.length > 0) {
+                return;
+            }
+            await this.syncWithServer();
+        } catch (error) {
+            
+        }
     }
 
-    open() {
+    async open() {
         if (!this.isOpen) this.toggle();
     }
 
-    close() {
+    async close() {
         if (this.isOpen) this.toggle();
     }
 
