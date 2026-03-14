@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.ecommerce.lab.service.CustomUserDetailsService;
+import com.ecommerce.lab.service.TokenBlacklistService;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -26,6 +27,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Autowired
     private CustomUserDetailsService userDetailsService;
+
+    @Autowired
+    private TokenBlacklistService blacklistService;
 
     @Override
     protected void doFilterInternal(
@@ -49,6 +53,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
+
+            if (blacklistService.isBlacklisted(token)) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("Token has been logged out");
+                return;
+            }
+
             String email = jwtUtils.extractUsername(token);
 
             System.out.println(

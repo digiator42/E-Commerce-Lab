@@ -10,6 +10,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.RememberMeServices;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import com.ecommerce.lab.service.AuthService;
+import com.ecommerce.lab.service.TokenBlacklistService;
 import com.ecommerce.lab.service.TotpService;
 import com.ecommerce.lab.service.UserService;
 
@@ -44,6 +46,9 @@ public class AuthController {
 
     @Autowired
     private final RememberMeServices rememberMeServices;
+
+    @Autowired
+    private TokenBlacklistService blacklistService;
 
     public AuthController(
         UserService userService,
@@ -122,9 +127,17 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletRequest request) {
+    public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
+        String authHeader = request.getHeader("Authorization");
 
-        // Clear Security Context & Invalidate Session
+        // Blacklist the JWT if present
+        // just one catch in hybrid if no provided token, it still can be used to reauthenticate
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            blacklistService.blacklistToken(token);
+        }
+
+        // Clear Security Context & Session
         SecurityContextHolder.clearContext();
         HttpSession session = request.getSession(false);
         if (session != null) {
