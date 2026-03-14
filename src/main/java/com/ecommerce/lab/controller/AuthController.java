@@ -128,15 +128,21 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User user = userService.findByEmail(auth.getName());
+
         String authHeader = request.getHeader("Authorization");
 
         // Blacklist the JWT if present
-        // just one catch in hybrid if no provided token, it still can be used to reauthenticate
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
             blacklistService.blacklistToken(token);
         }
 
+        // Fixes the reuse of token to regain authentication
+        user.setToken(null);
+        userRepository.save(user);
         // Clear Security Context & Session
         SecurityContextHolder.clearContext();
         HttpSession session = request.getSession(false);

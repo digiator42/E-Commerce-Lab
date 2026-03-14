@@ -11,6 +11,8 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.ecommerce.lab.model.User;
+import com.ecommerce.lab.repository.UserRepository;
 import com.ecommerce.lab.service.CustomUserDetailsService;
 import com.ecommerce.lab.service.TokenBlacklistService;
 
@@ -30,6 +32,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Autowired
     private TokenBlacklistService blacklistService;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(
@@ -62,12 +67,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             String email = jwtUtils.extractUsername(token);
 
-            System.out.println(
-                "========> " + email + " " + SecurityContextHolder.getContext().getAuthentication()
-            );
-            System.out.println("DEBUG: Raw Token received: " + token);
-            // email = "ahmed@example.com";
-
+            // Toke is expired, signature errors
             if (email == null) {
                 // The token was present but invalid (signature mismatch or expired)
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -78,21 +78,28 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             Authentication existingAuth = SecurityContextHolder.getContext()
                 .getAuthentication();
 
-            // Only skip if the current user is already the SAME user (optional check)
-            if (existingAuth == null || !existingAuth.getName().equals(email)) {
-                UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+            // Only skip if the current user is already the SAME user
+            // if (existingAuth == null || !existingAuth.getName().equals(email)) {
+            UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+            User user = userRepository.findByEmail(email).orElse(null);
 
-                if (jwtUtils.validateToken(token, userDetails)) {
-                    var authToken = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities()
-                    );
-                    authToken
-                        .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            System.out.println("===> Is the same token ? " + token.equals(user.getToken()));
 
-                    // Overwrite or set the authentication
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
-                }
+            if (jwtUtils.validateToken(token, userDetails) && token.equals(user.getToken())) {
+                var authToken = new UsernamePasswordAuthenticationToken(
+                    userDetails, null, userDetails.getAuthorities()
+                );
+                authToken
+                    .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                // Overwrite or set the authentication
+                SecurityContextHolder.getContext().setAuthentication(authToken);
+            } else {
+                // If the token in the DB is null or different, the user has logged out
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                return;
             }
+            // }
         }
         filterChain.doFilter(request, response);
     }
