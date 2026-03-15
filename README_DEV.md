@@ -14,6 +14,14 @@ This lab documents the core business logic and architectural patterns used to bu
 
 ## Business Logic
 
+- [✓] **Authentication**
+  - Hybrid JWT & Session-based Authentication
+  - Logic:
+    - **Hybrid Validation**: The system accepts both JWT and traditional Session cookies.
+    - **JWT Flexibility**: For general testing, JWT is optional; however, it is strictly enforced for all `/api/admin/**` routes.
+    - **Session Management**: If no JWT is provided in the request header, the security filter chain falls back to standard Session-based authentication.
+    - **Extended Persistence**: Includes a "Remember Me" feature that extends both the session cookie and the JWT validity to a 14-day period.
+
 - [✓] **User Management**
   - Features:  
     - [✓] Login / Register (Form / OAuth2 Google)
@@ -34,7 +42,7 @@ This lab documents the core business logic and architectural patterns used to bu
       - [✓] Coupons in admin dashboard (add, edit, activate)
 
 
-- [✓] Role-Based Access Control (RBAC)
+- [✓] **Role-Based Access Control (RBAC)**
   > Admin routes (/api/admin/**) are guarded by hasRole('ADMIN') and JWT token.
 
 - [✓] **Image & Asset Management**  
