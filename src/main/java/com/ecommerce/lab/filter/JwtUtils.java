@@ -3,12 +3,11 @@ package com.ecommerce.lab.filter;
 import java.util.Date;
 import java.util.function.Function;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
-
-import com.ecommerce.lab.service.CustomUserDetailsService;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -18,24 +17,17 @@ import jakarta.servlet.http.HttpSession;
 
 @Component
 public class JwtUtils {
-    // temp key
-    private static final String SECRET_KEY = "a2V5MTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTI=";
-    private CustomUserDetailsService userDetailsService;
-
-    public JwtUtils(CustomUserDetailsService userDetailsService) {
-        this.userDetailsService = userDetailsService;
-    }
+    
+    @Value("${spring.security.jwt-key}")
+    private String SECRET_KEY;
 
     public String generateToken(String email, boolean rememberMe) {
-        System.out.println("====>> " + email + " " + rememberMe);
-        long expiration = rememberMe ? (1000L * 60 * 60 * 24 * 30) : (60_000); // 30 days vs 1 day
+        long expiration = rememberMe ? (1000L * 60 * 60 * 24 * 14) : (1000L * 60 * 60 * 24); // 30 days vs 1 day
 
         return Jwts.builder()
             .setSubject(email)
             .setIssuedAt(new Date())
-            .setExpiration(new Date(System.currentTimeMillis() + expiration)) // 6 mins // 1000 * 60
-                                                                              // *
-                                                                              // 60 * 24
+            .setExpiration(new Date(System.currentTimeMillis() + expiration))
             .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
             .compact();
     }

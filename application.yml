@@ -32,6 +32,8 @@ spring:
             fallback: false
   
   security:
+    jwt-key: ${JWT_SECRET_KEY}
+    remember-key: ${REMEMBER_ME_KEY}
     oauth2:
       client:
         registration:
@@ -41,6 +43,7 @@ spring:
             scope:
               - email
               - profile
+  
 
 server:
   port: ${PORT:8080}

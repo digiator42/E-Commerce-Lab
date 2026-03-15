@@ -846,6 +846,13 @@ export class AuthManager {
                 // this will clear all stored data
                 localStorage.clear();
 
+                try {
+                    await this.cartManager.syncWithServer();
+                    await this.wishlistManager.syncWithServer();
+                } catch (error) {
+
+                }
+
                 if (this.router) {
                     await this.router.navigate('/login');
                 }

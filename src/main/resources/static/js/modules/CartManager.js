@@ -415,14 +415,11 @@ export class CartManager {
             setTimeout(() => overlay.classList.add('hidden'), 300);
         }
 
-        try {
-            if (this.items.length > 0) {
-                return;
-            }
-            await this.syncWithServer();
-        } catch (error) {
+        // try {
+        //     await this.syncWithServer();
+        // } catch (error) {
             
-        }
+        // }
     }
 
     async open() {
