@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.ecommerce.lab.dto.ProductRequestDTO;
 import com.ecommerce.lab.dto.ProductResponseDTO;
 import com.ecommerce.lab.model.Product;
-import com.ecommerce.lab.repository.ProductRepository;
+import com.ecommerce.lab.repository.base.ProductRepository;
 import com.ecommerce.lab.service.ProductService;
 
 import jakarta.validation.Valid;

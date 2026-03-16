@@ -1,4 +1,4 @@
-package com.ecommerce.lab.repository;
+package com.ecommerce.lab.repository.base;
 
 import java.util.List;
 import java.util.Optional;
@@ -8,7 +8,8 @@ import org.springframework.stereotype.Repository;
 
 import com.ecommerce.lab.model.User;
 
-@Repository
+import org.springframework.data.repository.NoRepositoryBean;
+@NoRepositoryBean
 public interface UserRepository extends JpaRepository<User, Long> {
 
     boolean existsByEmail(String email);

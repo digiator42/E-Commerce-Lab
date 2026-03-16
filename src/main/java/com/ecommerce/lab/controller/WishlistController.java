@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import com.ecommerce.lab.dto.ProductResponseDTO;
-import com.ecommerce.lab.repository.WishlistRepository;
+import com.ecommerce.lab.repository.base.WishlistRepository;
 import com.ecommerce.lab.service.WishlistService;
 
 @RestController

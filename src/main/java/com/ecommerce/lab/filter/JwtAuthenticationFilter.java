@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -14,7 +15,7 @@ import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.ecommerce.lab.model.User;
-import com.ecommerce.lab.repository.UserRepository;
+import com.ecommerce.lab.repository.base.UserRepository;
 import com.ecommerce.lab.service.CustomUserDetailsService;
 import com.ecommerce.lab.service.TokenBlacklistService;
 
@@ -42,17 +43,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             "/api/2fa/resend"
     };
 
-    @Autowired
     private JwtUtils jwtUtils;
 
-    @Autowired
     private CustomUserDetailsService userDetailsService;
 
-    @Autowired
     private TokenBlacklistService blacklistService;
 
-    @Autowired
     private UserRepository userRepository;
+
+    public JwtAuthenticationFilter(
+        JwtUtils jwtUtils,
+        CustomUserDetailsService userDetailsService,
+        TokenBlacklistService blacklistService,
+        @Qualifier("userRepositoryPostgres") UserRepository userRepository
+    ) {
+        this.jwtUtils = jwtUtils;
+        this.userDetailsService = userDetailsService;
+        this.blacklistService = blacklistService;
+        this.userRepository = userRepository;
+    }
 
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
 

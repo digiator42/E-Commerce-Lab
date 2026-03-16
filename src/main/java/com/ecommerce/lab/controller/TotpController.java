@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ecommerce.lab.model.User;
-import com.ecommerce.lab.repository.UserRepository;
+import com.ecommerce.lab.repository.base.UserRepository;
 import com.ecommerce.lab.service.TotpService;
 
 import lombok.RequiredArgsConstructor;

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import com.ecommerce.lab.dto.GiftCardRequest;
 import com.ecommerce.lab.model.GiftCard;
 import com.ecommerce.lab.model.User;
-import com.ecommerce.lab.repository.GiftCardRepository;
+import com.ecommerce.lab.repository.base.GiftCardRepository;
 
 import lombok.RequiredArgsConstructor;
 

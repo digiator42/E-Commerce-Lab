@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import com.ecommerce.lab.model.GiftCard;
-import com.ecommerce.lab.repository.GiftCardRepository;
+import com.ecommerce.lab.repository.base.GiftCardRepository;
 
 import lombok.RequiredArgsConstructor;
 

@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ecommerce.lab.exception.ProductNotFoundException;
 import com.ecommerce.lab.model.Coupon;
-import com.ecommerce.lab.repository.CouponRepository;
+import com.ecommerce.lab.repository.base.CouponRepository;
 import com.ecommerce.lab.service.OrderService;
 
 import lombok.RequiredArgsConstructor;

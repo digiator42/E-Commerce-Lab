@@ -23,9 +23,9 @@ import com.ecommerce.lab.exception.ResourceNotFoundException;
 import com.ecommerce.lab.model.BalanceTransaction;
 import com.ecommerce.lab.model.GiftCard;
 import com.ecommerce.lab.model.User;
-import com.ecommerce.lab.repository.BalanceTransactionRepository;
-import com.ecommerce.lab.repository.GiftCardRepository;
-import com.ecommerce.lab.repository.UserRepository;
+import com.ecommerce.lab.repository.base.BalanceTransactionRepository;
+import com.ecommerce.lab.repository.base.GiftCardRepository;
+import com.ecommerce.lab.repository.base.UserRepository;
 import com.ecommerce.lab.service.EmailService;
 
 import jakarta.transaction.Transactional;

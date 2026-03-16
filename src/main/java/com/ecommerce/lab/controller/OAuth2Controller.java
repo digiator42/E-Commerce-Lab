@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ecommerce.lab.model.AuthProvider;
 import com.ecommerce.lab.model.Role;
 import com.ecommerce.lab.model.User;
-import com.ecommerce.lab.repository.UserRepository;
+import com.ecommerce.lab.repository.base.UserRepository;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;

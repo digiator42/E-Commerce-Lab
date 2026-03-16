@@ -1,4 +1,4 @@
-package com.ecommerce.lab.repository;
+package com.ecommerce.lab.repository.base;
 
 import java.util.Optional;
 
@@ -7,7 +7,8 @@ import org.springframework.stereotype.Repository;
 
 import com.ecommerce.lab.model.Category;
 
-@Repository
+import org.springframework.data.repository.NoRepositoryBean;
+@NoRepositoryBean
 public interface CategoryRepository extends JpaRepository<Category, Long> {
     Optional<Category> findByName(String categoryName);
 }

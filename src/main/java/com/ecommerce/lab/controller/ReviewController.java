@@ -9,9 +9,9 @@ import org.springframework.web.bind.annotation.*;
 import com.ecommerce.lab.model.Product;
 import com.ecommerce.lab.model.Review;
 import com.ecommerce.lab.model.User;
-import com.ecommerce.lab.repository.ProductRepository;
-import com.ecommerce.lab.repository.ReviewRepository;
-import com.ecommerce.lab.repository.UserRepository;
+import com.ecommerce.lab.repository.base.ProductRepository;
+import com.ecommerce.lab.repository.base.ReviewRepository;
+import com.ecommerce.lab.repository.base.UserRepository;
 import com.ecommerce.lab.service.OrderService;
 
 @RestController

@@ -13,9 +13,9 @@ import com.ecommerce.lab.dto.ProductResponseDTO;
 import com.ecommerce.lab.exception.ProductNotFoundException;
 import com.ecommerce.lab.model.Product;
 import com.ecommerce.lab.model.Review;
-import com.ecommerce.lab.repository.OrderRepository;
-import com.ecommerce.lab.repository.ProductRepository;
-import com.ecommerce.lab.repository.ReviewRepository;
+import com.ecommerce.lab.repository.base.OrderRepository;
+import com.ecommerce.lab.repository.base.ProductRepository;
+import com.ecommerce.lab.repository.base.ReviewRepository;
 
 import org.springframework.transaction.annotation.Transactional;
 
