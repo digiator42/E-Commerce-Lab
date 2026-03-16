@@ -20,8 +20,10 @@ public class CartItem {
     @JoinColumn(name = "product_id")
     private Product product;
 
+    @Column(name = "is_gift_card", nullable = false, columnDefinition = "boolean default false")
     private boolean isGiftCard = false;
-    private double giftCardAmount;
+    @Column(name = "gift_card_amount", nullable = false, columnDefinition = "float(53) default 0.0")
+    private double giftCardAmount = 0.0;
     private String recipientEmail;
     private String giftCardMessage;
 

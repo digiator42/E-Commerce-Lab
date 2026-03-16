@@ -20,7 +20,7 @@ import com.ecommerce.lab.exception.ResourceNotFoundException;
 import com.ecommerce.lab.filter.JwtUtils;
 import com.ecommerce.lab.model.Role;
 import com.ecommerce.lab.model.User;
-import com.ecommerce.lab.repository.UserRepository;
+import com.ecommerce.lab.repository.base.UserRepository;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

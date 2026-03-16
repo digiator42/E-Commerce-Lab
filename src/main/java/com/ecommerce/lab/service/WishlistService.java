@@ -8,9 +8,9 @@ import com.ecommerce.lab.dto.ProductResponseDTO;
 import com.ecommerce.lab.model.Product;
 import com.ecommerce.lab.model.User;
 import com.ecommerce.lab.model.WishlistItem;
-import com.ecommerce.lab.repository.ProductRepository;
-import com.ecommerce.lab.repository.UserRepository;
-import com.ecommerce.lab.repository.WishlistRepository;
+import com.ecommerce.lab.repository.base.ProductRepository;
+import com.ecommerce.lab.repository.base.UserRepository;
+import com.ecommerce.lab.repository.base.WishlistRepository;
 
 @Service
 public class WishlistService {

@@ -1,4 +1,4 @@
-package com.ecommerce.lab.repository;
+package com.ecommerce.lab.repository.base;
 
 import java.util.List;
 
@@ -7,6 +7,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.ecommerce.lab.model.WishlistItem;
 
+import org.springframework.data.repository.NoRepositoryBean;
+@NoRepositoryBean
 public interface WishlistRepository extends JpaRepository<WishlistItem, Long> {
     List<WishlistItem> findByUserEmail(String email);
 

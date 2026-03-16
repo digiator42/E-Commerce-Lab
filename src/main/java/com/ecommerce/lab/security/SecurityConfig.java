@@ -25,14 +25,19 @@ import jakarta.servlet.http.HttpServletResponse;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Autowired
     private JwtAuthenticationFilter jwtAuthFilter;
 
-    @Autowired
     private CustomUserDetailsService userDetailsService;
-    
+
     @Value("${spring.security.remember-key}")
     private String REMEMBER_ME_KEY;
+
+    public SecurityConfig(
+        JwtAuthenticationFilter jwtAuthFilter, CustomUserDetailsService userDetailsService
+    ) {
+        this.jwtAuthFilter = jwtAuthFilter;
+        this.userDetailsService = userDetailsService;
+    }
 
     @Bean
     public RememberMeServices rememberMeServices() {

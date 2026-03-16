@@ -1,4 +1,4 @@
-package com.ecommerce.lab.repository;
+package com.ecommerce.lab.repository.base;
 
 import java.util.List;
 
@@ -8,6 +8,8 @@ import org.springframework.data.repository.query.Param;
 
 import com.ecommerce.lab.model.Order;
 
+import org.springframework.data.repository.NoRepositoryBean;
+@NoRepositoryBean
 public interface OrderRepository extends JpaRepository<Order, Long> {
     Order getOrderById(Long id);
     @Query("SELECT DISTINCT o FROM Order o " +

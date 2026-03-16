@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ecommerce.lab.model.Category;
-import com.ecommerce.lab.repository.CategoryRepository;
+import com.ecommerce.lab.repository.base.CategoryRepository;
 
 @RestController
 @RequestMapping("/api/categories")

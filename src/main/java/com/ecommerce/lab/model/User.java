@@ -33,7 +33,7 @@ public class User {
     @Column(nullable = true)
     private String token;
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false, columnDefinition = "varchar(255) default 'unknown'")
     private String userName;
 
     @Column(unique = true, nullable = false)
@@ -61,7 +61,7 @@ public class User {
     @JsonIgnore
     private String totpSecret;
 
-    @Column(nullable = true)
+    @Column(name = "is_totp_enabled", nullable = false, columnDefinition = "boolean default false")
     @JsonIgnore
     private boolean isTotpEnabled = false;
 
@@ -72,6 +72,7 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Address> addressObjects = new HashSet<>();
 
+    @Column(nullable = false, columnDefinition = "float(53) default 0.0")
     private double storeBalance = 0.0;
 
     @Column(nullable = false, columnDefinition = "boolean default false")

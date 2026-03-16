@@ -20,12 +20,12 @@ import com.ecommerce.lab.model.Order;
 import com.ecommerce.lab.model.OrderItem;
 import com.ecommerce.lab.model.OrderStatus;
 import com.ecommerce.lab.model.User;
-import com.ecommerce.lab.repository.BalanceTransactionRepository;
-import com.ecommerce.lab.repository.CartRepository;
-import com.ecommerce.lab.repository.CouponRepository;
-import com.ecommerce.lab.repository.GiftCardRepository;
-import com.ecommerce.lab.repository.OrderRepository;
-import com.ecommerce.lab.repository.UserRepository;
+import com.ecommerce.lab.repository.base.BalanceTransactionRepository;
+import com.ecommerce.lab.repository.base.CartRepository;
+import com.ecommerce.lab.repository.base.CouponRepository;
+import com.ecommerce.lab.repository.base.GiftCardRepository;
+import com.ecommerce.lab.repository.base.OrderRepository;
+import com.ecommerce.lab.repository.base.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 import tools.jackson.databind.ObjectMapper;

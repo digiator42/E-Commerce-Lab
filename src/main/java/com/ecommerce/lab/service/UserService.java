@@ -4,7 +4,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.ecommerce.lab.repository.UserRepository;
 import com.ecommerce.lab.dto.LoginRequestDTO;
 import com.ecommerce.lab.dto.RegisterRequestDTO;
 import com.ecommerce.lab.dto.UserResponseDTO;
@@ -15,6 +14,8 @@ import com.ecommerce.lab.exception.UserAlreadyExistsException;
 import com.ecommerce.lab.exception.UserNotFoundException;
 import com.ecommerce.lab.model.Role;
 import com.ecommerce.lab.model.User;
+import com.ecommerce.lab.repository.base.UserRepository;
+
 import java.util.List;
 
 @Service

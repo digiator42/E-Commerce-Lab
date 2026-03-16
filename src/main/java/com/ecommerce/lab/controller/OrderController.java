@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ecommerce.lab.dto.OrderRequest;
 import com.ecommerce.lab.dto.OrderResponseDTO;
 import com.ecommerce.lab.model.Order;
-import com.ecommerce.lab.repository.OrderRepository;
+import com.ecommerce.lab.repository.base.OrderRepository;
 import com.ecommerce.lab.service.InvoiceService;
 import com.ecommerce.lab.service.OrderService;
 
