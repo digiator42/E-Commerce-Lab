@@ -1,11 +1,16 @@
 package com.ecommerce.lab.service;
 
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.ResponseEntity;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.ecommerce.lab.dto.ProductRequestDTO;
@@ -19,8 +24,6 @@ import com.ecommerce.lab.repository.base.ReviewRepository;
 
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
@@ -91,6 +94,59 @@ public class ProductService {
         }
 
         return status;
+    }
+
+    @Transactional(readOnly = true)
+    public ProductResponseDTO getProduct(Long id, Principal principal) {
+        
+        Product product = productRepository.findById(id)
+            .orElseThrow(() -> new ProductNotFoundException("Product Not Found"));
+
+        String status = (principal != null) ? this.canReview(principal.getName(), id) : "GUEST";
+
+        return ProductResponseDTO.fromEntity(product, status);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ProductResponseDTO> getProductsPage(
+        String search,
+        List<String> category,
+        Double minPrice,
+        Double maxPrice,
+        Double minRating,
+        String sort,
+        Pageable pageable,
+        Principal principal
+    ) {
+        // Sorting
+        Sort sortOrder = switch (sort) {
+        case "price_asc" -> Sort.by("price").ascending();
+        case "price_desc" -> Sort.by("price").descending();
+        case "name_asc" -> Sort.by("name").ascending();
+        case "name_desc" -> Sort.by("name").descending();
+        case "stock" -> Sort.by("stock").ascending();
+        case "newest" -> Sort.by("id").descending();
+        default -> Sort.unsorted();
+        };
+
+        Pageable updatedPageable = PageRequest
+            .of(pageable.getPageNumber(), pageable.getPageSize(), sortOrder);
+
+        Page<Product> productPage;
+        if ("rating".equals(sort)) {
+            // Special case for average rating sorting
+            productPage = productRepository.findAllOrderByAverageRating(updatedPageable);
+        } else {
+            Specification<Product> spec = this
+                .filterBy(search, category, minPrice, maxPrice, minRating);
+            productPage = productRepository.findAll(spec, updatedPageable);
+        }
+
+        return productPage.map(product -> {
+            String status = (principal == null) ? "GUEST"
+                : this.canReview(principal.getName(), product.getId());
+            return ProductResponseDTO.fromEntity(product, status);
+        });
     }
 
     public Specification<Product> filterBy(

@@ -1,5 +1,8 @@
 package com.ecommerce.lab.repository.mysql;
 
-import com.ecommerce.lab.repository.base.CartRepository;
+import org.springframework.stereotype.Repository;
 
-public interface CategoryRepositoryMysql extends CartRepository {}
+import com.ecommerce.lab.repository.base.CategoryRepository;
+
+@Repository
+public interface CategoryRepositoryMysql extends CategoryRepository {}

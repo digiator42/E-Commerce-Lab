@@ -55,7 +55,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         JwtUtils jwtUtils,
         CustomUserDetailsService userDetailsService,
         TokenBlacklistService blacklistService,
-        @Qualifier("userRepositoryPostgres") UserRepository userRepository
+        UserRepository userRepository
     ) {
         this.jwtUtils = jwtUtils;
         this.userDetailsService = userDetailsService;

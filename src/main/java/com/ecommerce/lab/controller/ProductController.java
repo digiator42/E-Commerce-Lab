@@ -11,6 +11,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -49,21 +50,7 @@ public class ProductController {
         @PathVariable Long id,
         Principal principal
     ) {
-        Optional<Product> productOpt = productRepository.findById(id);
-
-        if (productOpt.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        Product product = productOpt.get();
-        String status = null;
-
-        if (principal != null) {
-            String email = principal.getName();
-            status = service.canReview(email, id);
-        }
-
-        return ResponseEntity.ok(ProductResponseDTO.fromEntity(product, status));
+        return ResponseEntity.ok(service.getProduct(id, principal));
     }
 
     @GetMapping
@@ -101,36 +88,17 @@ public class ProductController {
         Principal principal
     ) {
 
-        // Sorting
-        Sort sortOrder = switch (sort) {
-        case "price_asc" -> Sort.by("price").ascending();
-        case "price_desc" -> Sort.by("price").descending();
-        case "name_asc" -> Sort.by("name").ascending();
-        case "name_desc" -> Sort.by("name").descending();
-        case "stock" -> Sort.by("stock").ascending();
-        case "newest" -> Sort.by("id").descending();
-        default -> Sort.unsorted();
-        };
-
-        Pageable updatedPageable = PageRequest
-            .of(pageable.getPageNumber(), pageable.getPageSize(), sortOrder);
-
-        Page<Product> productPage;
-        if ("rating".equals(sort)) {
-            // Special case for average rating sorting
-            productPage = productRepository.findAllOrderByAverageRating(updatedPageable);
-        } else {
-            Specification<Product> spec = service
-                .filterBy(search, category, minPrice, maxPrice, minRating);
-            productPage = productRepository.findAll(spec, updatedPageable);
-        }
-
-        return ResponseEntity.ok(productPage.map(product -> convertToDto(product, principal)));
-    }
-
-    private ProductResponseDTO convertToDto(Product product, Principal principal) {
-        String status = (principal == null) ? "GUEST"
-            : service.canReview(principal.getName(), product.getId());
-        return ProductResponseDTO.fromEntity(product, status);
+        return ResponseEntity.ok(
+            service.getProductsPage(
+                search,
+                category,
+                minPrice,
+                maxPrice,
+                minRating,
+                sort,
+                pageable,
+                principal
+            )
+        );
     }
 }
