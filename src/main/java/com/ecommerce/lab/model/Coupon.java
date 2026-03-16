@@ -17,18 +17,18 @@ public class Coupon {
     @Column(unique = true, nullable = false)
     private String code;
 
-    @Column(name = "discount_percentage", nullable = false, columnDefinition = "float(53) default 0.0")
-    private double discountPercentage;
+    @Column(name = "discount_percentage", nullable = false)
+    private double discountPercentage = 0.0;
 
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate expiryDate;
 
-    @Column(name = "is_active", nullable = false, columnDefinition = "boolean default true")
+    @Column(name = "is_active", nullable = false)
     private boolean isActive = true;
 
-    @Column(name = "usage_limit", nullable = false, columnDefinition = "int default 0")
-    private int usageLimit;
+    @Column(name = "usage_limit", nullable = false)
+    private int usageLimit = 0;
 
-    @Column(name = "times_used", nullable = false, columnDefinition = "int default 0")
+    @Column(name = "times_used", nullable = false)
     private int timesUsed = 0;
 }
