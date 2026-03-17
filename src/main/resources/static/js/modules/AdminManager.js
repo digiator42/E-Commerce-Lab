@@ -189,7 +189,7 @@ export class AdminManager {
                 <tr class="border-b border-gray-50 hover:bg-gray-50 transition">
                     <td class="py-4 px-6 font-mono text-xs">#ORD-${order.id}</td>
                     <td class="py-4 px-2">
-                        <div class="text-sm font-medium text-gray-900">${order.user.email}</div>
+                        <div class="text-sm font-medium text-gray-900">${order.user?.email}</div>
                         <div class="text-[10px] text-gray-400">${new Date(order.orderDate).toLocaleDateString()}</div>
                     </td>
                     <td class="py-4 px-2">

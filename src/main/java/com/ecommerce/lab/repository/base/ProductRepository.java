@@ -45,6 +45,7 @@ public interface ProductRepository
         Pageable pageable
     );
 
+    @EntityGraph(attributePaths = {"reviews", "category"})
     Page<Product> findByCategoryName(String category, Pageable pageable);
 
     @EntityGraph(attributePaths = {"reviews", "category"})

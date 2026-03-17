@@ -39,6 +39,7 @@ import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import com.ecommerce.lab.dto.OrderResponseDTO;
 import com.ecommerce.lab.dto.ProductRequestDTO;
 import com.ecommerce.lab.dto.UserResponseDTO;
 import com.ecommerce.lab.exception.BusinessLogicException;
@@ -160,9 +161,17 @@ public class AdminController {
     }
 
     @GetMapping("/orders")
-    public ResponseEntity<List<Order>> getAllOrders() {
-        return ResponseEntity
-            .ok(orderRepository.findAll(Sort.by(Sort.Direction.DESC, "orderDate")));
+    public ResponseEntity<List<OrderResponseDTO>> getAllOrders() {
+        List<Order> orders = orderRepository.findAll(Sort.by(Sort.Direction.DESC, "orderDate"));
+
+        return ResponseEntity.ok(
+            orders.stream()
+                .map(order -> {
+                    System.out.println(order.getItems().size());
+                    return OrderResponseDTO.fromEntity(order);
+                })
+                .toList()
+        );
     }
 
     @PatchMapping("/orders/{id}/status")

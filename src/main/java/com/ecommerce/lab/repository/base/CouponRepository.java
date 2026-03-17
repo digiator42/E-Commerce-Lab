@@ -11,6 +11,6 @@ import org.springframework.data.repository.NoRepositoryBean;
 public interface CouponRepository extends JpaRepository<Coupon, Long> {
 
     Optional<Coupon> findByCode(String couponCode);
-
+    
     Boolean existsByCode(String couponCode);
 }
