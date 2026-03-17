@@ -23,6 +23,7 @@ import com.ecommerce.lab.service.InvoiceService;
 import com.ecommerce.lab.service.OrderService;
 
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.transaction.Transactional;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -83,13 +84,12 @@ public class OrderController {
     @GetMapping("/{orderId}/download-invoice")
     public void downloadInvoice(@PathVariable Long orderId, HttpServletResponse response)
         throws IOException {
-        Order order = orderRepository.getOrderById(orderId);
 
         response.setContentType("application/pdf");
         String headerKey = "Content-Disposition";
         String headerValue = "attachment; filename=invoice_order_" + orderId + ".pdf";
         response.setHeader(headerKey, headerValue);
 
-        invoiceService.generateInvoice(order, response.getOutputStream());
+        invoiceService.generateInvoice(orderId, response.getOutputStream());
     }
 }

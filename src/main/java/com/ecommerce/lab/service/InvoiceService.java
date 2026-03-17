@@ -4,11 +4,14 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.time.LocalDateTime;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.ecommerce.lab.model.Address;
 import com.ecommerce.lab.model.Order;
 import com.ecommerce.lab.model.OrderItem;
+import com.ecommerce.lab.repository.base.OrderRepository;
 import com.lowagie.text.*;
 import java.awt.Color;
 import com.lowagie.text.pdf.PdfPCell;
@@ -20,13 +23,19 @@ import tools.jackson.databind.ObjectMapper;
 @Service
 public class InvoiceService {
 
+    @Autowired
+    private OrderRepository orderRepository;
+
     private static final String LOGO_PATH = "/images/logo.png";
     private static final Color PRIMARY_COLOR = new Color(70, 130, 180); // Steel Blue
     private static final Color SECONDARY_COLOR = new Color(245, 245, 245); // Light Gray
     private static final Color ACCENT_COLOR = new Color(255, 99, 71); // Tomato Red
 
-    public void generateInvoice(Order order, OutputStream outputStream)
+    @Transactional(readOnly = true)
+    public void generateInvoice(Long orderId, OutputStream outputStream)
         throws IOException, DocumentException {
+
+        Order order = orderRepository.getOrderById(orderId);
         Document document = new Document(PageSize.A4);
         PdfWriter writer = PdfWriter.getInstance(document, outputStream);
 

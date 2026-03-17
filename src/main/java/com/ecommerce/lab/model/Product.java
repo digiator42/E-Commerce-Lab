@@ -9,6 +9,12 @@ import lombok.Data;
 
 @Entity
 @Table(name = "products")
+@NamedEntityGraph(name = "Product.fullDetails", attributeNodes = {
+        @NamedAttributeNode("category"),
+        @NamedAttributeNode(value = "reviews", subgraph = "review-user-subgraph")
+}, subgraphs = {
+        @NamedSubgraph(name = "review-user-subgraph", attributeNodes = @NamedAttributeNode("user"))
+})
 @Data
 @Transactional
 public class Product {

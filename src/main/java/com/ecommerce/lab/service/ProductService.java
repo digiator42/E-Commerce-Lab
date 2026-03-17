@@ -4,6 +4,7 @@ import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -79,6 +80,7 @@ public class ProductService {
         return productRepository.save(product);
     }
 
+    @Transactional(readOnly = true)
     public String canReview(String email, Long id) {
         boolean purchased = orderRepository.existsByUserEmailAndItemsProductId(email, id);
         boolean reviewed = reviewRepository.existsByUserEmailAndProductId(email, id);
@@ -98,7 +100,7 @@ public class ProductService {
 
     @Transactional(readOnly = true)
     public ProductResponseDTO getProduct(Long id, Principal principal) {
-        
+
         Product product = productRepository.findById(id)
             .orElseThrow(() -> new ProductNotFoundException("Product Not Found"));
 
@@ -142,9 +144,26 @@ public class ProductService {
             productPage = productRepository.findAll(spec, updatedPageable);
         }
 
+        List<Long> productIds = productPage.getContent().stream().map(Product::getId).toList();
+
+        // Batch fetch purchased and reviewed IDs for this user
+        Set<Long> purchasedIds = (principal == null) ? Set.of()
+            : orderRepository.findPurchasedProductIds(principal.getName(), productIds);
+
+        Set<Long> reviewedIds = (principal == null) ? Set.of()
+            : reviewRepository.findReviewedProductIds(principal.getName(), productIds);
+
         return productPage.map(product -> {
-            String status = (principal == null) ? "GUEST"
-                : this.canReview(principal.getName(), product.getId());
+            String status = "GUEST";
+            if (principal != null) {
+                if (reviewedIds.contains(product.getId())) {
+                    status = "ALREADY_REVIEWED";
+                } else if (purchasedIds.contains(product.getId())) {
+                    status = "CAN_REVIEW";
+                } else {
+                    status = "MUST_PURCHASE";
+                }
+            }
             return ProductResponseDTO.fromEntity(product, status);
         });
     }

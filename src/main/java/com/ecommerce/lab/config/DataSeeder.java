@@ -55,7 +55,6 @@ public class DataSeeder {
             createValidCoupons(couponRepository);
 
             if (productRepo.count() > 0) {
-                System.err.println("=====================");
                 return;
             }
 
