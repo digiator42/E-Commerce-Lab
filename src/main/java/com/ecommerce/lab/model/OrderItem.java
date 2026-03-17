@@ -1,5 +1,7 @@
 package com.ecommerce.lab.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -12,13 +14,14 @@ public class OrderItem {
 
     @ManyToOne
     @JoinColumn(name = "order_id")
+    @JsonBackReference
     private Order order;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "product_id")
     private Product product;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "giftcard_id")
     private GiftCard giftCard;
 

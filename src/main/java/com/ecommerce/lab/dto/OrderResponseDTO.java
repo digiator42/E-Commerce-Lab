@@ -17,8 +17,10 @@ public record OrderResponseDTO(
 ) {
 
     public static OrderResponseDTO fromEntity(Order order) {
+
         List<OrderItemDTO> oiDTOs = order.getItems().stream().map(OrderItemDTO::fromEntity)
             .toList();
+
 
         return new OrderResponseDTO(
             order.getId(),

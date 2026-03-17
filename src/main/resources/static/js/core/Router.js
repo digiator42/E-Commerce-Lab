@@ -100,7 +100,7 @@ export class Router {
                 // Fetch stats and products
                 const [statsRes, productsRes, couponsRes] = await Promise.all([
                     this.adminManager.getStats(),
-                    this.apiClient.fetch('/api/products?size=100'),
+                    this.apiClient.fetch('/api/products/custom?size=100'),
                     this.apiClient.fetch('/api/admin/coupons')
                 ]);
 
