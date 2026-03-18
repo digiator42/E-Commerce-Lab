@@ -113,7 +113,7 @@ public class EmailService {
 
             // Generate PDF and Attach
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            invoiceService.generateInvoice(order, outputStream);
+            invoiceService.generateInvoice(order.getId(), outputStream);
 
             byte[] pdfBytes = outputStream.toByteArray();
             helper.addAttachment(
