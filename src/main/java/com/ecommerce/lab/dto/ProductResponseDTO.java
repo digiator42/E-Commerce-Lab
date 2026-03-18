@@ -27,12 +27,12 @@ public record ProductResponseDTO(
         }
 
         public static ProductResponseDTO fromEntity(Product product, String reviewStatus) {
-                // 1. Safe check for Category
+                // Safe check for Category
                 String categoryName = Hibernate.isInitialized(product.getCategory())
                         ? product.getCategory().getName()
                         : "Unknown";
 
-                // 2. Safe check for Reviews
+                // Safe check for Reviews
                 List<ReviewDTO> reviewDTOs = new ArrayList<>();
                 double average = 0.0;
                 int reviewCount = 0;
@@ -43,7 +43,7 @@ public record ProductResponseDTO(
                                 .mapToInt(Review::getRating).average().orElse(0.0);
 
                         reviewDTOs = product.getReviews().stream().map(r -> {
-                                // 3. Safe check for Review User
+                                // Safe check for Review User
                                 String email = Hibernate.isInitialized(r.getUser())
                                         ? r.getUser().getEmail()
                                         : "Anonymous";

@@ -13,6 +13,7 @@ public record OrderResponseDTO(
     String paymentTransactionId,
     String shippingAddress,
     Double totalAmount,
+    UserResponseDTO user,
     List<OrderItemDTO> items
 ) {
 
@@ -30,6 +31,7 @@ public record OrderResponseDTO(
             order.getPaymentTransactionId(),
             order.getShippingAddress(),
             order.getTotalAmount(),
+            order.getUser() != null ? UserResponseDTO.fromEntity(order.getUser()) : null,
             oiDTOs
         );
     }
