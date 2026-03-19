@@ -101,7 +101,7 @@ public class ProductService {
     @Transactional(readOnly = true)
     public ProductResponseDTO getProduct(Long id, Principal principal) {
 
-        Product product = productRepository.findById(id)
+        Product product = productRepository.findWithDetailsById(id)
             .orElseThrow(() -> new ProductNotFoundException("Product Not Found"));
 
         String status = (principal != null) ? this.canReview(principal.getName(), id) : "GUEST";

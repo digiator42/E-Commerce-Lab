@@ -17,52 +17,52 @@ import org.springframework.data.repository.NoRepositoryBean;
 
 @NoRepositoryBean
 public interface ProductRepository
-    extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
+        extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
 
-    boolean existsByName(String name);
+        boolean existsByName(String name);
 
-    Optional<Product> findByName(String name);
+        Optional<Product> findByName(String name);
 
-    @EntityGraph(attributePaths = {
-            "reviews", "category"
-    })
-    Optional<Product> findById(Long id);
+        @EntityGraph(attributePaths = {
+                        "reviews", "category", "reviews.user"
+        })
+        @Query("SELECT p FROM Product p WHERE p.id = :id")
+        Optional<Product> findWithDetailsById(Long id);
 
-    @Override
-    @EntityGraph(attributePaths = {
-            "reviews", "category", "reviews.user"
-    })
-    Page<Product> findAll(Specification<Product> spec, Pageable pageable);
+        @Override
+        @EntityGraph(attributePaths = {
+                        "reviews", "category", "reviews.user"
+        })
+        Page<Product> findAll(Specification<Product> spec, Pageable pageable);
 
-    @EntityGraph(attributePaths = {
-            "reviews", "category"
-    })
-    List<Product> findAllByName(String name);
+        @EntityGraph(attributePaths = {
+                        "reviews", "category"
+        })
+        List<Product> findAllByName(String name);
 
-    @EntityGraph(attributePaths = {
-            "reviews", "category"
-    })
-    List<Product> findAllByNameOrBrand(String name, String brand);
+        @EntityGraph(attributePaths = {
+                        "reviews", "category"
+        })
+        List<Product> findAllByNameOrBrand(String name, String brand);
 
-    @EntityGraph(attributePaths = {
-            "reviews", "category"
-    })
-    Page<Product> findByNameContainingIgnoreCase(String name, Pageable pageable);
+        @EntityGraph(attributePaths = {
+                        "reviews", "category"
+        })
+        Page<Product> findByNameContainingIgnoreCase(String name, Pageable pageable);
 
-    @EntityGraph(attributePaths = {
-            "reviews", "category"
-    })
-    Page<Product> findByCategoryNameAndNameContainingIgnoreCase(
-        String category,
-        String name,
-        Pageable pageable
-    );
+        @EntityGraph(attributePaths = {
+                        "reviews", "category"
+        })
+        Page<Product> findByCategoryNameAndNameContainingIgnoreCase(
+                String category,
+                String name,
+                Pageable pageable
+        );
 
-    @EntityGraph(value = "Product.fullDetails")
-    Page<Product> findByCategoryName(String category, Pageable pageable);
+        @EntityGraph(value = "Product.fullDetails")
+        Page<Product> findByCategoryName(String category, Pageable pageable);
 
-    @EntityGraph(value = "Product.fullDetails")
-    @Query("SELECT p FROM Product p LEFT JOIN p.reviews r GROUP BY p.id ORDER BY COALESCE(AVG(r.rating), 0) DESC")
-    Page<Product> findAllOrderByAverageRating(Pageable pageable);
+        @Query("SELECT p FROM Product p LEFT JOIN p.reviews r GROUP BY p.id ORDER BY COALESCE(AVG(r.rating), 0) DESC")
+        Page<Product> findAllOrderByAverageRating(Pageable pageable);
 
 }
