@@ -44,7 +44,7 @@ public record ProductResponseDTO(
 
                         reviewDTOs = product.getReviews().stream().map(r -> {
                                 // Safe check for Review User
-                                String email = Hibernate.isInitialized(r.getUser())
+                                String email = r.getUser() != null
                                         ? r.getUser().getEmail()
                                         : "Anonymous";
                                 return new ReviewDTO(
