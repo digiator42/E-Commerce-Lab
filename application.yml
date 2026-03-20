@@ -1,14 +1,15 @@
 spring:
-  postgres:
-    url: jdbc:postgresql://${PG_DATABASE_URL}
-    username: ${PG_DB_USER}
-    password: ${PG_DB_PASS}
-    driver-class-name: org.postgresql.Driver
-  mysql:
-    url: jdbc:mysql://${MS_DATABASE_URL}
-    username: ${MS_DB_USER}
-    password: ${MS_DB_PASS}
-    driver-class-name: com.mysql.cj.jdbc.Driver
+  datasource:
+    postgres:
+      url: jdbc:postgresql://${PG_DATABASE_URL}
+      username: ${PG_DB_USER}
+      password: ${PG_DB_PASS}
+      driver-class-name: org.postgresql.Driver
+    mysql:
+      url: jdbc:mysql://${MS_DATABASE_URL}
+      username: ${MS_DB_USER}
+      password: ${MS_DB_PASS}
+      driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
     open-in-view: true
