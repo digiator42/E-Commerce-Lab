@@ -1,19 +1,24 @@
 spring:
-  profiles:
-    active: default
-  datasource:
-    url: jdbc:postgresql://${DATABASE_URL}
-    username: ${DB_USER}
-    password: ${DB_PASS}
+  postgres:
+    url: jdbc:postgresql://${PG_DATABASE_URL}
+    username: ${PG_DB_USER}
+    password: ${PG_DB_PASS}
     driver-class-name: org.postgresql.Driver
+  mysql:
+    url: jdbc:mysql://${MS_DATABASE_URL}
+    password: ${MS_DB_PASS}
+    driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
+    open-in-view: true
     hibernate:
-      ddl-auto: create-drop
-    show-sql: true
+      ddl-auto: update
+    show-sql: false
     properties:
       hibernate:
-        format_sql: true
+        format_sql: false
+        default_batch_fetch_size: 20
+        dialect: org.hibernate.dialect.MySQLDialect
         
   mail:
     host: smtp.gmail.com
