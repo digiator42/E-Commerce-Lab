@@ -12,22 +12,22 @@ import org.springframework.data.repository.NoRepositoryBean;
 
 @NoRepositoryBean
 public interface WishlistRepository extends JpaRepository<WishlistItem, Long> {
-    @EntityGraph(attributePaths = {
-            "product", "user", "product.category",
-            "product.reviews"
-    })
-    List<WishlistItem> findByUserEmail(String email);
+        @EntityGraph(attributePaths = {
+                        "product", "user", "product.category",
+                        "product.reviews", "product.reviews.user"
+        })
+        List<WishlistItem> findByUserEmail(String email);
 
-    @EntityGraph(attributePaths = {
-            "product", "user", "product.category",
-            "product.reviews"
-    })
-    boolean existsByUserEmailAndProductId(String email, Long productId);
+        @EntityGraph(attributePaths = {
+                        "product", "user", "product.category",
+                        "product.reviews", "product.reviews.user"
+        })
+        boolean existsByUserEmailAndProductId(String email, Long productId);
 
-    @Transactional
-    @EntityGraph(attributePaths = {
-            "product", "user", "product.category",
-            "product.reviews"
-    })
-    void deleteByUserEmailAndProductId(String email, Long productId);
+        @Transactional
+        @EntityGraph(attributePaths = {
+                        "product", "user", "product.category",
+                        "product.reviews"
+        })
+        void deleteByUserEmailAndProductId(String email, Long productId);
 }
