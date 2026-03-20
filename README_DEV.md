@@ -8,7 +8,7 @@ This lab documents the core business logic and architectural patterns used to bu
 
 - [✓] **Backend**: Spring Boot  
 - [✓] **Frontend**: Vanilla JavaScript (SPA), Tailwind CSS  
-- [✓] **Database**: PostgreSQL
+- [✓] **Database**: PostgreSQL & MysSql
 
 ---
 
@@ -92,3 +92,13 @@ This lab documents the core business logic and architectural patterns used to bu
 
 - [✓] **SPA Routing Support**:  
   > Logic: Catch-all fallback returns `index.html`, Frontend router handles route rendering  
+
+
+## Database Migration & Multi DB Support
+
+- [✓] **Multi Database Integration**:
+  - The system now supports both **PostgreSQL** and **MySQL** (integrated via the `migrating-mysql` branch).
+  - **Default Profile**: PostgreSQL is the default database configuration.
+  - **Switching to MySQL**: To enable MySQL, set the environment variable:
+    - `SPRING_PROFILES_ACTIVE=mysql-primary`
+  - **Logic**: The server dynamically picks up configuration variables based on the active profile, and the ORM layer handles the dialect translation automatically.
