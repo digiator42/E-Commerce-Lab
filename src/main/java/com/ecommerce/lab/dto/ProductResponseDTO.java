@@ -45,7 +45,7 @@ public record ProductResponseDTO(
                         reviewDTOs = product.getReviews().stream().map(r -> {
                                 // Safe check for Review User
                                 String email = r.getUser() != null
-                                        ? r.getUser().getEmail()
+results                                         ? r.getUser().getName()
                                         : "Anonymous";
                                 return new ReviewDTO(
                                         email, r.getRating(), r.getComment(), r.getCreatedAt()
@@ -54,13 +54,28 @@ public record ProductResponseDTO(
                 }
 
                 return new ProductResponseDTO(
-                        product.getId(), product.getName(), product.getDescription(),
-                        product.getPrice(), product.getStock(), categoryName,
-                        product.getImageUrl(), reviewStatus, average, reviewCount, reviewDTOs
+                        product.getId(),
+                        product.getName(),
+                        product.getDescription(),
+                        product.getPrice(),
+                        product.getStock(),
+                        categoryName,
+                        product.getImageUrl(),
+                        reviewStatus,
+                        average,
+                        reviewCount,
+                        reviewDTOs
                 );
         }
 
         public static ProductResponseDTO simpleFromEntity(Product product) {
+                return simpleFromEntity(product, null);
+        }
+
+        public static ProductResponseDTO simpleFromEntity(Product product, String reviewStatus) {
+                String categoryName = product.getCategory() != null
+                        ? product.getCategory().getName()
+                        : "Unknown";
 
                 return new ProductResponseDTO(
                         product.getId(),
@@ -68,12 +83,12 @@ public record ProductResponseDTO(
                         product.getDescription(),
                         product.getPrice(),
                         product.getStock(),
-                        product.getCategory().getName(),
+                        categoryName,
                         product.getImageUrl(),
-                        null,
-                        null,
-                        null,
-                        null
+                        reviewStatus,
+                        product.getAverageRating(), // From @Formula
+                        product.getTotalReviews(), // From @Formula
+                        null // No reviews list for paginated views
                 );
         }
 
