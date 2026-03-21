@@ -45,7 +45,7 @@ public record ProductResponseDTO(
                         reviewDTOs = product.getReviews().stream().map(r -> {
                                 // Safe check for Review User
                                 String email = r.getUser() != null
-results                                         ? r.getUser().getName()
+                                        ? r.getUser().getName()
                                         : "Anonymous";
                                 return new ReviewDTO(
                                         email, r.getRating(), r.getComment(), r.getCreatedAt()
