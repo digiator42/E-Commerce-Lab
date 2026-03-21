@@ -144,7 +144,9 @@ public class ProductService {
             productPage = productRepository.findAll(spec, updatedPageable);
         }
 
-        List<Long> productIds = productPage.getContent().stream().map(Product::getId).toList();
+        List<Long> productIds = productPage.getContent().stream()
+            .map(Product::getId)
+            .toList();
 
         // Batch fetch purchased and reviewed IDs for this user
         Set<Long> purchasedIds = (principal == null) ? Set.of()
@@ -153,6 +155,7 @@ public class ProductService {
         Set<Long> reviewedIds = (principal == null) ? Set.of()
             : reviewRepository.findReviewedProductIds(principal.getName(), productIds);
 
+        // Map to DTOs using simpleFromEntity (no reviews list, uses @Formula fields)
         return productPage.map(product -> {
             String status = "GUEST";
             if (principal != null) {
@@ -164,7 +167,7 @@ public class ProductService {
                     status = "MUST_PURCHASE";
                 }
             }
-            return ProductResponseDTO.fromEntity(product, status);
+            return ProductResponseDTO.simpleFromEntity(product, status);
         });
     }
 
