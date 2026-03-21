@@ -3,8 +3,6 @@ package com.ecommerce.lab.filter;
 import java.io.IOException;
 import java.util.Arrays;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -70,7 +68,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getServletPath();
         return Arrays.stream(PUBLIC_PATHS)
-            .anyMatch(pattern -> pathMatcher.match(pattern, path));
+            .anyMatch(pattern -> {
+                return pathMatcher.match(pattern, path);
+            });
     }
 
     @Override
@@ -117,6 +117,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             // Only skip if the current user is already the SAME user
             if (existingAuth == null || !existingAuth.getName().equals(email)) {
+
                 UserDetails userDetails = userDetailsService.loadUserByUsername(email);
                 User user = userRepository.findByEmail(email).orElse(null);
 

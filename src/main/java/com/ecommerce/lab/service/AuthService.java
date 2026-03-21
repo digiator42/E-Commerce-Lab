@@ -35,7 +35,7 @@ public class AuthService {
     private final EmailService emailService;
     private final JwtUtils jwtUtils;
     @Autowired
-    private final RememberMeServices rememberMeServices;
+    private RememberMeServices rememberMeServices;
     private final CustomUserDetailsService userDetailsService;
 
     public void generateAndSend2FACode(String email) {
@@ -100,6 +100,7 @@ public class AuthService {
         );
 
         if (isRememberMe) {
+            request.setAttribute("FORCE_REMEMBER_ME", true);
 
             UsernamePasswordAuthenticationToken rememberMeAuth = new UsernamePasswordAuthenticationToken(
                 userDetails,
