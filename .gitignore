@@ -32,4 +32,5 @@ build/
 ### VS Code ###
 .env
 application-dev.yml
+run-env.ps1
 /uploads
