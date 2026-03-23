@@ -15,10 +15,10 @@ spring:
     open-in-view: true
     hibernate:
       ddl-auto: create-drop
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
-        format_sql: true
+        format_sql: false
         default_batch_fetch_size: 20
         
   mail:
