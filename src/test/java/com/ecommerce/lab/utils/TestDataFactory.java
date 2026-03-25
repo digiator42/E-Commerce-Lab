@@ -5,7 +5,7 @@ import com.ecommerce.lab.model.*;
 import java.time.LocalDateTime;
 
 public class TestDataFactory {
-    
+
     public static RegisterRequestDTO createValidRegisterRequest() {
         return new RegisterRequestDTO(
             "John Doe",
@@ -16,7 +16,7 @@ public class TestDataFactory {
             "password123"
         );
     }
-    
+
     public static LoginRequestDTO createValidLoginRequest() {
         return new LoginRequestDTO(
             "john@example.com",
@@ -24,7 +24,7 @@ public class TestDataFactory {
             null
         );
     }
-    
+
     public static ProductRequestDTO createValidProductRequest() {
         return new ProductRequestDTO(
             "Test Product",
@@ -34,7 +34,7 @@ public class TestDataFactory {
             "Electronics"
         );
     }
-    
+
     public static User createTestUser() {
         User user = new User();
         user.setId(1L);
@@ -46,7 +46,7 @@ public class TestDataFactory {
         user.setStoreBalance(100.0);
         return user;
     }
-    
+
     public static Product createTestProduct() {
         Product product = new Product();
         product.setId(1L);
@@ -56,15 +56,15 @@ public class TestDataFactory {
         product.setStock(100);
         product.setAverageRating(4.5);
         product.setTotalReviews(10);
-        
+
         Category category = new Category();
         category.setId(1L);
         category.setName("Electronics");
         product.setCategory(category);
-        
+
         return product;
     }
-    
+
     public static Review createTestReview() {
         Review review = new Review();
         review.setId(1L);
@@ -73,7 +73,7 @@ public class TestDataFactory {
         review.setCreatedAt(LocalDateTime.now());
         return review;
     }
-    
+
     public static Order createTestOrder() {
         Order order = new Order();
         order.setId(1L);
@@ -83,7 +83,7 @@ public class TestDataFactory {
         order.setOrderDate(LocalDateTime.now());
         return order;
     }
-    
+
     public static GiftCard createTestGiftCard() {
         GiftCard giftCard = new GiftCard();
         giftCard.setId(1L);
@@ -93,5 +93,21 @@ public class TestDataFactory {
         giftCard.setActive(true);
         giftCard.setRecipientEmail("friend@example.com");
         return giftCard;
+    }
+
+    public static ProductResponseDTO createTestProductResponse() {
+        return ProductResponseDTO.fromEntity(createTestProduct());
+    }
+
+    public static ProductResponseDTO createTestProductResponse(boolean simple) {
+        return ProductResponseDTO.simpleFromEntity(createTestProduct());
+    }
+
+    public static UserResponseDTO createTestUserResponse() {
+        return UserResponseDTO.fromEntity(createTestUser());
+    }
+
+    public static OrderResponseDTO createTestOrderResponse() {
+        return OrderResponseDTO.fromEntity(createTestOrder());
     }
 }
