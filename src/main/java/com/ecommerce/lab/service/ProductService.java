@@ -24,6 +24,7 @@ import com.ecommerce.lab.repository.base.ProductRepository;
 import com.ecommerce.lab.repository.base.ReviewRepository;
 
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
@@ -32,6 +33,7 @@ import jakarta.validation.Valid;
 
 @Service
 @Transactional
+@Validated
 public class ProductService {
     private final ProductRepository productRepository;
     private final OrderRepository orderRepository;

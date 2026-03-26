@@ -86,6 +86,28 @@ class ProductControllerTest extends BaseControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("Should reject product with invalid data")
+    void shouldRejectInvalidProduct() throws Exception {
+        // Given
+        ProductRequestDTO invalidRequest = new ProductRequestDTO(
+            "", // NotBlank
+            "Description",
+            5,
+            10.0,
+            ""
+        );
+
+        // When/Then
+        mockMvc.perform(
+            post("/api/products")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(invalidRequest))
+        )
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
     @WithMockUser
     @DisplayName("Should return paginated products")
     void shouldReturnPaginatedProducts() throws Exception {
@@ -152,5 +174,38 @@ class ProductControllerTest extends BaseControllerTest {
         )
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.content[0].name").value("Test Product"));
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("Should filter products with multiple criteria")
+    void shouldFilterWithMultipleCriteria() throws Exception {
+        // Given
+        Page<ProductResponseDTO> productPage = new PageImpl<>(
+            List.of(TestDataFactory.createTestProductResponse(true))
+        );
+
+        when(
+            productService.getProductsPage(
+                anyString(), anyList(), anyDouble(), anyDouble(),
+                anyDouble(), anyString(), any(), any()
+            )
+        ).thenReturn(productPage);
+
+        // When/Then
+        mockMvc.perform(
+            get("/api/products/custom")
+                .param("search", "Test")
+                .param("category", "Electronics")
+                .param("minPrice", "10")
+                .param("maxPrice", "100")
+                .param("minRating", "3")
+                .param("sort", "price_asc")
+                .param("page", "0")
+                .param("size", "10")
+        )
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content[0].name").value("Test Product"))
+            .andDo(print());
     }
 }
