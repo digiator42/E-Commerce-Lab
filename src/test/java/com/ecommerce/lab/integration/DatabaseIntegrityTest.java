@@ -1,14 +1,16 @@
 package com.ecommerce.lab.integration;
 
-import com.ecommerce.lab.BaseControllerTest;
 import com.ecommerce.lab.model.Product;
 import com.ecommerce.lab.repository.base.ProductRepository;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
-class DatabaseIntegrityTest extends BaseControllerTest {
+@SpringBootTest
+class DatabaseIntegrityTest {
 
     @Autowired
     private ProductRepository productRepository;

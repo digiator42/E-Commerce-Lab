@@ -71,7 +71,7 @@ public class AuthService {
         return false;
     }
 
-    public ResponseEntity<UserResponseDTO> finalizeSession(
+    public UserResponseDTO finalizeSession(
         User user,
         LoginRequestDTO loginReq,
         HttpServletRequest request,
@@ -118,6 +118,6 @@ public class AuthService {
         user.setLastLogin(LocalDateTime.now());
         userRepository.save(user);
 
-        return ResponseEntity.ok(UserResponseDTO.fromEntity(user));
+        return UserResponseDTO.fromEntity(user);
     }
 }

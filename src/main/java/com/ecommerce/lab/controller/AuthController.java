@@ -44,7 +44,7 @@ public class AuthController {
     private final UserRepository userRepository;
 
     @Autowired
-    private final RememberMeServices rememberMeServices;
+    private RememberMeServices rememberMeServices;
 
     @Autowired
     private TokenBlacklistService blacklistService;
@@ -117,7 +117,7 @@ public class AuthController {
             );
         }
 
-        return authService.finalizeSession(user, loginReq, request, response);
+        return ResponseEntity.ok(authService.finalizeSession(user, loginReq, request, response));
     }
 
     @PostMapping("/register")

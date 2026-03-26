@@ -13,7 +13,31 @@ public class TestDataFactory {
             "123 Main St",
             25,
             "john@example.com",
-            "password123"
+            "Password&123!"
+        );
+    }
+
+    public static RegisterRequestDTO createInvalidEmailRegisterRequest() {
+        return new RegisterRequestDTO(
+            "John Doe",
+            "johndoe",
+            "123 main St",
+            25,
+            "john@example",
+            "Password&123!"
+
+        );
+    }
+
+    public static RegisterRequestDTO createInvalidPasswordRegisterRequest() {
+        return new RegisterRequestDTO(
+            "John Doe",
+            "johndoe",
+            "123 main St",
+            25,
+            "john@example.com",
+            "weakpassword!"
+
         );
     }
 
@@ -41,7 +65,7 @@ public class TestDataFactory {
         user.setName("John Doe");
         user.setUserName("johndoe");
         user.setEmail("john@example.com");
-        user.setPassword("encodedPassword");
+        user.setPassword("password123");
         user.setRole(Role.ROLE_USER);
         user.setStoreBalance(100.0);
         return user;

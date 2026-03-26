@@ -1,7 +1,6 @@
 package com.ecommerce.lab.unit;
 
 import com.ecommerce.lab.BaseControllerTest;
-import com.ecommerce.lab.controller.ProductController;
 import com.ecommerce.lab.dto.ProductRequestDTO;
 import com.ecommerce.lab.dto.ProductResponseDTO;
 import com.ecommerce.lab.exception.ProductNotFoundException;
@@ -12,19 +11,13 @@ import com.ecommerce.lab.utils.TestDataFactory;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.json.AutoConfigureJson;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -32,16 +25,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@AutoConfigureJson
 class ProductControllerTest extends BaseControllerTest {
-
-    @Autowired
-    private MockMvc mockMvc;
 
     @MockitoBean
     private ProductService productService;
