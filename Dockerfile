@@ -21,4 +21,4 @@ COPY application.yml /app/application.yml
 
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-Dspring.config.location=file:/app/application.yml", "-Dserver.port=${PORT}", "-jar","app.jar"]
+ENTRYPOINT ["java", "-Dspring.config.location=file:/app/application.yml", "-Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}", "-Dserver.port=${PORT}", "-jar","app.jar"]
