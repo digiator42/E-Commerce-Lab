@@ -120,16 +120,13 @@ export class AdminManager {
             formData.append("file", fileInput.files[0]);
         }
 
-        const res = await fetch('/api/admin/products', {
+        const product = await this.apiClient.fetch('/api/admin/products', {
             method: 'POST',
             body: formData
         });
 
-        if (res.ok) {
-            const product = await res.json();
-            console.log("Saved everything in one go:", product);
-            await this.router.navigate("/admin");
-        }
+        console.log("Saved everything in one go:", product);
+        await this.router.navigate("/admin");
     }
 
     async updateProduct(event, id) {
@@ -153,7 +150,7 @@ export class AdminManager {
     }
 
     async editProduct(id) {
-        window.router.navigate("/admin/edit-product/" + id);        
+        window.router.navigate("/admin/edit-product/" + id);
     }
 
     filterOrders() {
