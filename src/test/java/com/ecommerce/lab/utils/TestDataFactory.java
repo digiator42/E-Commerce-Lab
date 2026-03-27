@@ -2,7 +2,18 @@ package com.ecommerce.lab.utils;
 
 import com.ecommerce.lab.dto.*;
 import com.ecommerce.lab.model.*;
+import com.warrenstrange.googleauth.GoogleAuthenticator;
+
+import io.jsonwebtoken.Jwts;
+
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import io.jsonwebtoken.SignatureAlgorithm;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+import java.util.Date;
+import java.util.Map;
 
 public class TestDataFactory {
 
@@ -133,5 +144,57 @@ public class TestDataFactory {
 
     public static OrderResponseDTO createTestOrderResponse() {
         return OrderResponseDTO.fromEntity(createTestOrder());
+    }
+
+    public static class JwtTestUtil {
+
+        @Value("${spring.security.jwt-key}")
+        private static String jwtSecret;
+
+        public static String generateTestToken(String email) {
+            Map<String, Object> claims = new HashMap<>();
+            claims.put("email", email);
+
+            return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(email)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + 86400000)) // 24 hours
+                .signWith(SignatureAlgorithm.HS512, jwtSecret)
+                .compact();
+        }
+
+        public static String generateExpiredToken(String email) {
+            Map<String, Object> claims = new HashMap<>();
+            claims.put("email", email);
+
+            return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(email)
+                .setIssuedAt(new Date(System.currentTimeMillis() - 86400000)) // 1 day ago
+                .setExpiration(new Date(System.currentTimeMillis() - 3600000)) // 1 hour ago
+                .signWith(SignatureAlgorithm.HS512, jwtSecret)
+                .compact();
+        }
+
+        public static String generateInvalidToken() { return "invalid.token.here"; }
+    }
+
+    @Component
+    public static class TwoFATestUtil {
+
+        private static final GoogleAuthenticator gAuth = new GoogleAuthenticator();
+
+        public static String generateTestSecret() { return gAuth.createCredentials().getKey(); }
+
+        public static int generateValidCode(String secret) { return gAuth.getTotpPassword(secret); }
+
+        public static int generateInvalidCode() {
+            return 123456; // Invalid code
+        }
+
+        public static String generateTestQrUrl(String email, String secret) {
+            return "otpauth://totp/ECommerce:" + email + "?secret=" + secret + "&issuer=ECommerce";
+        }
     }
 }

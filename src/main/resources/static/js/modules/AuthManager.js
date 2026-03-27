@@ -693,6 +693,7 @@ export class AuthManager {
         this.switchResetTab('email');
     }
 
+    // Remember: Not used
     async handle2FAVerification(event) {
         event.preventDefault();
 
