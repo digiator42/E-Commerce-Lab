@@ -91,7 +91,8 @@ public class AuthService {
         HttpSession session = request.getSession(true);
         session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
 
-        final boolean isRememberMe = StringUtils.equals(loginReq.rememberMe(), "on");
+        final boolean isRememberMe = StringUtils
+            .equals(loginReq != null ? loginReq.rememberMe() : "", "on");
 
         // Generate the token
         String token = jwtUtils.generateToken(
