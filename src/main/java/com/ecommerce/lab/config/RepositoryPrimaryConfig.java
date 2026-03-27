@@ -67,6 +67,27 @@ public class RepositoryPrimaryConfig {
         return repo;
     }
 
+    // --- OrderItemRepository ---
+    @Bean
+    @Primary
+    @Profile("!mysql-primary")
+    public OrderItemRepository primaryOrderItemRepoPg(
+        @Qualifier("orderItemRepositoryPostgres") OrderItemRepository repo
+    ) {
+        return repo;
+    }
+
+    @Bean
+    @Primary
+    @Profile("mysql-primary")
+    public OrderItemRepository primaryOrderItemRepoMy(
+        @Qualifier("orderItemRepositoryMysql") OrderItemRepository repo
+    ) {
+        return repo;
+    }
+
+
+
     // --- ORDER REPOSITORY ---
     @Bean
     @Primary

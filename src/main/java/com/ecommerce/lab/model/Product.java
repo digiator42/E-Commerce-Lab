@@ -38,6 +38,9 @@ public class Product {
         @Column(nullable = false)
         private Integer stock;
 
+        @Column(nullable = false)
+        private boolean active = true;
+
         @ManyToOne
         @JoinColumn(name = "category_id")
         private Category category;

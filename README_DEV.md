@@ -35,7 +35,7 @@ This lab documents the core business logic and architectural patterns used to bu
 - [✓] **Admin Management**
     - Admin Features
       - [✓] Inventory requests
-      - [✓] Add/Edit/Delete products
+      - [✓] Add/Edit/Delete products (Delete with soft delete, and hard delete for testing)
       - [✓] Customer Orders requests
       - [✓] Users Access management (ROLE_ADMIN & ROLE_USER)
       - [✓] Self downgrade protection
