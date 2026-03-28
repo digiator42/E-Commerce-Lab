@@ -71,7 +71,7 @@ public class AuthService {
         return false;
     }
 
-    public ResponseEntity<UserResponseDTO> finalizeSession(
+    public UserResponseDTO finalizeSession(
         User user,
         LoginRequestDTO loginReq,
         HttpServletRequest request,
@@ -91,7 +91,8 @@ public class AuthService {
         HttpSession session = request.getSession(true);
         session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
 
-        final boolean isRememberMe = StringUtils.equals(loginReq.rememberMe(), "on");
+        final boolean isRememberMe = StringUtils
+            .equals(loginReq != null ? loginReq.rememberMe() : "", "on");
 
         // Generate the token
         String token = jwtUtils.generateToken(
@@ -118,6 +119,6 @@ public class AuthService {
         user.setLastLogin(LocalDateTime.now());
         userRepository.save(user);
 
-        return ResponseEntity.ok(UserResponseDTO.fromEntity(user));
+        return UserResponseDTO.fromEntity(user);
     }
 }

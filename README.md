@@ -7,10 +7,10 @@ E-Commerce-Lab serves as both a development playground and a testing lab.
 - Product catalog management
 - User account and role handling
 - Shopping cart and checkout flow
+- Admin dashboard with admin priviliges
 - Payment simulation
-- Order tracking
-- Automated testing with JUnit
-- CI/CD friendly structure
+
+refere to [README_DEV.md](README_DEV.md) for detailed technical architecture and business logic.
 
 ## Tech Stack
 - **Backend:** Java, Spring Boot

@@ -26,11 +26,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     })
     Order getOrderById(Long id);
 
-    @Query("SELECT DISTINCT o FROM Order o " +
-        "LEFT JOIN FETCH o.items i " +
-        "LEFT JOIN FETCH i.product " + // This ensures the product is loaded
-        "WHERE o.user.email = :email " +
-        "ORDER BY o.orderDate DESC")
     @EntityGraph(value = "Order.fullDetails")
     List<Order> findByUserEmailOrderByOrderDateDesc(@Param("email") String email);
 

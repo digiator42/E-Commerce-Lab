@@ -2,7 +2,6 @@ package com.ecommerce.lab.repository.base;
 
 import java.util.Optional;
 
-import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.ecommerce.lab.model.Category;
@@ -12,6 +11,6 @@ import org.springframework.data.repository.NoRepositoryBean;
 public interface CategoryRepository extends JpaRepository<Category, Long> {
     boolean existsByName(String name);
 
-    @EntityGraph(attributePaths = {"products"})
     Optional<Category> findByName(String categoryName);
+
 }

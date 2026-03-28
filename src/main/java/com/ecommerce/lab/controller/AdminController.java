@@ -12,6 +12,7 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import jakarta.persistence.EntityManager;
 import org.springframework.core.io.UrlResource;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Sort;
@@ -21,6 +22,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -51,8 +53,10 @@ import com.ecommerce.lab.model.OrderStatus;
 import com.ecommerce.lab.model.Product;
 import com.ecommerce.lab.model.Role;
 import com.ecommerce.lab.model.User;
+import com.ecommerce.lab.repository.base.CartRepository;
 import com.ecommerce.lab.repository.base.CategoryRepository;
 import com.ecommerce.lab.repository.base.CouponRepository;
+import com.ecommerce.lab.repository.base.OrderItemRepository;
 import com.ecommerce.lab.repository.base.OrderRepository;
 import com.ecommerce.lab.repository.base.ProductRepository;
 import com.ecommerce.lab.repository.base.UserRepository;
@@ -71,6 +75,9 @@ public class AdminController {
     private final RequestMappingHandlerMapping handlerMapping;
     private final UserRepository userRepository;
     private final CouponRepository couponRepository;
+    private final EntityManager entityManager;
+    private final CartRepository cartItemRepository;
+    private final OrderItemRepository orderItemRepository;
 
     @GetMapping("/stats")
     public ResponseEntity<?> getDashboardStats() {
@@ -131,12 +138,23 @@ public class AdminController {
     }
 
     @DeleteMapping("/products/{id}")
+    @Transactional
     public ResponseEntity<?> deleteProduct(@PathVariable Long id) {
-        if (!productRepository.existsById(id)) {
-            return ResponseEntity.notFound().build();
-        }
-        productRepository.deleteById(id);
-        return ResponseEntity.ok("Product deleted successfully");
+        return productRepository.findById(id).map(product -> {
+            // Clear from Carts
+            cartItemRepository.deleteByProductId(id);
+
+            // Clear from Order Items
+            orderItemRepository.deleteByProductId(id);
+
+            // Sync with DB
+            entityManager.flush();
+
+            // Finally delete the product
+            productRepository.delete(product);
+
+            return ResponseEntity.ok("Product deleted completely");
+        }).orElse(ResponseEntity.notFound().build());
     }
 
     @PutMapping("/products/{id}")

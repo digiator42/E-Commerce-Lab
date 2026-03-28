@@ -71,19 +71,20 @@ public class TwoFactorController {
         String inputCode = body.get("code");
         User user = userService.findByEmail(email);
 
-        // Method A: TOTP (Google Authenticator)
+        // TOTP (Google Authenticator)
         try {
             int totpCode = Integer.parseInt(inputCode);
             if (totpService.verifyCode(user.getTotpSecret(), totpCode)) {
-                // return authService.finalizeSession(user, request, response);
+                return ResponseEntity
+                    .ok(authService.finalizeSession(user, null, request, response));
             }
         } catch (NumberFormatException e) {
             // Not a valid number, so it's definitely not a TOTP code
         }
 
-        // Method B: Email Code
+        // Email Code
         if (authService.verify2FACode(email, inputCode)) {
-            // return authService.finalizeSession(user, request);
+            return ResponseEntity.ok(authService.finalizeSession(user, null, request, response));
         }
 
         return ResponseEntity.status(401).body("Invalid code");
