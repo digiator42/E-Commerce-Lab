@@ -88,7 +88,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (path.startsWith("/api/admin")) {
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
                 response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                System.out.println("==============");
                 response.getWriter().write("Unauthorized");
                 return;
             }
