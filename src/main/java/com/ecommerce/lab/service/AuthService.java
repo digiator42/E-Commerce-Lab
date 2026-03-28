@@ -56,7 +56,7 @@ public class AuthService {
     public boolean verify2FACode(String email, String code) {
         User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-
+        System.out.println("======> " + user.getTwoFactorCode() + " " + code);
         if (user.getTwoFactorCode() != null &&
             user.getTwoFactorCode().equals(code) &&
             user.getTwoFactorCodeExpires().isAfter(LocalDateTime.now())) {

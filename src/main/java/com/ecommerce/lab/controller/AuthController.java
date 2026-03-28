@@ -1,6 +1,7 @@
 package com.ecommerce.lab.controller;
 
 import java.security.Principal;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,23 +99,30 @@ public class AuthController {
         if (user.is2faEnabled()) {
             authService.generateAndSend2FACode(user.getEmail());
 
-            if (user.getTotpSecret() == null) {
-                user.setTotpSecret(totpService.generateSecret());
-                userRepository.save(user);
-            }
-
-            String qrUrl = totpService.getQrCodeUrl(user.getEmail(), user.getTotpSecret());
-
             HttpSession session = request.getSession(true);
             session.setAttribute("PENDING_2FA_USER", user.getEmail());
 
-            return ResponseEntity.ok(
-                Map.of(
-                    "requires2FA", true,
-                    "qrCodeUrl", qrUrl,
-                    "message", "Verify using Google Authenticator or check your Email"
-                )
-            );
+            Map<String, Object> responseMap = new HashMap<>();
+            responseMap.put("requires2FA", true);
+
+            // First time totp auth setup
+            if (!user.isTotpEnabled()) {
+                if (user.getTotpSecret() == null) {
+                    user.setTotpSecret(totpService.generateSecret());
+                    userRepository.save(user);
+                }
+                String qrUrl = totpService.getQrCodeUrl(user.getEmail(), user.getTotpSecret());
+                responseMap.put("qrCodeUrl", qrUrl);
+                responseMap.put("isFirstTimeSetup", true);
+                responseMap.put("message", "Verify using Google Authenticator or check your Email");
+            } else {
+                // Setup is already done, no secret/URL
+                responseMap.put("qrCodeUrl", null);
+                responseMap.put("isFirstTimeSetup", false);
+                responseMap.put("message", "Verify using Google Authenticator or check your Email");
+            }
+
+            return ResponseEntity.ok(responseMap);
         }
 
         return ResponseEntity.ok(authService.finalizeSession(user, loginReq, request, response));
