@@ -75,6 +75,11 @@ public class TwoFactorController {
         try {
             int totpCode = Integer.parseInt(inputCode);
             if (totpService.verifyCode(user.getTotpSecret(), totpCode)) {
+                // Set the setup totp so no more qrUrl to be sent
+                if (!user.isTotpEnabled()) {
+                    user.setTotpEnabled(true);
+                    userRepository.save(user);
+                }
                 return ResponseEntity
                     .ok(authService.finalizeSession(user, null, request, response));
             }

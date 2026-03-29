@@ -12,6 +12,7 @@ export class AuthManager {
         this.router = null;
         this.cartManager = null;
         this.wishlistManager = null;
+        this.isTimerCalled = false;
     }
 
     static getInstance() {
@@ -50,8 +51,20 @@ export class AuthManager {
 
     set2FAData(data) {
         this.pending2FAEmail = data.email;
-        this.qrCodeUrl = data.qrCodeUrl;
-        this.totpSecret = data.totpSecret;
+
+        if (data.isFirstTimeSetup) {
+            this.qrCodeUrl = data.qrCodeUrl;
+        }
+        else {
+            this.qrCodeUrl = null;
+        }
+
+        const queryString = this.qrCodeUrl?.split('?')[1]; // get secret chunck
+        const params = new URLSearchParams(queryString);
+        const secret = params.get('secret');
+        this.totpSecret = secret;
+
+        console.log(this.pending2FAEmail, this.qrCodeUrl, this.totpSecret);
     }
 
     setResetData(email, totpToken) {
@@ -79,8 +92,8 @@ export class AuthManager {
             document.getElementById('tab-email-content').classList.remove('hidden');
             document.getElementById('tab-authenticator-content').classList.add('hidden');
 
-            // Start email timer
             this.startEmailTimer();
+            this.isTimerCalled = true;
         }
     }
 
@@ -178,9 +191,13 @@ export class AuthManager {
 
     async resendEmailCode() {
         try {
-            await fetch(`/api/2fa/resend-email-code?email=${encodeURIComponent(this.pending2FAEmail)}`, {
+            const response = await fetch(`/api/2fa/resend?email=${encodeURIComponent(this.pending2FAEmail)}`, {
                 method: 'POST'
             });
+
+            if (response.status === 429) {
+                throw new Error('Too many requests. Wait and try again.');
+            }
 
             this.uiManager.showToast('New code sent to your email!', 'success');
             this.startEmailTimer();
@@ -192,8 +209,15 @@ export class AuthManager {
 
     // Start email timer
     startEmailTimer() {
+        if (this.isTimerCalled) {
+            // this.isTimerCalled = true;
+            return;
+        }
+
         let timeLeft = 300; // 5 minutes in seconds
         const timerEl = document.getElementById('email-timer');
+        const resendEmail = document.getElementById('resend-email-btn');
+        resendEmail.disabled = true;
 
         const interval = setInterval(() => {
             const minutes = Math.floor(timeLeft / 60);
@@ -203,6 +227,7 @@ export class AuthManager {
             if (timeLeft <= 0) {
                 clearInterval(interval);
                 timerEl.textContent = 'Code expired';
+                resendEmail.disabled = false;
             }
             timeLeft--;
         }, 1000);
@@ -530,11 +555,15 @@ export class AuthManager {
                 this.set2FAData({
                     email: data.email,
                     qrCodeUrl: responseData.qrCodeUrl,
-                    totpSecret: responseData.totpSecret
+                    totpSecret: responseData.totpSecret,
+                    isFirstTimeSetup: responseData.isFirstTimeSetup
                 });
 
                 this.uiManager.showToast(responseData.message, 'info');
                 await this.router.navigate('/2fa/verify');
+                if (!this.qrCodeUrl) {
+                    document.getElementById('qr-code-section').classList.add('hidden');
+                }
                 return;
             }
 
@@ -586,6 +615,7 @@ export class AuthManager {
             document.getElementById('tab-authenticator-reset').classList.add('border-blue-600', 'text-blue-600');
             document.getElementById('tab-authenticator-reset-content').classList.remove('hidden');
             document.getElementById('tab-email-reset-content').classList.add('hidden');
+
         }
     }
 
@@ -788,9 +818,35 @@ export class AuthManager {
         }
     }
 
+    async twoFAConfirmation(checkBox) {
+        if (!await this.uiManager.confirm(
+            'Two Factor Authentication', 'You will be logged out to setup otp service, Ensure to login again immediately.'
+        )) {
+            checkBox.checked = false;
+            return false;
+        }
+        const checkbox = document.getElementById('2fa-toggle');
+        const enabled = checkbox.checked;
+
+        await this.performToggle(checkBox, enabled);
+        await this.logout();
+    }
+
     async toggle2FA() {
         const checkbox = document.getElementById('2fa-toggle');
         const enabled = checkbox.checked;
+
+        if (enabled) {
+            const isConfirmed = await this.twoFAConfirmation(checkbox);
+            if (!isConfirmed) {
+                return;
+            }
+        }
+
+        await this.performToggle(checkbox, enabled);
+    }
+
+    async performToggle(checkbox, enabled) {
 
         try {
             const data = await this.apiClient.fetch('/api/2fa/toggle', {
@@ -857,6 +913,7 @@ export class AuthManager {
                 if (this.router) {
                     await this.router.navigate('/login');
                 }
+                this.isTimerCalled = false;
                 return true;
             }
         } catch (error) {

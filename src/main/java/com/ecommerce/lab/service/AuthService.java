@@ -57,7 +57,7 @@ public class AuthService {
         User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        if (user.getTwoFactorCode() != null &&
+            if (user.getTwoFactorCode() != null &&
             user.getTwoFactorCode().equals(code) &&
             user.getTwoFactorCodeExpires().isAfter(LocalDateTime.now())) {
 

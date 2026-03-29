@@ -31,7 +31,7 @@
         <!-- Google Authenticator Tab -->
         <div id="tab-authenticator-content" class="space-y-6">
             <!-- QR Code Section -->
-            <div class="bg-gray-50 p-6 rounded-2xl text-center">
+            <div id="qr-code-section" class="bg-gray-50 p-6 rounded-2xl text-center">
                 <h3 class="font-bold text-gray-900 mb-3">Scan QR Code</h3>
                 <div id="qr-code-container" class="flex justify-center mb-3">
                     <div class="bg-white p-3 rounded-xl shadow-sm inline-block">
@@ -114,7 +114,7 @@
 
                 <!-- Resend Email Code -->
                 <div class="flex items-center justify-between mt-4">
-                    <button type="button" onclick="window.authManager.resendEmailCode()"
+                    <button id="resend-email-btn" type="button" onclick="window.authManager.resendEmailCode()"
                         class="text-sm text-blue-600 hover:text-blue-800 font-medium">
                         Resend Email Code
                     </button>
