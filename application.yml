@@ -14,7 +14,7 @@ spring:
   jpa:
     open-in-view: true
     hibernate:
-      ddl-auto: update
+      ddl-auto: create-drop
       naming:
         # This converts CamelCase to snake_case (OrderItem -> order_item)
         physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
