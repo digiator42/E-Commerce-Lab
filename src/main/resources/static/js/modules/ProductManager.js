@@ -929,6 +929,8 @@ export class ProductManager {
         try {
             const data = await this.apiClient.fetch(`/api/products/custom?category=${category}&page=0&size=4`);
 
+            const products = data.content.map(p => new Product(p));
+
             const container = document.getElementById(containerId);
             if (!container) return;
 
@@ -939,7 +941,7 @@ export class ProductManager {
 
             const cardTemplate = await ComponentStore.getInstance().load('product-card');
 
-            container.innerHTML = data.content.map(p => {
+            container.innerHTML = products.map(p => {
                 const imageSrc = p.imageUrl || 'https://placehold.co/600x400/EEE/31343C';
                 const isInWishlist = window.wishlistManager?.isInWishlist(p.id) || false;
 
@@ -950,10 +952,9 @@ export class ProductManager {
                     .replace(/{{price}}/g, p.price.toFixed(2))
                     .replace(/{{id}}/g, p.id)
                     .replace(/{{category}}/g, p.category)
-                    .replace(/{{rating}}/g, '★★★★☆')
-                    .replace(/{{reviewCount}}/g, p.reviews?.length || 0)
-                    .replace(/{{reviewStatus}}/g, '')
-                    .replace(/{{reviewStatusTag}}/g, '')
+                    .replace(/{{rating}}/g, p?.getRatingStars())
+                    .replace(/{{reviewCount}}/g, p.totalReviews)
+                    .replace(/{{reviewStatus}}/g, p.reviewStatus || '')
                     .replace(/{{wishlistClass}}/g, isInWishlist ? 'text-red-500 fill-current' : 'text-gray-400')
                     .replace(/{{wishlistFill}}/g, isInWishlist ? 'currentColor' : 'none');
             }).join('');

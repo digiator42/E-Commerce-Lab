@@ -818,9 +818,35 @@ export class AuthManager {
         }
     }
 
+    async twoFAConfirmation(checkBox) {
+        if (!await this.uiManager.confirm(
+            'Two Factor Authentication', 'You will be logged out to setup otp service, Ensure to login again immediately.'
+        )) {
+            checkBox.checked = false;
+            return false;
+        }
+        const checkbox = document.getElementById('2fa-toggle');
+        const enabled = checkbox.checked;
+
+        await this.performToggle(checkBox, enabled);
+        await this.logout();
+    }
+
     async toggle2FA() {
         const checkbox = document.getElementById('2fa-toggle');
         const enabled = checkbox.checked;
+
+        if (enabled) {
+            const isConfirmed = await this.twoFAConfirmation(checkbox);
+            if (!isConfirmed) {
+                return;
+            }
+        }
+
+        await this.performToggle(checkbox, enabled);
+    }
+
+    async performToggle(checkbox, enabled) {
 
         try {
             const data = await this.apiClient.fetch('/api/2fa/toggle', {

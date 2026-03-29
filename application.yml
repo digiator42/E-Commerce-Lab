@@ -14,7 +14,12 @@ spring:
   jpa:
     open-in-view: true
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: create
+      naming:
+        # This converts CamelCase to snake_case (OrderItem -> order_item)
+        physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
+        # This ensures the logical names follow Spring Boot defaults
+        implicit-strategy: org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
     show-sql: false
     properties:
       hibernate:
