@@ -36,11 +36,11 @@ export const Constants = {
         "Default": `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.659A2.25 2.25 0 009.568 3z" /></svg>`
     },
     TESTING_USERS: [
-            "ahmed@example.com",
-            "sarah@example.com",
-            "john@example.com",
-            "layla@example.com",
-            "mike@example.com"
+            "hassan@example.com",
+            "farag@example.com",
+            "shrouk@example.com",
+            "esraa@example.com",
+            "heba@example.com"
     ],
     TOAST_DURATION: 3000,
     PAGE_SIZE: 6
