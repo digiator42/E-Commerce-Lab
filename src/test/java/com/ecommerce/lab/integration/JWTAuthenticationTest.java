@@ -74,7 +74,6 @@ class JWTAuthenticationTest extends BaseControllerTest {
         mockMvc.perform(
             get("/api/auth/is-logged-in")
                 .header("Authorization", "Bearer " + validToken)
-                .sessionAttr("SPRING_SECURITY_CONTEXT", SecurityContextHolder.createEmptyContext())
         )
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.email").value(testUser.getEmail()))
@@ -130,7 +129,6 @@ class JWTAuthenticationTest extends BaseControllerTest {
             get("/api/cart")
                 .header("Authorization", "Bearer " + validToken)
         )
-            .andDo(print())
             .andExpect(status().isOk());
     }
 
@@ -160,7 +158,6 @@ class JWTAuthenticationTest extends BaseControllerTest {
             get("/api/orders/my-orders")
                 .header("Authorization", "Bearer " + validToken)
         )
-            .andDo(print())
             .andExpect(status().isOk());
     }
 

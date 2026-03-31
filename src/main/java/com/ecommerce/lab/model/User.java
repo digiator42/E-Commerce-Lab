@@ -55,6 +55,7 @@ public class User {
 
     @JsonIgnore
     private String resetToken;
+
     @JsonIgnore
     private LocalDateTime resetTokenExpires;
 
@@ -78,8 +79,10 @@ public class User {
     @Column(nullable = false, columnDefinition = "boolean default false")
     @JsonIgnore
     private boolean is2faEnabled = false;
+
     @JsonIgnore
     private String twoFactorCode;
+    
     @JsonIgnore
     private LocalDateTime twoFactorCodeExpires;
 

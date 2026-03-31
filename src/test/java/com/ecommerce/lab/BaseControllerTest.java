@@ -13,8 +13,6 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc // Does not apply spring security here is why we need @BeforeEach
 public abstract class BaseControllerTest {
@@ -34,16 +32,6 @@ public abstract class BaseControllerTest {
         mockMvc = MockMvcBuilders
             .webAppContextSetup(context)
             .apply(SecurityMockMvcConfigurers.springSecurity())
-            .defaultRequest(
-                get("/").sessionAttr(
-                    "SPRING_SECURITY_CONTEXT", SecurityContextHolder.createEmptyContext()
-                )
-            )
             .build();
-    }
-
-    @AfterEach
-    void clearSecurityContext() {
-        SecurityContextHolder.clearContext();
     }
 }
