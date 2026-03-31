@@ -16,7 +16,6 @@ import com.ecommerce.lab.BaseControllerTest;
 import com.ecommerce.lab.dto.LoginRequestDTO;
 import com.ecommerce.lab.dto.RegisterRequestDTO;
 import com.ecommerce.lab.dto.UserResponseDTO;
-import com.ecommerce.lab.filter.JwtAuthenticationFilter;
 import com.ecommerce.lab.filter.JwtUtils;
 import com.ecommerce.lab.model.User;
 import com.ecommerce.lab.repository.base.UserRepository;
