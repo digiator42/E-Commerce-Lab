@@ -11,8 +11,8 @@ public record RegisterRequestDTO(
         @NotBlank @Size(min = 5, max = 20) String username,
         @NotBlank String address,
         @Min(value = 13) @Max(value = 120) Integer age,
-        @NotBlank @Email String email,
-        @NotBlank @Size(min = 6) String password
+        @NotBlank @Email(regexp = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$") String email,
+        @NotBlank @Size(min = 8) String password
 ) {
 
 }
