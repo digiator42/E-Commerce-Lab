@@ -25,7 +25,10 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     public UserService(
-        UserRepository userRepository, EmailService emailService, PasswordEncoder passwordEncoder
+        UserRepository userRepository, 
+        EmailService emailService,
+        PasswordResetService passwordResetService,
+         PasswordEncoder passwordEncoder
     ) {
         this.userRepository = userRepository;
         this.emailService = emailService;
@@ -77,6 +80,8 @@ public class UserService {
         if (userRepository.existsByUserName(dto.username())) {
             throw new UserAlreadyExistsException("Username is already taken");
         }
+
+        PasswordResetService.validate(dto.password());
 
         User user = new User();
         user.setName(dto.displayName());
