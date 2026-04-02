@@ -108,8 +108,15 @@ public class UserService {
         User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        if (dto.displayName() != null)
-            user.setName(dto.displayName());
+        if (dto.displayName() != null) {
+            String displayName = dto.displayName().trim();
+
+            if (displayName.length() == 0) {
+                throw new AuthenticationException("Display name cannot be empty");
+            }
+            user.setName(displayName);
+        }
+        
         if (dto.defaultAddress() != null)
             user.setAddress(dto.defaultAddress());
 
@@ -123,9 +130,7 @@ public class UserService {
                 throw new AuthenticationException("The current password you entered is incorrect");
             }
 
-            if (dto.newPassword().length() < 8) {
-                throw new AuthenticationException("New password must be at least 8 characters long");
-            }
+            PasswordResetService.validate(dto.newPassword());
 
             user.setPassword(passwordEncoder.encode(dto.newPassword()));
         }

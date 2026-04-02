@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ecommerce.lab.dto.UserUpdateDTO;
 import com.ecommerce.lab.service.UserService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
@@ -21,7 +23,7 @@ public class UserController {
     public UserController(UserService userService) { this.userService = userService; }
 
     @PutMapping("/profile")
-    public ResponseEntity<?> updateProfile(@RequestBody UserUpdateDTO dto, Principal principal) {
+    public ResponseEntity<?> updateProfile(@RequestBody @Valid UserUpdateDTO dto, Principal principal) {
         if (principal == null)
             return ResponseEntity.status(401).build();
 

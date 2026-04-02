@@ -261,6 +261,10 @@ export class UserManager {
         event.preventDefault();
 
         const displayName = document.getElementById('display-name').value;
+        if (!displayName || displayName.trim().length === 0 || displayName.length > 50) {
+            this.uiManager.showToast('Please enter a valid display name (1-50 characters)', 'error');
+            return;
+        }
 
         const success = await this.updateProfile({
             displayName: displayName
@@ -288,10 +292,11 @@ export class UserManager {
             country: document.getElementById('address-country').value
         };
 
-        // Validate address
-        if (!address.street || !address.city || !address.state || !address.zipCode) {
-            this.uiManager.showToast('Please fill in all address fields', 'error');
-            return;
+        for (const key in address) {
+            if (!address[key] || address[key].trim().length === 0) {
+                this.uiManager.showToast('Please fill in all address fields', 'error');
+                return;
+            }
         }
 
         await this.updateProfile({

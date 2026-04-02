@@ -7,8 +7,20 @@ export class User {
         this.userName = data.userName || '';
         this.role = data.role || 'ROLE_USER';
         this.defaultAddress = data.defaultAddress || null;
-        this.profilePicture = data.profilePicture
-        this.lastLogin = new Date(data.lastLogin).toLocaleDateString() || new Date.now().toLocaleDateString();
+        this.profilePicture = data.profilePicture || null;
+        this.lastLogin = new Date(data.lastLogin).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        }) || new Date.now().toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
         this.isConstructorized = true;
     }
 
