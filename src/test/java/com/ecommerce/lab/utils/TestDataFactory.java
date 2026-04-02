@@ -146,10 +146,15 @@ public class TestDataFactory {
         return OrderResponseDTO.fromEntity(createTestOrder());
     }
 
+    @Component
     public static class JwtTestUtil {
 
-        @Value("${spring.security.jwt-key}")
         private static String jwtSecret;
+
+        @Value("${spring.security.jwt-key}")
+        public void setJwtSecret(String secret) { JwtTestUtil.jwtSecret = secret; }
+
+        public static String getJwtSecret() { return jwtSecret; }
 
         public static String generateTestToken(String email) {
             Map<String, Object> claims = new HashMap<>();
@@ -160,7 +165,7 @@ public class TestDataFactory {
                 .setSubject(email)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 86400000)) // 24 hours
-                .signWith(SignatureAlgorithm.HS512, jwtSecret)
+                .signWith(SignatureAlgorithm.HS512, getJwtSecret())
                 .compact();
         }
 
@@ -173,7 +178,7 @@ public class TestDataFactory {
                 .setSubject(email)
                 .setIssuedAt(new Date(System.currentTimeMillis() - 86400000)) // 1 day ago
                 .setExpiration(new Date(System.currentTimeMillis() - 3600000)) // 1 hour ago
-                .signWith(SignatureAlgorithm.HS512, jwtSecret)
+                .signWith(SignatureAlgorithm.HS512, getJwtSecret())
                 .compact();
         }
 

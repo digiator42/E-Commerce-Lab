@@ -20,6 +20,8 @@ import com.ecommerce.lab.model.CartItem;
 import com.ecommerce.lab.repository.base.CartRepository;
 import com.ecommerce.lab.service.CartService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/cart")
 public class CartController {
@@ -43,7 +45,7 @@ public class CartController {
 
     @PostMapping("/add-gift-card")
     public ResponseEntity<?> addGiftCardToCart(
-        @RequestBody GiftCardRequest gcRequest,
+        @RequestBody @Valid GiftCardRequest gcRequest,
         Principal principal
     ) {
         if (principal == null)

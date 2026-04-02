@@ -197,11 +197,6 @@ public class DataSeeder {
     }
 
     private User createAdminUser(UserRepository userRepo, PasswordEncoder passwordEncoder) {
-        // this.emailService.sendSimpleEmail(
-        // "aimlive2013@gmail.com",
-        // "Testing",
-        // "This is a test email\n"
-        // );
 
         if (userRepo.count() > 0) {
             return null;
@@ -220,11 +215,11 @@ public class DataSeeder {
 
     private List<User> createMockUsers(UserRepository userRepo, PasswordEncoder passwordEncoder) {
         String[] names = {
-                "Ahmed Zaki", "Sarah Connor", "John Doe", "Layla Hassan", "Mike Ross"
+                "Ahmed Hassan", "Shrouk Magdy", "Esraa Derbaz", "Ahmed Farag", "Heba Debi"
         };
         String[] emails = {
-                "ahmed@example.com", "sarah@example.com", "john@example.com", "layla@example.com",
-                "mike@example.com"
+                "hassan@example.com", "shrouk@example.com", "esraa@example.com", "farag@example.com",
+                "heba@example.com"
         };
 
         List<User> mockUsers = new ArrayList<>();

@@ -175,7 +175,7 @@ export class Router {
                         // set last login
                         const lastLogin = document.getElementById('last-login-time');
                         if (lastLogin) {
-                            lastLogin.textContent = new Date(user.lastLogin);
+                            lastLogin.textContent = user.lastLogin
                         }
 
                         // Set profile initials
