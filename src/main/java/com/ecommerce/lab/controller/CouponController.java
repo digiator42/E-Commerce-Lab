@@ -28,7 +28,6 @@ public class CouponController {
         Coupon coupon = couponRepository.findByCode(code)
             .orElseThrow(() -> new ProductNotFoundException("Coupon not found"));
 
-        // Call the same helper function used in placeOrder
         orderService.validateCoupon(coupon);
 
         return ResponseEntity.ok(

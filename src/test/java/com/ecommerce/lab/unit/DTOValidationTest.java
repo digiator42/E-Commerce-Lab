@@ -1,21 +1,10 @@
 package com.ecommerce.lab.unit;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Component;
 
-import com.ecommerce.lab.BaseControllerTest;
-import com.ecommerce.lab.config.DataSeeder;
 import com.ecommerce.lab.dto.*;
-import com.ecommerce.lab.repository.base.CategoryRepository;
-import com.ecommerce.lab.repository.base.CouponRepository;
-import com.ecommerce.lab.repository.base.ProductRepository;
-import com.ecommerce.lab.repository.base.ReviewRepository;
-import com.ecommerce.lab.repository.base.UserRepository;
 
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -27,8 +16,7 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@Component
-class DTOValidationTest extends BaseControllerTest {
+class DTOValidationTest {
 
     private final ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
     private final Validator validator = factory.getValidator();
