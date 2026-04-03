@@ -47,7 +47,7 @@ public class TestDataFactory {
             "123 main St",
             25,
             "john@example.com",
-            "weakpassword!"
+            "weak"
 
         );
     }
