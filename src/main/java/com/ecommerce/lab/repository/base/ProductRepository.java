@@ -51,6 +51,8 @@ public interface ProductRepository
 
         Page<Product> findByCategoryName(String category, Pageable pageable);
 
+        List<Product> findByStockGreaterThan(int stock);
+
         @Query("SELECT p FROM Product p LEFT JOIN p.reviews r GROUP BY p.id ORDER BY COALESCE(AVG(r.rating), 0) DESC")
         Page<Product> findAllOrderByAverageRating(Pageable pageable);
 

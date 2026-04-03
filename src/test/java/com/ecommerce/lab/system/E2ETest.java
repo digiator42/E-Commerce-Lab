@@ -318,11 +318,9 @@ class E2ETest extends BaseControllerTest {
                 System.out.println("   - Cart Items: " + cartRepository.count());
                 System.out.println("========================================\n");
 
-                // Delete users and products
                 this.tearDown();
         }
 
-        @AfterAll
         void tearDown() {
                 // Delete children
                 cartRepository.deleteAll();

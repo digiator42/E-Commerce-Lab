@@ -27,9 +27,6 @@ public abstract class BaseControllerTest {
     @Autowired
     protected WebApplicationContext context;
 
-    // protected final ObjectMapper objectMapper = new ObjectMapper()
-    // .registerModule(new JavaTimeModule());
-
     @Autowired
     protected ObjectMapper objectMapper;
 
