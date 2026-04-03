@@ -121,7 +121,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(email);
                 User user = userRepository.findByEmail(email).orElse(null);
 
-                // System.out.println("===> Is the same token ? " + token.equals(user.getToken()));
+                System.out.println("===> Is the same token ? " + token.equals(user.getToken()));
 
                 if (jwtUtils.validateToken(token, userDetails, request)
                     && token.equals(user.getToken())) {

@@ -65,7 +65,7 @@ public class TestDataGenerator {
         List<Category> categories = IntStream.range(0, count)
             .mapToObj(i -> {
                 Category category = new Category();
-                category.setName(CATEGORIES.get(i % CATEGORIES.size()) + " " + (i + 1));
+                category.setName(CATEGORIES.get(i % (CATEGORIES.size()+count)) + " " + (i + 1));
                 return category;
             })
             .toList();
