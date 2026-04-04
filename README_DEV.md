@@ -102,3 +102,6 @@ This lab documents the core business logic and architectural patterns used to bu
   - **Switching to MySQL**: To enable MySQL, set the environment variable:
     - `SPRING_PROFILES_ACTIVE=mysql-primary`
   - **Logic**: The server dynamically picks up configuration variables based on the active profile, and the ORM layer handles the dialect translation automatically.
+
+## Database structure 
+![alt text](./docs/db.png)

@@ -31,14 +31,24 @@
 | Authentication | ✅ | ✅ | 🔲 |
 | 2FA | ✅ | ✅ | 🔲 |
 | Products | ✅ | ✅ | 🔲 |
-| Orders | 🔲 | 🔲 | 🔲 |
-| Cart | 🔲 | 🔲 | 🔲 |
-| Wishlist | 🔲 | 🔲 | 🔲 |
-| Admin | 🔲 | 🔲 | 🔲 |
+| Orders | ✅ | ✅ | 🔲 |
+| Cart | ✅ | ✅ | 🔲 |
+| Wishlist | ✅ | ✅ | 🔲 |
+| Admin | ✅ | ✅ | 🔲 |
 
 ## Quick Links
-- [Traceability Matrix](./docs/traceability-matrix.md)
 - [ISTQB Test Plan](./docs/test-plan.md)
 - [ISTQB Test Cases](./docs/test-cases.xlsx)
+- [Traceability Matrix](./docs/traceability-matrix.md)
 - [Bug Report](./docs/bug-report.xlsx)
-- [Test Plan](./docs/test-plan.md)
+
+
+## Framework Tests
+- ### Unit Tests
+    Isolate specific components or layers, often mocking out dependencies (like services or repositories) to test business logic and input validation quickly.
+
+- ### Integration Tests
+    Verify that different parts of the application work together correctly.
+
+- ### End-to-End (E2E) / System Tests
+    Complete application tests that simulate real user interactions, including authentication, product browsing, cart management, and checkout processes.

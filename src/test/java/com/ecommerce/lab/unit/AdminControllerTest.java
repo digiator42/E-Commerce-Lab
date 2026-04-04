@@ -7,13 +7,11 @@ import com.ecommerce.lab.repository.base.ProductRepository;
 import com.ecommerce.lab.repository.base.UserRepository;
 import com.ecommerce.lab.service.CustomUserDetailsService;
 import com.ecommerce.lab.BaseControllerTest;
-import com.ecommerce.lab.filter.JwtAuthenticationFilter;
 import com.ecommerce.lab.utils.TestDataFactory;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UserDetails;
