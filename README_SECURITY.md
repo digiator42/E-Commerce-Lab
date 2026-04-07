@@ -26,7 +26,7 @@
 - #### Security Test Case: JWT none Algorithm
     * **Logic**: Prevent "alg: none" attacks that bypass signature verification.
     * **Test Case**: Attempt to access protected resources by setting JWT header to `{"alg": "none"}`.
-    * **Result**: **Passed**. The system strictly enforces keyed hashing algorithms (HS512), returning a `401 Unauthorized`.
+    * **Result**: **Passed**. The system strictly enforces keyed hashing algorithms (HS256), returning a `401 Unauthorized`.
     * **Ref**: [VULN-003](./docs/security)
 
 
@@ -44,3 +44,15 @@
 
 ### [ ] Insufficient Logging & Monitoring
 
+
+## Security Hardening 
+
+- ### Content Security Policy (CSP)
+
+    * **Observation**: `Content-Security-Policy` is missing.
+    * **Risk**: **Medium**. Without CSP, the application relies solely on server-side input sanitization. If an injection vulnerability occurs, the browser will execute malicious scripts by default.
+
+- ### HTTP Strict Transport Security (HSTS)
+
+    * **Observation**: `Strict-Transport-Security` key is missing.
+    * **Risk**: **High**. If a user accesses the site via a public Wi-Fi, an attacker can downgrade the connection to plain HTTP and intercept JWT tokens (Man in the middle attack).
