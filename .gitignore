@@ -34,4 +34,4 @@ build/
 application-dev.yml
 run-env.ps1
 /uploads
-/security-test-results
+/security-test-results*

@@ -137,7 +137,14 @@ public class AuthController {
     public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        User user = userService.findByEmail(auth.getName());
+
+        User user = null;
+
+        try {
+            user = userService.findByEmail(auth.getName());
+        } catch (Exception e) {
+            // Just proceed with jwt logout
+        }
 
         String authHeader = request.getHeader("Authorization");
 
@@ -148,8 +155,10 @@ public class AuthController {
         }
 
         // Fixes the reuse of token to regain authentication
-        user.setToken(null);
-        userRepository.save(user);
+        if (user != null) {
+            user.setToken(null);
+            userRepository.save(user);
+        }
         // Clear Security Context & Session
         SecurityContextHolder.clearContext();
         HttpSession session = request.getSession(false);
