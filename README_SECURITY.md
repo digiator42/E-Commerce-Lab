@@ -1,14 +1,14 @@
 ## Security Architecture
 
-## All security testing is made either manual or by automated Powershell scripting [here](./security-tests/init-test.ps1)
+## All security testing is done either manually or by automated Powershell scripting [here](./security-tests/init-test.ps1)
 
-### [ ] Improper Authorization (IDOR)
+### [ X ] Improper Authorization (IDOR)
 - **Logic**: Ensure users cannot access or modify resources (orders, profiles, cart items) belonging to other users by manipulating IDs in the URL or request body.
   - **Test Case**: Attempt to get invoice `/api/orders/{id}/download-invoice` using an ID belonging to a different user account.
   - **Result** Success user A got to download and get invoice details of user B (including senstive data like use B name/address).
-  - **Ref** [VULN-001](./docs/security)
+  - **Ref** [VULN-001](./docs/tests/security-tests.xlsx)
 
-### [ ] Broken Access Control
+### [ ✓ ] Broken Access Control
 - #### Security Test Case: JWT Integrity & RBAC
 
     * **Logic**: Enforce strict RBAC (Role-Based Access Control) for administrative functions.
@@ -23,34 +23,34 @@
         }
         ```
     * **Result**: **Passed**. A `401 Unauthorized` code was returned, confirming the server rejected the tampered signature.
-    * **Ref**: [VULN-002](./docs/security)
+    * **Ref**: [VULN-002](./docs/tests/security-tests.xlsx)
     ---
 - #### Security Test Case: JWT none Algorithm
     * **Logic**: Prevent "alg: none" attacks that bypass signature verification.
     * **Test Case**: Attempt to access protected resources by setting JWT header to `{"alg": "none"}`.
     * **Result**: **Passed**. The system strictly enforces keyed hashing algorithms (HS256), returning a `401 Unauthorized`.
-    * **Ref**: [VULN-003](./docs/security)
+    * **Ref**: [VULN-003](./docs/tests/security-tests.xlsx)
 
 
-### [ ] Broken Authentication
+### [ X ] Broken Authentication
     
 - ####  Brute Force
     * **Logic**: Prevent automated password guessing by implementing account lockout or rate limiting.
     * **Test Case**: Attempt 5+ failed logins with the same username.
     * **Expected Result**: The account is temporarily locked, or a CAPTCHA is triggered.
     * **Result**: Currently, the system allows unlimited login attempts, making it vulnerable to credential stuffing.
-    * **Ref**: [VULN-004](./docs/security)
+    * **Ref**: [VULN-004](./docs/tests/security-tests.xlsx)
 
 ---
 
-### [ ] Sensitive Data Exposure
+### [ X ] Sensitive Data Exposure
 - #### Stack trace leak
     * **Test Case**: Send a `GET` request to `/api/cart/add/{id}` (which expects `POST`).
     * **Result**: **FAILED**. The system returned a `405 Method Error` with a full stack trace revealing package structures (`com.ecommerce`) and framework versions.
-    * **Ref**: [VULN-005](./docs/security)
+    * **Ref**: [VULN-005](./docs/tests/security-tests.xlsx)
 
 
-### [ ] Security Misconfiguration
+### [ X ] Security Misconfiguration
 
 - ### Content Security Policy (CSP)
 
@@ -63,21 +63,24 @@
     * **Risk**: **High**. If a user accesses the site via a public Wi-Fi, an attacker can downgrade the connection to plain HTTP and intercept JWT tokens (Man in the middle attack).
 
 
-### [ ] Cross-Site Scripting (XSS)
+### [ X ] Cross-Site Scripting (XSS)
 - #### Stored XSS in Product Reviews
     * **Test Case**: Submit a product review with the payload: `<script><img title="</script><img src onerror=alert(1)>"></script>`.
     * **Result**: **FAILED**. The payload was stored in the database and executed in the browser of any user viewing the product page, triggering an alert box.
-    * **Ref**: [VULN-006](./docs/security)
+    * **Ref**: [VULN-006](./docs/tests/security-tests.xlsx)
 
-### [ ] Insecure Deserialization
+### [ ✓ ] Insecure Deserialization
 
-### [ ] Using Components with Known Vulnerabilities
+### [ ✓ ] Using Components with Known Vulnerabilities
 
-### [ ] Insufficient Logging & Monitoring
+### [ X ] Insufficient Logging & Monitoring
 
 - #### Missing
     * Critical actions such as "Role Change" or "Product Price Update" are not logged with the performing admin's ID.
     * Invalid login attempts, unauthorized access to `/api/admin` are not logged
+    * Ref: [VULN-007](./docs/tests/security-tests.xlsx)
+
+
 
 
 

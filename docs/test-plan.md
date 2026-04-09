@@ -17,7 +17,7 @@
 | E2E Automation | Selenium | Tester |
 
 ## Exit Criteria
-- [ ] All framework tests pass (>95%)
+- [ ✓ ] All framework tests pass (>95%)
 - [ ] All manual test cases executed
 - [ ] No critical/high bugs open
 - [ ] Traceability matrix covered
