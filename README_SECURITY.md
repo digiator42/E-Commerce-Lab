@@ -1,5 +1,7 @@
 ## Security Architecture
 
+## All security testing is made either manual or by automated Powershell scripting [here](./security-tests/init-test.ps1)
+
 ### [ ] Improper Authorization (IDOR)
 - **Logic**: Ensure users cannot access or modify resources (orders, profiles, cart items) belonging to other users by manipulating IDs in the URL or request body.
   - **Test Case**: Attempt to get invoice `/api/orders/{id}/download-invoice` using an ID belonging to a different user account.
@@ -31,21 +33,24 @@
 
 
 ### [ ] Broken Authentication
+    
+- ####  Brute Force
+    * **Logic**: Prevent automated password guessing by implementing account lockout or rate limiting.
+    * **Test Case**: Attempt 5+ failed logins with the same username.
+    * **Expected Result**: The account is temporarily locked, or a CAPTCHA is triggered.
+    * **Result**: Currently, the system allows unlimited login attempts, making it vulnerable to credential stuffing.
+    * **Ref**: [VULN-004](./docs/security)
+
+---
 
 ### [ ] Sensitive Data Exposure
+- #### Stack trace leak
+    * **Test Case**: Send a `GET` request to `/api/cart/add/{id}` (which expects `POST`).
+    * **Result**: **FAILED**. The system returned a `405 Method Error` with a full stack trace revealing package structures (`com.ecommerce`) and framework versions.
+    * **Ref**: [VULN-005](./docs/security)
+
 
 ### [ ] Security Misconfiguration
-
-### [ ] Cross-Site Scripting (XSS)
-
-### [ ] Insecure Deserialization
-
-### [ ] Using Components with Known Vulnerabilities
-
-### [ ] Insufficient Logging & Monitoring
-
-
-## Security Hardening 
 
 - ### Content Security Policy (CSP)
 
@@ -56,3 +61,23 @@
 
     * **Observation**: `Strict-Transport-Security` key is missing.
     * **Risk**: **High**. If a user accesses the site via a public Wi-Fi, an attacker can downgrade the connection to plain HTTP and intercept JWT tokens (Man in the middle attack).
+
+
+### [ ] Cross-Site Scripting (XSS)
+- #### Stored XSS in Product Reviews
+    * **Test Case**: Submit a product review with the payload: `<script><img title="</script><img src onerror=alert(1)>"></script>`.
+    * **Result**: **FAILED**. The payload was stored in the database and executed in the browser of any user viewing the product page, triggering an alert box.
+    * **Ref**: [VULN-006](./docs/security)
+
+### [ ] Insecure Deserialization
+
+### [ ] Using Components with Known Vulnerabilities
+
+### [ ] Insufficient Logging & Monitoring
+
+- #### Missing
+    * Critical actions such as "Role Change" or "Product Price Update" are not logged with the performing admin's ID.
+    * Invalid login attempts, unauthorized access to `/api/admin` are not logged
+
+
+
