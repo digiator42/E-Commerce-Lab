@@ -79,8 +79,3 @@
     * Critical actions such as "Role Change" or "Product Price Update" are not logged with the performing admin's ID.
     * Invalid login attempts, unauthorized access to `/api/admin` are not logged
     * Ref: [VULN-007](./docs/tests/security-tests.xlsx)
-
-
-
-
-
