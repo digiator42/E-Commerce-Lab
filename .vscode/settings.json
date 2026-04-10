@@ -9,5 +9,11 @@
     },
     "[javascript]": {
         "editor.defaultFormatter": "vscode.typescript-language-features"
-    }
+    },
+    "cucumberautocomplete.steps": [
+        "src/test/java/**/*.java",
+        "features/step_definitions/*.js"
+    ],
+    "cucumberautocomplete.syncfeatures": "features/*.feature",
+    "cucumberautocomplete.strictGherkinCompletion": true
 }

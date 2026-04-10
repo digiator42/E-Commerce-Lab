@@ -1,3 +1,3 @@
 Feature: User Login
   Scenario: Simple Login Check
-    Given the browser is open
+    Given Site is open
