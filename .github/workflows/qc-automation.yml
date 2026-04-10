@@ -13,8 +13,8 @@ jobs:
         image: postgres:15
         env:
           POSTGRES_DB: master_ecom_test
-          POSTGRES_USERNAME: ${{ secrets.DB_USERNAME }}
-          POSTGRES_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          POSTGRES_USERNAME: cloud_user
+          POSTGRES_PASSWORD: cloud_password
         ports:
           - 5432:5432
         options: >-
