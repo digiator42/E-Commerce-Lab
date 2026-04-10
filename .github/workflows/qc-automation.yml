@@ -54,4 +54,10 @@ jobs:
           MYSQL_PASSWORD: root_password
           POSTGRES_USERNAME: cloud_user
           POSTGRES_PASSWORD: cloud_password
+
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          REMEMBER_ME_KEY: ${{ secrets.REMEMBER_ME_KEY }}
+          
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
         run: ./mvnw test -Dspring.profiles.active=test,postgres
