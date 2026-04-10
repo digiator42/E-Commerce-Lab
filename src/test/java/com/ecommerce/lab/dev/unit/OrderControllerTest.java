@@ -1,12 +1,13 @@
-package com.ecommerce.lab.unit;
+package com.ecommerce.lab.dev.unit;
 
 import com.ecommerce.lab.dto.OrderRequest;
 import com.ecommerce.lab.repository.base.OrderRepository;
 import com.ecommerce.lab.dto.GiftCardRequest;
 import com.ecommerce.lab.service.OrderService;
 import com.ecommerce.lab.service.InvoiceService;
-import com.ecommerce.lab.BaseControllerTest;
-import com.ecommerce.lab.utils.TestDataFactory;
+import com.ecommerce.lab.dev.BaseControllerTest;
+import com.ecommerce.lab.dev.utils.TestDataFactory;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;

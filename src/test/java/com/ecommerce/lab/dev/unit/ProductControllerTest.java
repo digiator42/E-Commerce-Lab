@@ -1,13 +1,13 @@
-package com.ecommerce.lab.unit;
+package com.ecommerce.lab.dev.unit;
 
-import com.ecommerce.lab.BaseControllerTest;
+import com.ecommerce.lab.dev.BaseControllerTest;
+import com.ecommerce.lab.dev.utils.TestDataFactory;
 import com.ecommerce.lab.dto.ProductRequestDTO;
 import com.ecommerce.lab.dto.ProductResponseDTO;
 import com.ecommerce.lab.exception.ProductNotFoundException;
 import com.ecommerce.lab.model.Product;
 import com.ecommerce.lab.repository.base.ProductRepository;
 import com.ecommerce.lab.service.ProductService;
-import com.ecommerce.lab.utils.TestDataFactory;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

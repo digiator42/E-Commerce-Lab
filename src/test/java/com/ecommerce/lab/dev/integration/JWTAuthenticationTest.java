@@ -1,10 +1,10 @@
-package com.ecommerce.lab.integration;
+package com.ecommerce.lab.dev.integration;
 
-import com.ecommerce.lab.BaseControllerTest;
+import com.ecommerce.lab.dev.BaseControllerTest;
+import com.ecommerce.lab.dev.utils.TestDataFactory;
 import com.ecommerce.lab.model.Role;
 import com.ecommerce.lab.model.User;
 import com.ecommerce.lab.repository.base.UserRepository;
-import com.ecommerce.lab.utils.TestDataFactory;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;

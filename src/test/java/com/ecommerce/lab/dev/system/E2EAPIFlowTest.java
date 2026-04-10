@@ -1,10 +1,10 @@
-package com.ecommerce.lab.system;
+package com.ecommerce.lab.dev.system;
 
-import com.ecommerce.lab.BaseControllerTest;
+import com.ecommerce.lab.dev.BaseControllerTest;
+import com.ecommerce.lab.dev.utils.TestDataGenerator;
 import com.ecommerce.lab.dto.*;
 import com.ecommerce.lab.model.Review;
 import com.ecommerce.lab.repository.base.*;
-import com.ecommerce.lab.utils.TestDataGenerator;
 
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;

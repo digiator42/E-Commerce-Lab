@@ -1,4 +1,4 @@
-package com.ecommerce.lab;
+package com.ecommerce.lab.dev;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;

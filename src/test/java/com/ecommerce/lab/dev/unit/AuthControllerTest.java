@@ -1,4 +1,4 @@
-package com.ecommerce.lab.unit;
+package com.ecommerce.lab.dev.unit;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -12,7 +12,8 @@ import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import com.ecommerce.lab.BaseControllerTest;
+import com.ecommerce.lab.dev.BaseControllerTest;
+import com.ecommerce.lab.dev.utils.TestDataFactory;
 import com.ecommerce.lab.dto.LoginRequestDTO;
 import com.ecommerce.lab.dto.RegisterRequestDTO;
 import com.ecommerce.lab.dto.UserResponseDTO;
@@ -22,7 +23,6 @@ import com.ecommerce.lab.repository.base.UserRepository;
 import com.ecommerce.lab.service.AuthService;
 import com.ecommerce.lab.service.CustomUserDetailsService;
 import com.ecommerce.lab.service.UserService;
-import com.ecommerce.lab.utils.TestDataFactory;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

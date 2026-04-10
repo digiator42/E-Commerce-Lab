@@ -1,4 +1,4 @@
-package com.ecommerce.lab.utils;
+package com.ecommerce.lab.dev.utils;
 
 import com.ecommerce.lab.dto.*;
 import com.ecommerce.lab.model.*;

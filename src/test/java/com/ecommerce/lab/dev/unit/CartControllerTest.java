@@ -1,9 +1,10 @@
-package com.ecommerce.lab.unit;
+package com.ecommerce.lab.dev.unit;
 
+import com.ecommerce.lab.dev.BaseControllerTest;
 import com.ecommerce.lab.dto.CartItemResponseDTO;
 import com.ecommerce.lab.dto.GiftCardRequest;
 import com.ecommerce.lab.service.CartService;
-import com.ecommerce.lab.BaseControllerTest;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;

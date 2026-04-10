@@ -1,6 +1,8 @@
-package com.ecommerce.lab.system;
+package com.ecommerce.lab.dev.system;
 
-import com.ecommerce.lab.BaseControllerTest;
+import com.ecommerce.lab.dev.BaseControllerTest;
+import com.ecommerce.lab.dev.utils.TestDataFactory;
+import com.ecommerce.lab.dev.utils.TestDataGenerator;
 import com.ecommerce.lab.dto.RegisterRequestDTO;
 import com.ecommerce.lab.model.Product;
 import com.ecommerce.lab.model.Role;
@@ -10,8 +12,7 @@ import com.ecommerce.lab.repository.base.OrderRepository;
 import com.ecommerce.lab.repository.base.ProductRepository;
 import com.ecommerce.lab.repository.base.ReviewRepository;
 import com.ecommerce.lab.repository.base.UserRepository;
-import com.ecommerce.lab.utils.TestDataFactory;
-import com.ecommerce.lab.utils.TestDataGenerator;
+
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

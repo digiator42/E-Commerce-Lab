@@ -1,8 +1,8 @@
-package com.ecommerce.lab.integration;
+package com.ecommerce.lab.dev.integration;
 
+import com.ecommerce.lab.dev.utils.TestDataGenerator;
 import com.ecommerce.lab.model.Product;
 import com.ecommerce.lab.repository.base.ProductRepository;
-import com.ecommerce.lab.utils.TestDataGenerator;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -23,9 +23,7 @@ class DatabaseIntegrityTest {
     private TestDataGenerator testDataGenerator;
 
     @BeforeAll
-    void init() {
-        testDataGenerator.generateProducts(10);
-    }
+    void init() { testDataGenerator.generateProducts(10); }
 
     @Test
     void shouldVerifySeededDataExists() {

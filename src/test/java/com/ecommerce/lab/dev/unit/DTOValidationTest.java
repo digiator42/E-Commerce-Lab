@@ -1,4 +1,4 @@
-package com.ecommerce.lab.unit;
+package com.ecommerce.lab.dev.unit;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
