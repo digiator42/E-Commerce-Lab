@@ -19,6 +19,39 @@ refere to [README_DEV.md](README_DEV.md) for detailed technical architecture and
 - **Database:** PostgreSQL, MySQL
 - **Version Control:** GitHub
 
+## Project Structure
+```ps
+.
+├── src
+│   ├── main
+│   │   ├── java/com/ecommerce/lab
+│   │   │   ├── config/             # Spring Security & App Configuration
+│   │   │   ├── controller/         # REST Endpoints
+│   │   │   ├── model/              # JPA Entities
+│   │   │   ├── dto/                # Data Transfer Objects
+│   │   │   ├── repository/         # Multi-DB (MySQL/Postgres) support
+│   │   │   ├── security/           # JWT & Auth Logic
+│   │   │   └── service/            # Business Logic
+│   │   └── resources
+│   │       ├── static/             # Vanilla JS, CSS, & Components
+│   │       └── templates/          # HTML Views
+│   │
+│   └── test
+│       ├── java/com/ecommerce/lab
+│       │   ├── unit/               # Fast Development/Component Tests
+│       │   └── automation/         # Heavy QC Automation (Selenium + TestNG)
+│       │       ├── runners/        # Cucumber IT Runners
+│       │       ├── steps/          # Gherkin Step Definitions
+│       │       └── pages/          # Selenium Page Object Models (POM)
+│       └── resources
+│           └── features/           # Gherkin .feature files
+│
+├── docs/                           # Manual test cases & project documentation
+├── security-tests/                 # OWASP Top 10 Audit logs & scripts
+├── .github/workflows/              # CI/CD Pipeline (GitHub Actions)
+└── pom.xml                         # Build config with QC & Dev profiles
+```
+
 ## Getting Started
    ```bash
    > git clone https://github.com/digiator42/E-Commerce-Lab.git
