@@ -22,6 +22,18 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: master_ecom_test
+          MYSQL_ROOT_PASSWORD: root_password
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
 
     steps:
       - uses: actions/checkout@v4
@@ -40,4 +52,6 @@ jobs:
         env:
           POSTGRES_USERNAME: cloud_user
           POSTGRES_PASSWORD: cloud_password
+          MYSQL_USERNAME: root
+          MYSQL_PASSWORD: root_password
         run: ./mvnw test -Dspring.profiles.active=test,postgres
