@@ -33,6 +33,9 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
+      - name: Make Maven Executable
+        run: chmod +x mvnw
+
       - name: Run Development Tests
         env:
           POSTGRES_USERNAME: cloud_user
