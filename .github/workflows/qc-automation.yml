@@ -13,7 +13,7 @@ jobs:
         image: postgres:15
         env:
           POSTGRES_DB: master_ecom_test
-          POSTGRES_USERNAME: cloud_user
+          POSTGRES_USER: cloud_user
           POSTGRES_PASSWORD: cloud_password
         ports:
           - 5432:5432
@@ -50,8 +50,8 @@ jobs:
 
       - name: Run Development Tests
         env:
-          POSTGRES_USERNAME: cloud_user
+          POSTGRES_USER: cloud_user
           POSTGRES_PASSWORD: cloud_password
-          MYSQL_USERNAME: root
+          MYSQL_USER: root
           MYSQL_PASSWORD: root_password
         run: ./mvnw test -Dspring.profiles.active=test,postgres
