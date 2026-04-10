@@ -63,7 +63,7 @@
 
     #### Run a specific test class
     > ./mvnw test -Dtest=ClassTestName
-    #### Or you can use PS script run-tests.ps1, you need to set all below attributes.
+    #### Or you can use PS script `run-tests.ps1`, you need to set all below attributes.
     ```bash
     $env:MYSQL_USERNAME = ""
     $env:MYSQL_PASSWORD = ""
@@ -74,5 +74,13 @@
     $env:JWT_SECRET_KEY = "32bitkey"
     $env:REMEMBER_ME_KEY = "32bitkey"
     ```
+- ## QC Automation Tests
+  - ### Run
+    > ./mvnw verify -P qc "-Dspring.profiles.active=test,postgres"
+    #### OR 
+    > ./mvnw verify -P qc "-Dspring.profiles.active=test,mysql-primary"
+
+
+
    
 
