@@ -50,8 +50,8 @@ jobs:
 
       - name: Run Development Tests
         env:
-          POSTGRES_USER: cloud_user
-          POSTGRES_PASSWORD: cloud_password
-          MYSQL_USER: root
+          MYSQL_USERNAME: root
           MYSQL_PASSWORD: root_password
+          POSTGRES_USERNAME: cloud_user
+          POSTGRES_PASSWORD: cloud_password
         run: ./mvnw test -Dspring.profiles.active=test,postgres
