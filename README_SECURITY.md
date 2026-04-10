@@ -79,3 +79,13 @@
     * Critical actions such as "Role Change" or "Product Price Update" are not logged with the performing admin's ID.
     * Invalid login attempts, unauthorized access to `/api/admin` are not logged
     * Ref: [VULN-007](./docs/tests/security-tests.xlsx)
+
+
+### Run Automated Security Tests
+- #### Run all security test scripts
+    > cd security-tests
+
+    > .\run-all.ps1
+    
+    #### View Results
+    A comprehensive HTML report is generated under the `security-result/` directory, detailing identified vulnerabilities, and hints.

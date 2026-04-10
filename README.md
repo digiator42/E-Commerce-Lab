@@ -39,57 +39,11 @@ docker build -t ecommerce-lab .
 docker run -p 8080:8080 -e SPRING_PROFILES_ACTIVE=mysql-primary ecommerce-lab
 ```
 
+## Testing
+- The project follows a structured testing methodology combining automated frameworks and formal ISTQB practices.
 
-## yaml sample
-```yaml
-spring:
-  datasource:
-    postgres:
-      jdbc-url: jdbc:postgresql://localhost:5432/master_ecom
-      username: username
-      password: password
-      driver-class-name: org.postgresql.Driver
-    mysql:
-      jdbc-url: jdbc:mysql://localhost:3306/master_ecom
-      username: username
-      password: password
-      driver-class-name: com.mysql.cj.jdbc.Driver
+  - **Manual & Formal Testing**: Comprehensive test suites are managed via **Jira (Sprint 4)** and documented in a detailed **Excel Traceability Matrix**. This includes functional verification, edge case analysis, and regression logs.
+  - **Security Testing**: Security audits are performed using a mix of manual penetration testing and automated PowerShell scripts to identify vulnerabilities like IDOR, XSS, and Broken Access Control.
+  - **Automated Testing**: The framework utilizes **JUnit** for unit/integration logic and **Selenium** for end-to-end user flow validation.
 
-  jpa:
-    hibernate:
-      ddl-auto: update
-    properties:
-      hibernate:
-        format_sql: false
-        default_batch_fetch_size: 20
-        
-  mail:
-    host: smtp.gmail.com
-    port: 465
-    username: ${MAIL_USERNAME:placeholder}
-    password: ${MAIL_PASSWORD:placeholder}
-    properties:
-      mail:
-        smtp:
-          auth: true
-          ssl:
-            enable: true
-          socketFactory:
-            port: 465
-            class: javax.net.ssl.SSLSocketFactory
-            fallback: false
-  
-  security:
-    jwt-key: ${JWT_SECRET_KEY:32-byte-key}
-    remember-key: ${REMEMBER_ME_KEY:32-byte-key}
-    oauth2:
-      client:
-        registration:
-          google:
-            client-id: ${GOOGLE_CLIENT_ID:placeholder}
-            client-secret: ${GOOGLE_CLIENT_SECRET:placeholder}
-            scope:
-              - email
-              - profile
-
-```
+  For a detailed breakdown of the test strategy, coverage summary, and security vulnerability reports, refer to [README_TEST.md](README_TEST.md) and [README_SECURITY.md](README_SECURITY.md).

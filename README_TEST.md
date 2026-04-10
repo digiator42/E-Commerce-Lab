@@ -44,11 +44,28 @@
 
 
 ## Framework Tests
-- ### Unit Tests
-    Isolate specific components or layers, often mocking out dependencies (like services or repositories) to test business logic and input validation quickly.
+- ### Unit Tests, Integration Tests, End-to-End (E2E) / System Tests
 
-- ### Integration Tests
-    Verify that different parts of the application work together correctly.
+## Run tests
+- ### Framework Tests
+  - #### Run all tests using the default PostgreSQL profile
+    > $env:SPRING_PROFILES_ACTIVE="test"; ./mvnw test
 
-- ### End-to-End (E2E) / System Tests
-    Complete application tests that simulate real user interactions, including authentication, product browsing, cart management, and checkout processes.
+    #### Run tests with a MySql profile
+    > $env:SPRING_PROFILES_ACTIVE="test,mysql-primary"; ./mvnw test
+
+    #### Run a specific test class
+    > ./mvnw test -Dtest=ClassTestName
+    #### Or you can use PS script run-tests.ps1, you need to set all below attributes.
+    ```bash
+    $env:MYSQL_USERNAME = ""
+    $env:MYSQL_PASSWORD = ""
+
+    $env:POSTGRES_USERNAME = ""
+    $env:POSTGRES_PASSWORD = ""
+
+    $env:JWT_SECRET_KEY = "32bitkey"
+    $env:REMEMBER_ME_KEY = "32bitkey"
+    ```
+   
+

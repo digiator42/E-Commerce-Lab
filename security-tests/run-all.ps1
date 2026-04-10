@@ -58,7 +58,7 @@ function Resolve-TestResult {
 
 # ── Test suites ─────────────────────────────────────────────────────────────
 $testSuites = @(
-    @{ Name = "OWASP Full Scan"; Script = "init-test.ps1"       },
+    @{ Name = "Init Security Scan"; Script = "init-test.ps1"       },
     @{ Name = "SQL Injection";   Script = "test-sqli.ps1"       },
     @{ Name = "XSS Testing";     Script = "test-xss.ps1"        },
     @{ Name = "JWT Security";    Script = "test-jwt.ps1"        },
