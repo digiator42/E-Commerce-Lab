@@ -1,0 +1,40 @@
+name: Ecommerce Lab QC Suite
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  automation:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: master_ecom_test
+          POSTGRES_USERNAME: ${{ secrets.DB_USERNAME }}
+          POSTGRES_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Run Development Tests
+        env:
+          POSTGRES_USERNAME: cloud_user
+          POSTGRES_PASSWORD: cloud_password
+        run: ./mvnw test -Dspring.profiles.active=test,postgres
