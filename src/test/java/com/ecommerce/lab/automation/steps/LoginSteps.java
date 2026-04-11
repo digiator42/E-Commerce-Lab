@@ -26,6 +26,6 @@ public class LoginSteps {
         driver = new ChromeDriver(options);
         driver.manage().window().maximize();
 
-        driver.get("http://localhost:8080/login");
+        driver.get("https://e-commerce-lab.onrender.com/");
     }
 }
