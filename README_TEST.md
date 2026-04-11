@@ -44,14 +44,19 @@
 
 
 ## Framework Tests
-- ### Unit Tests, Integration Tests, End-to-End (E2E) / System Tests
-- ### Performance Comparison: MySQL vs. PostgreSQL
-  - **Scenario**: High-concurrency load test on `productId` lookup.
-  - **Observation**: MySQL profile encountered   `CannotCreateTransactionException` under sustained load.
-  - **Root Cause**: Hikari Pool exhaustion. 58 threads timed out waiting for a   connection (Pool size: 10).
-  - **Comparison**: PostgreSQL profile handled the same load without connection   timeouts, suggesting faster query execution or better default connection   handling.
-  - **Fixes**: 
-      - Increased `maximum-pool-size` to 30.
+- ### Unit Tests
+  - Isolating controllers, service and repository tests with in-memory databases (H2) and Mockito for dependencies. 
+- ### Integration Tests
+  - Testing full stack flows with real databases (PostgreSQL, MySQL) to validate authentication, product management, and security features.
+- ### End-to-End (E2E) / System Tests
+  - Performed heavy load tests with 10k products and 1k users to evaluate performance and stability under realistic conditions.
+  - #### Performance Comparison: MySQL vs. PostgreSQL
+    - **Scenario**: High-concurrency load test on `productId` lookup.
+    - **Observation**: MySQL profile encountered   `CannotCreateTransactionException` under sustained load.
+    - **Root Cause**: Hikari Pool exhaustion. 58 threads timed out waiting for a   connection (Pool size: 10).
+    - **Comparison**: PostgreSQL profile handled the same load without connection   timeouts, suggesting faster query execution or better default connection   handling.
+    - **Fixes**: 
+        - Increased `maximum-pool-size` to 30.
 
 ## Run tests
 - ### Framework Tests
