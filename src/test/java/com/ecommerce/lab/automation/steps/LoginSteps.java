@@ -13,13 +13,19 @@ public class LoginSteps {
     public void site_is_open() {
 
         WebDriverManager.chromedriver().setup();
-        
+
         ChromeOptions options = new ChromeOptions();
+        // If running in GitHub Actions, disable headless mode
+        if (System.getenv("GITHUB_ACTIONS") != null) {
+            options.addArguments("--headless");
+            options.addArguments("--no-sandbox");
+            options.addArguments("--disable-dev-shm-usage");
+        }
         options.addArguments("--remote-allow-origins=*");
         
         driver = new ChromeDriver(options);
         driver.manage().window().maximize();
-        
+
         driver.get("http://localhost:8080/login");
     }
 }

@@ -60,4 +60,11 @@ jobs:
           
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-        run: ./mvnw test -Dspring.profiles.active=test,postgres
+        run: ./mvnw verify -Dspring.profiles.active=test,postgres -P qc -Ddependency-check.skip=true
+
+      - name: Upload Test Results
+        if: always() # Run in all cases
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: target/surefire-reports/
