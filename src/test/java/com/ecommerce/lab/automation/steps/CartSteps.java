@@ -1,7 +1,9 @@
 package com.ecommerce.lab.automation.steps;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 
 import com.ecommerce.lab.automation.utils.DriverManager;
 import com.ecommerce.lab.automation.utils.SeleniumUtils;
@@ -12,6 +14,15 @@ public class CartSteps {
     @Given("one item is added to the cart")
     public void one_item_is_added_to_the_cart() {
         WebDriver driver = DriverManager.getDriver(true);
+
+        if (System.getenv("GITHUB_ACTIONS") != null) {
+            WebElement element = SeleniumUtils.waitForElement(
+                driver, By.cssSelector("button.bg-blue-600"), 10
+            );
+            JavascriptExecutor executor = (JavascriptExecutor) driver;
+            executor.executeScript("arguments[0].click();", element);
+            return;
+        }
 
         SeleniumUtils.waitAndClick(driver, By.cssSelector("button.bg-blue-600"), 10);
     }
