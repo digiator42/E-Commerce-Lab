@@ -202,36 +202,38 @@
 	<build>
 		<plugins>
 			<plugin>
-			<groupId>org.apache.maven.plugins</groupId>
-			<artifactId>maven-failsafe-plugin</artifactId>
-			<version>3.2.5</version>
-			<configuration>
-				<includes>
-					<include>**/automation/**/*IT.java</include>
-				</includes>
-				<properties>
-					<property>
-						<name>testng.show.stacktrace.in.report</name>
-						<value>true</value>
-					</property>
-				</properties>
-			</configuration>
-			<dependencies>
-				<dependency>
-					<groupId>org.apache.maven.surefire</groupId>
-					<artifactId>surefire-testng</artifactId>
-					<version>3.2.5</version>
-				</dependency>
-			</dependencies>
-			<executions>
-				<execution>
-					<goals>
-						<goal>integration-test</goal>
-						<goal>verify</goal>
-					</goals>
-				</execution>
-			</executions>
-		</plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<version>3.2.5</version>
+				<configuration>
+					<includes>
+						<include>**/automation/**/*IT.java</include>
+						<include>**/automation/**/*ST.java</include>
+						<include>**/automation/**/*E2E.java</include>
+					</includes>
+					<properties>
+						<property>
+							<name>testng.show.stacktrace.in.report</name>
+							<value>true</value>
+						</property>
+					</properties>
+				</configuration>
+				<dependencies>
+					<dependency>
+						<groupId>org.apache.maven.surefire</groupId>
+						<artifactId>surefire-testng</artifactId>
+						<version>3.2.5</version>
+					</dependency>
+				</dependencies>
+				<executions>
+					<execution>
+						<goals>
+							<goal>integration-test</goal>
+							<goal>verify</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
