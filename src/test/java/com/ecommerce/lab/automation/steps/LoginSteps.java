@@ -1,31 +1,23 @@
 package com.ecommerce.lab.automation.steps;
 
 import io.cucumber.java.en.Given;
-import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.By;
+
+import com.ecommerce.lab.automation.utils.DriverManager;
 
 public class LoginSteps {
-    private WebDriver driver;
 
-    @Given("Site is open")
-    public void site_is_open() {
+    @Given("the user {string} with {string} is logged in")
+    public void site_is_open(String email, String password) {
 
-        WebDriverManager.chromedriver().setup();
+        WebDriver driver = DriverManager.getDriverWait(true);
+        // Open Site
+        driver.get("https://e-commerce-lab.onrender.com/login");
+        // Login
+        driver.findElement(By.id("login-email")).sendKeys(email);
+        driver.findElement(By.id("login-password")).sendKeys(password);
+        driver.findElement(By.id("login-btn")).click();
 
-        ChromeOptions options = new ChromeOptions();
-        // If running in GitHub Actions, disable headless mode
-        if (System.getenv("GITHUB_ACTIONS") != null) {
-            options.addArguments("--headless");
-            options.addArguments("--no-sandbox");
-            options.addArguments("--disable-dev-shm-usage");
-        }
-        options.addArguments("--remote-allow-origins=*");
-        
-        driver = new ChromeDriver(options);
-        driver.manage().window().maximize();
-
-        driver.get("https://e-commerce-lab.onrender.com/");
-    }
+    }    
 }
