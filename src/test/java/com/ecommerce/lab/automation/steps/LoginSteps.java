@@ -16,9 +16,9 @@ public class LoginSteps {
         // Open Site
         SeleniumUtils.navigateTo(driver, "/login");
         // Login
-        driver.findElement(By.id("login-email")).sendKeys(email);
-        driver.findElement(By.id("login-password")).sendKeys(password);
-        driver.findElement(By.id("login-btn")).click();
+        SeleniumUtils.waitForElement(driver, By.id("login-email"), 10).sendKeys(email);
+        SeleniumUtils.waitForElement(driver, By.id("login-password"), 10).sendKeys(password);
+        SeleniumUtils.waitAndClick(driver, By.id("login-btn"), 10);
 
     }
 }
