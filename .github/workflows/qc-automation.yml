@@ -60,7 +60,10 @@ jobs:
           
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-        run: ./mvnw verify -Dspring.profiles.active=test,postgres -P qc -Ddependency-check.skip=true
+        run: |
+          ./mvnw spring-boot:run & 
+          timeout 60s bash -c 'until printf "" 2>>/dev/null >/dev/tcp/127.0.0.1/8080; do sleep 2; done'
+          ./mvnw verify -Dspring.profiles.active=test -P qc -Ddependency-check.skip=true
 
       - name: Upload Test Results
         if: always() # Run in all cases
