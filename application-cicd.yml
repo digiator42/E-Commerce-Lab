@@ -1,0 +1,57 @@
+spring:
+  datasource:
+    postgres:
+      jdbc-url: jdbc:postgresql://localhost:5432/master_ecom_test
+      username: ${POSTGRES_USERNAME:placeholder}
+      password: ${POSTGRES_PASSWORD:placeholder}
+      driver-class-name: org.postgresql.Driver
+    mysql:
+      jdbc-url: jdbc:mysql://localhost:3306/master_ecom_test
+      username: ${MYSQL_USERNAME:placeholder}
+      password: ${MYSQL_PASSWORD:placeholder}
+      driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 30
+      minimum-idle: 5
+      idle-timeout: 30000
+      connection-timeout: 20000
+      max-lifetime: 1800000
+  
+  jpa:
+    open-in-view: true
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        default_batch_fetch_size: 20
+        
+  mail:
+    host: smtp.gmail.com
+    port: 465
+    username: ${MAIL_USERNAME:placeholder@gmail.com}
+    password: ${MAIL_PASSWORD:placeholder}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          ssl:
+            enable: true
+          socketFactory:
+            port: 465
+            class: javax.net.ssl.SSLSocketFactory
+            fallback: false
+  
+  security:
+    jwt-key: ${JWT_SECRET_KEY:32-byte-key}
+    remember-key: ${REMEMBER_ME_KEY:32-byte-key}
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:placeholder}
+            client-secret: ${GOOGLE_CLIENT_SECRET:placeholder}
+            scope:
+              - email
+              - profile
