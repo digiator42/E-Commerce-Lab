@@ -17,13 +17,15 @@ public class DriverManager {
     public static WebDriver getDriver(boolean sideBySide) {
         if (driver.get() == null) {
             ChromeOptions options = new ChromeOptions();
-            if (System.getenv("GITHUB_ACTIONS") != null) {
+            boolean isGitHubActions = System.getenv("GITHUB_ACTIONS") != null;
+
+            if (isGitHubActions) {
                 options.addArguments("--headless", "--no-sandbox", "--disable-dev-shm-usage");
             }
             options.setPageLoadStrategy(PageLoadStrategy.EAGER);
             WebDriver instance = new ChromeDriver(options);
 
-            if (sideBySide) {
+            if (sideBySide && !isGitHubActions) {
                 sideBySide(instance);
             }
             driver.set(instance);
@@ -57,6 +59,8 @@ public class DriverManager {
         // Resize both to fill their respective halves
         instance.manage().window().setSize(new Dimension(halfWidth, screenHeight));
     }
+
+    public static WebDriver getDriver() { return getDriver(false); }
 
     public static void quitDriver() {
         if (driver.get() != null) {

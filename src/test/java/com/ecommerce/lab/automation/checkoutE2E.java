@@ -13,7 +13,7 @@ import com.ecommerce.lab.automation.runners.AbstractBaseRunner;
         "json:target/cucumber.json"
     }
 )
-public class LoginIT extends AbstractBaseRunner {
+public class checkoutE2E extends AbstractBaseRunner {
     
 
 }

@@ -1,9 +1,12 @@
 package com.ecommerce.lab.automation.runners;
 
 import io.cucumber.testng.AbstractTestNGCucumberTests;
+
+
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.DataProvider;
+
 
 public abstract class AbstractBaseRunner extends AbstractTestNGCucumberTests {
 
@@ -16,7 +19,6 @@ public abstract class AbstractBaseRunner extends AbstractTestNGCucumberTests {
     @AfterSuite
     public void globalTeardown() {
         System.out.println("--- QC AUTOMATION: Global Suite Teardown ---");
-
     }
 
     @Override
