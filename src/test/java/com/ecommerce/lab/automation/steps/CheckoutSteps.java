@@ -14,7 +14,7 @@ public class CheckoutSteps {
     public void the_user_proceeds_to_checkout() {
         WebDriver driver = DriverManager.getDriver(true);
 
-        SeleniumUtils.waitAndClick(driver, By.id("checkout-btn"), 10);
+        SeleniumUtils.hardWaitAndClick(driver, By.id("checkout-btn"), 10);
     }
 
 }

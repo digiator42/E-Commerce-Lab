@@ -2,6 +2,7 @@ package com.ecommerce.lab.automation.utils;
 
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.By;
+import org.openqa.selenium.ElementClickInterceptedException;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
@@ -29,6 +30,24 @@ public class SeleniumUtils {
         new WebDriverWait(driver, Duration.ofSeconds(timeoutInSeconds))
             .until(ExpectedConditions.elementToBeClickable(locator))
             .click();
+    }
+
+    /**
+     * Agressive wait and click using JavaScript to bypass potential WebDriver
+     * issues in CI environments
+     */
+    public static void hardWaitAndClick(
+        WebDriver driver,
+        By locator,
+        int timeoutInSeconds
+    ) {
+        try {
+            // Try a standard click first
+            waitAndClick(driver, locator, timeoutInSeconds);
+        } catch (ElementClickInterceptedException e) {
+            // Try with js
+            waitAndClickJS(driver, locator, timeoutInSeconds);
+        }
     }
 
     /**
