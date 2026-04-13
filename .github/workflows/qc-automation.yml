@@ -82,18 +82,25 @@ jobs:
             target/failsafe-reports/
             target/QC-Report.html
 
-        deploy-report:
-          runs-on: ubuntu-latest
-          needs: build # after the main automation job
-          steps:
-            - name: Setup Pages
-              uses: actions/configure-pages@v4
-              
-            - name: Upload Artifact
-              uses: actions/upload-pages-artifact@v3
-              with:
-                path: 'target/' 
+  deploy-report:
+    runs-on: ubuntu-latest
+    needs: automation
+    if: always()
+    steps:
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+        
+      - name: Download Results
+        uses: actions/download-artifact@v4
+        with:
+          name: automation-results
+          path: target/
 
-            - name: Deploy to GitHub Pages
-              id: deployment
-              uses: actions/deploy-pages@v4
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'target/' 
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
