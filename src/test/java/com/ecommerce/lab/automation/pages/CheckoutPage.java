@@ -14,7 +14,9 @@ public class CheckoutPage {
     public CheckoutPage(WebDriver driver) { this.driver = driver; }
 
     public void proceedToCheckout() {
-        SeleniumUtils.waitAndClick(driver, checkoutBtn, SeleniumUtils.DEFAULT_TIMEOUT);
+        // First click on checkout button
+        SeleniumUtils.hardWaitAndClick(driver, checkoutBtn, SeleniumUtils.DEFAULT_TIMEOUT);
+        // Then click on place order button
         SeleniumUtils.waitAndClick(driver, placeOrderBtn, SeleniumUtils.DEFAULT_TIMEOUT);
     }
 
