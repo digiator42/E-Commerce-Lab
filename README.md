@@ -96,7 +96,7 @@ docker run -p 8080:8080 -e SPRING_PROFILES_ACTIVE=mysql-primary ecommerce-lab
 - [General Test Plan](./docs/test-plan.md)
 - [ISTQB Test Plan](./docs/test%20plan.pdf)
 - [User Stories](./docs/user%20stories.pdf)
-- [ISTQB Test Cases](./docs/test-cases.xlsx)
+- [ISTQB Test Cases](./docs/tests/manual/test-cases.xlsx)
 - [Traceability Matrix](./docs/traceability-matrix.md)
 - [Bug Report](./docs/bug-report.xlsx)
 - [Cucumber Report](https://digiator42.github.io/E-Commerce-Lab/cucumber/)
