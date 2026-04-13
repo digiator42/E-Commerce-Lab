@@ -18,6 +18,8 @@ import java.time.Duration;
 public class SeleniumUtils {
 
     public static final String BASE_URL = "http://localhost:8080";
+    public static final int DEFAULT_TIMEOUT = 10;
+    public static final int MINOR_TIMEOUT = 5;
 
     /**
      * Waits for an element to be clickable and then clicks it
@@ -100,6 +102,17 @@ public class SeleniumUtils {
     }
 
     /**
+     * Waits for an element to be visible then sends keys
+     */
+    public static void waitAndSendKeys(
+        WebDriver driver,
+        By locator,
+        String text
+    ) {
+        waitForElement(driver, locator, 10).sendKeys(text);
+    }
+
+    /**
      * Scroll into View of an element using JavaScript
      */
     public static void scrollToElement(WebDriver driver, By locator, int timeoutInSeconds) {
@@ -114,7 +127,9 @@ public class SeleniumUtils {
     public static void navigateTo(
         WebDriver driver,
         String path
-    ) { driver.get(BASE_URL + path); }
+    ) {
+        driver.navigate().to(BASE_URL + path);
+    }
 
     /**
      * Thread sleep wrapper to keep step definitions clean of try-catch blocks
