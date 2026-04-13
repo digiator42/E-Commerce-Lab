@@ -1,5 +1,10 @@
 name: Ecommerce Lab QC Suite
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 on:
   push:
     branches: [ main ]
@@ -67,8 +72,28 @@ jobs:
           ./mvnw verify -P qc -Ddependency-check.skip=true
 
       - name: Upload Test Results
-        if: always() # Run in all cases
+        if: always() 
         uses: actions/upload-artifact@v4
         with:
-          name: surefire-reports
-          path: target/surefire-reports/
+          name: automation-results
+          # Captures both surefire and failsafe reports
+          path: |
+            target/surefire-reports/
+            target/failsafe-reports/
+            target/QC-Report.html
+
+        deploy-report:
+          runs-on: ubuntu-latest
+          needs: build # after the main automation job
+          steps:
+            - name: Setup Pages
+              uses: actions/configure-pages@v4
+              
+            - name: Upload Artifact
+              uses: actions/upload-pages-artifact@v3
+              with:
+                path: 'target/' 
+
+            - name: Deploy to GitHub Pages
+              id: deployment
+              uses: actions/deploy-pages@v4
