@@ -1,4 +1,3 @@
-# E-CommerceLab Test Documentation
 
 ## Test Strategy
 - **Unit Tests**: Service layer logic, utilities, isolated components
@@ -37,11 +36,14 @@
 | Admin | ✅ | ✅ | 🔲 |
 
 ## Quick Links
-- [ISTQB Test Plan](./docs/test-plan.md)
+- [General Test Plan](./docs/test-plan.md)
+- [ISTQB Test Plan](./docs/test%20plan.pdf)
+- [User Stories](./docs/user%20stories.pdf)
 - [ISTQB Test Cases](./docs/test-cases.xlsx)
 - [Traceability Matrix](./docs/traceability-matrix.md)
 - [Bug Report](./docs/bug-report.xlsx)
-
+- [Cucumber Report](https://digiator42.github.io/E-Commerce-Lab/cucumber/)
+- [QC Report](https://digiator42.github.io/E-Commerce-Lab/QC-Report.html)
 
 ## Framework Tests
 - ### Unit Tests

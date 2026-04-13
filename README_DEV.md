@@ -1,4 +1,4 @@
-# Master Store Lab: Backend & Frontend Architecture
+# Backend & Frontend Architecture
 
 This lab documents the core business logic and architectural patterns used to build the e-commerce engine.
 

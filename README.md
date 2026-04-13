@@ -91,3 +91,14 @@ docker run -p 8080:8080 -e SPRING_PROFILES_ACTIVE=mysql-primary ecommerce-lab
   - **Automated Testing**: The framework utilizes **JUnit** for unit/integration logic and **Selenium**/**TestNG** for end-to-end user flow validation.
 
   For a detailed breakdown of the test strategy, coverage summary, and security vulnerability reports, refer to [README_TEST.md](README_TEST.md) and [README_SECURITY.md](README_SECURITY.md).
+
+## Quick Links
+- [General Test Plan](./docs/test-plan.md)
+- [ISTQB Test Plan](./docs/test%20plan.pdf)
+- [User Stories](./docs/user%20stories.pdf)
+- [ISTQB Test Cases](./docs/test-cases.xlsx)
+- [Traceability Matrix](./docs/traceability-matrix.md)
+- [Bug Report](./docs/bug-report.xlsx)
+- [Cucumber Report](https://digiator42.github.io/E-Commerce-Lab/cucumber/)
+- [QC Report](https://digiator42.github.io/E-Commerce-Lab/QC-Report.html)
+
