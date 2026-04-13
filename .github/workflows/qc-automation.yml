@@ -78,9 +78,9 @@ jobs:
           name: automation-results
           # Captures both surefire and failsafe reports
           path: |
-            target/surefire-reports/
+            target/**/*.html
+            target/**/*.json
             target/failsafe-reports/
-            target/QC-Report.html
 
   deploy-report:
     runs-on: ubuntu-latest
