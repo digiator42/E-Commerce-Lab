@@ -72,6 +72,17 @@ docker build -t ecommerce-lab .
 docker run -p 8080:8080 -e SPRING_PROFILES_ACTIVE=mysql-primary ecommerce-lab
 ```
 
+## Profiles
+- > The application uses Spring Profiles to manage different environments:
+
+   | Profile | Configuration File | Description |
+   |---|---|---|
+   | `default` | `application.yml` | Production settings with standard database configurations. |
+   | `dev` | `application-dev.yml` | Development environment with debug logging and H2 console enabled. |
+   | `test` | `application-test.yml` | Dedicated testing environment using a separate test database to ensure data isolation. |
+   | `ci` | `application-cicd.yml` | Optimized for GitHub Actions CI/CD pipelines using temporary databases. |
+
+
 ## Testing
 - The project follows a structured testing methodology combining automated frameworks and formal ISTQB practices.
 

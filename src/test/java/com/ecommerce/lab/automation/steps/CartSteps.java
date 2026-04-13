@@ -1,9 +1,7 @@
 package com.ecommerce.lab.automation.steps;
 
 import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 
 import com.ecommerce.lab.automation.utils.DriverManager;
 import com.ecommerce.lab.automation.utils.SeleniumUtils;
@@ -16,11 +14,7 @@ public class CartSteps {
         WebDriver driver = DriverManager.getDriver(true);
 
         if (System.getenv("GITHUB_ACTIONS") != null) {
-            WebElement element = SeleniumUtils.waitForElement(
-                driver, By.cssSelector("button.bg-blue-600"), 10
-            );
-            JavascriptExecutor executor = (JavascriptExecutor) driver;
-            executor.executeScript("arguments[0].click();", element);
+            SeleniumUtils.waitAndClickJS(driver, By.cssSelector("button.bg-blue-600"), 10);
             return;
         }
 
