@@ -6,13 +6,15 @@ import org.openqa.selenium.WebDriver;
 import com.ecommerce.lab.automation.utils.DriverManager;
 import com.ecommerce.lab.automation.utils.SeleniumUtils;
 
-import io.cucumber.java.en.Given;
+import io.cucumber.java.en.And;
 
 public class CartSteps {
-    @Given("one item is added to the cart")
-    public void one_item_is_added_to_the_cart() {
+    @And("user adds product {string} to the cart")
+    public void one_item_is_added_to_the_cart(String productId) {
         WebDriver driver = DriverManager.getDriver(true);
 
-        SeleniumUtils.hardWaitAndClick(driver, By.xpath("//button[contains(@onclick, 'addItem(36)')]"), 10);
+        By locator = By.xpath("//button[contains(@onclick, 'addItem(" + productId + ")')]");
+
+        SeleniumUtils.hardWaitAndClick(driver, locator, 10);
     }
 }
