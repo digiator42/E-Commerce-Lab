@@ -9,8 +9,8 @@ import com.ecommerce.lab.automation.runners.AbstractBaseRunner;
     glue = "com.ecommerce.lab.automation.steps",
     plugin = {
         "pretty", 
-        "html:target/cucumber-reports.html",
-        "json:target/cucumber.json"
+        "html:target/cucumber/index.html",
+        "json:target/cucumber/cucumber.json"
     }
 )
 public class checkoutE2E extends AbstractBaseRunner {
