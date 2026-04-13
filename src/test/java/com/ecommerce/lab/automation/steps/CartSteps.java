@@ -13,10 +13,7 @@ public class CartSteps {
     public void one_item_is_added_to_the_cart() {
         WebDriver driver = DriverManager.getDriver(true);
 
-        if (System.getenv("GITHUB_ACTIONS") != null) {
-            SeleniumUtils.waitAndClickJS(driver, By.cssSelector("button.bg-blue-600"), 10);
-            return;
-        }
+        SeleniumUtils.scrollToElement(driver, By.cssSelector("button.bg-blue-600"), 10);
 
         SeleniumUtils.waitAndClick(driver, By.cssSelector("button.bg-blue-600"), 10);
     }

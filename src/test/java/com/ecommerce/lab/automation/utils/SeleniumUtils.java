@@ -81,6 +81,15 @@ public class SeleniumUtils {
     }
 
     /**
+     * Scroll into View of an element using JavaScript
+     */
+    public static void scrollToElement(WebDriver driver, By locator, int timeoutInSeconds) {
+        WebElement elementToScroll = waitForElement(driver, locator, timeoutInSeconds);
+        JavascriptExecutor executor = (JavascriptExecutor) driver;
+        executor.executeScript("arguments[0].scrollIntoView();", elementToScroll);
+    }
+
+    /**
      * Navigation helper using the Base URL
      */
     public static void navigateTo(
