@@ -76,7 +76,7 @@ jobs:
         run: |
           echo "<html><head><title>Test Reports</title></head><body><h1>Ecommerce Lab - Test Reports</h1><ul>" > target/index.html
           
-          # Find all HTML files except index.html and those in the classes directory
+          # Find all HTML files except in the classes directory
           find target -name "*.html" ! -name "index.html" -not -path "*/classes/*" | sed 's|target/||' | while read line; do
             echo "<li><a href=\"$line\">$line</a></li>" >> target/index.html
           done

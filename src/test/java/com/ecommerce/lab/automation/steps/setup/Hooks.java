@@ -1,5 +1,7 @@
 package com.ecommerce.lab.automation.steps.setup;
 
+import org.openqa.selenium.WebDriver;
+
 import com.ecommerce.lab.automation.utils.DriverManager;
 import com.ecommerce.lab.automation.utils.ExtentManager;
 import com.ecommerce.lab.automation.utils.SeleniumUtils;
@@ -18,10 +20,13 @@ public class Hooks {
 
     @After
     public void tearDown(Scenario scenario) {
+        WebDriver driver = DriverManager.getDriver(false);
         if (scenario.isFailed()) {
-            ExtentManager.getTest().fail("Scenario Failed");
+            ExtentManager.getTest().fail("Scenario Failed: " + scenario.getName());
+            ExtentManager.addScreenshot(driver);
         } else {
             ExtentManager.getTest().pass("Scenario Passed");
+            ExtentManager.addScreenshot(driver);
         }
         SeleniumUtils.takeScreenshot(DriverManager.getDriver(false));
         SeleniumUtils.pause(2000);

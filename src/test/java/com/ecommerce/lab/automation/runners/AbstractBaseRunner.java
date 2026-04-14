@@ -16,7 +16,6 @@ public abstract class AbstractBaseRunner extends AbstractTestNGCucumberTests {
     public void globalSetup() {
         System.out.println("--- QC AUTOMATION: Global Suite Setup Starting ---");
         ExtentManager.getInstance();
-
     }
 
     @AfterSuite

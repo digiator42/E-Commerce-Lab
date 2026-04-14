@@ -9,7 +9,7 @@ import com.ecommerce.lab.automation.runners.AbstractBaseRunner;
     glue = "com.ecommerce.lab.automation.steps",
     plugin = {
         "pretty", 
-        "html:target/cucumber/index.html",
+        "html:target/cucumber/report.html",
         "json:target/cucumber/cucumber.json"
     }
 )
