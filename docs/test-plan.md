@@ -18,7 +18,7 @@
 
 ## Exit Criteria
 - [ ✓ ] All framework tests pass (>95%)
-- [ ] All manual test cases executed
-- [ ] No critical/high bugs open
+- [ ✓ ] All manual test cases executed
+- [ ✓ ] No critical/high bugs open
 - [ ] Traceability matrix covered
 

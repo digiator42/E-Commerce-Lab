@@ -92,8 +92,18 @@ docker run -p 8080:8080 -e SPRING_PROFILES_ACTIVE=mysql-primary ecommerce-lab
 
   For a detailed breakdown of the test strategy, coverage summary, and security vulnerability reports, refer to [README_TEST.md](README_TEST.md) and [README_SECURITY.md](README_SECURITY.md).
 
+## CI/CD
+The project integrates **GitHub Actions** for continuous integration and deployment. On every push or pull request, the pipeline executes the full test suite (QC Automation).
+
+- **Automated Reporting**: The CI/CD pipeline generates two comprehensive reports:
+    - **[QC Report](https://digiator42.github.io/E-Commerce-Lab/QC-Report.html)**: Built using the **AventStack Extent Reports** plugin, providing a high-level dashboard of test execution.
+    - **[Cucumber Report]((https://digiator42.github.io/E-Commerce-Lab/cucumber/))**: Detailed Gherkin-style breakdown of behavioral scenarios.
+- **Test Screenshots**: For both successful and failed tests, a **screenshot is captured for every scenario**.
+- **GitHub Pages Deployment**: Reports are automatically deployed to GitHub Pages after each run for easy stakeholder access.
+
+
 ## Quick Links
-- [General Test Plan](./docs/test-plan.md)
+- [Test Plan Brief](./docs/test-plan.md)
 - [ISTQB Test Plan](./docs/test%20plan.pdf)
 - [User Stories](./docs/user%20stories.pdf)
 - [ISTQB Test Cases](./docs/tests/manual/test-cases.xlsx)
