@@ -71,6 +71,16 @@ jobs:
           timeout 60s bash -c 'until printf "" 2>>/dev/null >/dev/tcp/127.0.0.1/8080; do sleep 2; done'
           ./mvnw verify -P qc -Ddependency-check.skip=true
 
+      - name: Generate Directory Listing
+        if: always()
+        run: |
+          echo "<html><body><h1>Ecommerce Lab - Test Reports</h1><ul>" > target/index.html
+          # Find all HTML files in target, excluding the index itself
+          find target -name "*.html" ! -name "index.html" | sed 's|target/||' | while read line; do
+            echo "<li><a href=\"$line\">$line</a></li>" >> target/index.html
+          done
+          echo "</ul></body></html>" >> target/index.html
+
       - name: Upload Test Results
         if: always() 
         uses: actions/upload-artifact@v4
@@ -81,15 +91,6 @@ jobs:
             target/**/*.html
             target/**/*.json
             target/failsafe-reports/
-      - name: Generate Directory Listing
-        if: always()
-        run: |
-          echo "<html><body><h1>Ecommerce Lab - Test Reports</h1><ul>" > target/index.html
-          # Find all HTML files in target, excluding the index itself
-          find target -name "*.html" ! -name "index.html" | sed 's|target/||' | while read line; do
-            echo "<li><a href=\"$line\">$line</a></li>" >> target/index.html
-          done
-          echo "</ul></body></html>" >> target/index.html
 
   deploy-report:
     runs-on: ubuntu-latest
