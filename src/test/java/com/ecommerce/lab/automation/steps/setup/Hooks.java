@@ -20,15 +20,16 @@ public class Hooks {
 
     @After
     public void tearDown(Scenario scenario) {
-        WebDriver driver = DriverManager.getParallelDriver(false);
+        WebDriver ParallelDriver = DriverManager.getSmartDriver();
+
         if (scenario.isFailed()) {
             ExtentManager.getTest().fail("Scenario Failed: " + scenario.getName());
-            ExtentManager.addScreenshot(driver);
+            ExtentManager.addScreenshot(ParallelDriver);
         } else {
             ExtentManager.getTest().pass("Scenario Passed");
-            ExtentManager.addScreenshot(driver);
+            ExtentManager.addScreenshot(ParallelDriver);
         }
-        SeleniumUtils.takeScreenshot(DriverManager.getParallelDriver(false));
+        SeleniumUtils.takeScreenshot(DriverManager.getSmartDriver());
         SeleniumUtils.pause(2000);
         DriverManager.quitDriver();
     }

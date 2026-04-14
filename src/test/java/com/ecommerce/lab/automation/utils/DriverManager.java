@@ -46,6 +46,11 @@ public class DriverManager {
         return driver;
     }
 
+    public static WebDriver getSmartDriver() {
+        boolean parallel = System.getenv("parallel").equals("true");
+        return parallel ? getParallelDriver(true) : getDriver();
+    }
+
     private static WebDriver createInstance(boolean sideBySide) {
         ChromeOptions options = new ChromeOptions();
         boolean isGitHubActions = System.getenv("GITHUB_ACTIONS") != null;

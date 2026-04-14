@@ -7,7 +7,7 @@ import com.ecommerce.lab.automation.utils.DriverManager;
 
 public class LoginSteps {
 
-    LoginPage loginPage = new LoginPage(DriverManager.getParallelDriverWait(true));
+    LoginPage loginPage = new LoginPage(DriverManager.getSmartDriver());
 
     @Given("the user {string} with {string} is logged in")
     public void site_is_open(String email, String password) {

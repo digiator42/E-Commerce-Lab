@@ -16,6 +16,7 @@ import com.ecommerce.lab.automation.utils.SeleniumUtils;
 public class ProductPage {
     private WebDriver driver;
 
+    
     private By productButton(String id) {
         return By.xpath("//button[contains(@onclick, 'addItem(" + id + ")')]");
     }
@@ -25,7 +26,7 @@ public class ProductPage {
     public void addProductToCart(String productId) {
         SeleniumUtils.waitAndClick(driver, productButton(productId), SeleniumUtils.DEFAULT_TIMEOUT);
     }
-
+    
     public List<Product> getProducts() {
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
         wait.until(ExpectedConditions.urlContains("/products"));

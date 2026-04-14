@@ -7,10 +7,10 @@ import io.cucumber.java.en.When;
 
 public class CheckoutSteps {
 
-    private CheckoutPage checkoutPage = new CheckoutPage(DriverManager.getParallelDriverWait(true));
 
     @When("the user proceeds to checkout")
     public void the_user_proceeds_to_checkout() {
+        CheckoutPage checkoutPage = new CheckoutPage(DriverManager.getSmartDriver());
         checkoutPage.proceedToCheckout();
     }
 
