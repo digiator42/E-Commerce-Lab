@@ -20,7 +20,7 @@ public class Hooks {
 
     @After
     public void tearDown(Scenario scenario) {
-        WebDriver driver = DriverManager.getDriver(false);
+        WebDriver driver = DriverManager.getParallelDriver(false);
         if (scenario.isFailed()) {
             ExtentManager.getTest().fail("Scenario Failed: " + scenario.getName());
             ExtentManager.addScreenshot(driver);
@@ -28,7 +28,7 @@ public class Hooks {
             ExtentManager.getTest().pass("Scenario Passed");
             ExtentManager.addScreenshot(driver);
         }
-        SeleniumUtils.takeScreenshot(DriverManager.getDriver(false));
+        SeleniumUtils.takeScreenshot(DriverManager.getParallelDriver(false));
         SeleniumUtils.pause(2000);
         DriverManager.quitDriver();
     }

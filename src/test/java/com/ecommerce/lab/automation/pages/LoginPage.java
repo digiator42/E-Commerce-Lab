@@ -12,14 +12,12 @@ public class LoginPage {
     private final By passwordField = By.id("login-password");
     private final By loginButton = By.cssSelector("button[type='submit']");
 
-    public LoginPage(WebDriver driver) {
-        this.driver = driver;
-    }
+    public LoginPage(WebDriver driver) { this.driver = driver; }
 
     // Actions
     public void login(String email, String password) {
-        SeleniumUtils.navigateTo(driver, "/products");
-        driver.get(SeleniumUtils.BASE_URL + "/login");
+        // SeleniumUtils.navigateTo(driver, "/products");
+        SeleniumUtils.get(driver, "/login");
 
         SeleniumUtils.waitAndSendKeys(driver, emailField, email);
         SeleniumUtils.waitAndSendKeys(driver, passwordField, password);

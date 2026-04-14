@@ -152,6 +152,14 @@ public class SeleniumUtils {
     }
 
     /**
+     * Get to url
+     */
+    public static void get(
+        WebDriver driver,
+        String path
+    ) { driver.get(BASE_URL + path); }
+
+    /**
      * Thread sleep wrapper to keep step definitions clean of try-catch blocks
      */
     public static void pause(int milliseconds) {
