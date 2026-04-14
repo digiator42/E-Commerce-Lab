@@ -97,7 +97,7 @@ The project integrates **GitHub Actions** for continuous integration and deploym
 
 - **Automated Reporting**: The CI/CD pipeline generates two comprehensive reports:
     - **[QC Report](https://digiator42.github.io/E-Commerce-Lab/QC-Report.html)**: Built using the **AventStack Extent Reports** plugin, providing a high-level dashboard of test execution.
-    - **[Cucumber Report]((https://digiator42.github.io/E-Commerce-Lab/cucumber/))**: Detailed Gherkin-style breakdown of behavioral scenarios.
+    - **[Cucumber Report](https://digiator42.github.io/E-Commerce-Lab/cucumber/)**: Detailed Gherkin-style breakdown of behavioral scenarios.
 - **Test Screenshots**: For both successful and failed tests, a **screenshot is captured for every scenario**.
 - **GitHub Pages Deployment**: Reports are automatically deployed to GitHub Pages after each run for easy stakeholder access.
 

@@ -40,6 +40,8 @@ public class Navbar {
             // Open the hamburger menu
             SeleniumUtils.waitAndClick(driver, hamburgerBtn, SeleniumUtils.DEFAULT_TIMEOUT);
             driver.findElement(storeLink).click();
+            // Close the hamburger menu
+            SeleniumUtils.waitAndClick(driver, hamburgerBtn, SeleniumUtils.DEFAULT_TIMEOUT);
         } else {
             driver.findElement(storeLink).click();
         }

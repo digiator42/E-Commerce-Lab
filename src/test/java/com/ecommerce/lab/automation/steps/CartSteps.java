@@ -18,7 +18,7 @@ public class CartSteps {
 
     @And("user adds product {string} to the cart")
     public void one_item_is_added_to_the_cart(String productId) {
-        Navbar navbar = new Navbar(DriverManager.getParallelDriver(false));
+        Navbar navbar = new Navbar(DriverManager.getParallelDriverWait(false));
 
         navbar.goToStore();
 
