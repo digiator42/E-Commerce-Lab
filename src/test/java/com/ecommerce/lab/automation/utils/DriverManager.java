@@ -47,7 +47,7 @@ public class DriverManager {
     }
 
     public static WebDriver getSmartDriver() {
-        boolean parallel = System.getenv("parallel").equals("true");
+        boolean parallel = System.getenv("parallel") != null && System.getenv("parallel").equals("true");
         return parallel ? getParallelDriver(true) : getDriver();
     }
 
