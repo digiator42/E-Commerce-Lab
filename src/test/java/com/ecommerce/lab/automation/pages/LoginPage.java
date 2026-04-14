@@ -18,6 +18,7 @@ public class LoginPage {
 
     // Actions
     public void login(String email, String password) {
+        SeleniumUtils.navigateTo(driver, "/products");
         driver.get(SeleniumUtils.BASE_URL + "/login");
 
         SeleniumUtils.waitAndSendKeys(driver, emailField, email);

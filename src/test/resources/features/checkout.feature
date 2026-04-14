@@ -10,5 +10,5 @@ Feature: Parallel Checkout Verification
 
     Examples:
       | email               | password     | productId |
-      | hassan@example.com  | password123  | 35        |     
-      | farag@example.com   | password123  | 35        |
+      | hassan@example.com  | password123  | 71        |     
+      | farag@example.com   | password123  | 71        |

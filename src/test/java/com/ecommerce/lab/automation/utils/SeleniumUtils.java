@@ -14,6 +14,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
+import java.util.List;
 
 public class SeleniumUtils {
 
@@ -62,6 +63,25 @@ public class SeleniumUtils {
     ) {
         return new WebDriverWait(driver, Duration.ofSeconds(timeoutInSeconds))
             .until(ExpectedConditions.visibilityOfElementLocated(locator));
+    }
+
+    /**
+     * Waits for all elements to be visible
+     */
+    public static List<WebElement> waitForAllElements(
+        WebDriver driver,
+        By locator,
+        int timeoutInSeconds
+    ) {
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+
+        List<WebElement> productElements = wait.until(
+            ExpectedConditions.visibilityOfAllElementsLocatedBy(
+                By.cssSelector("#product-list-container .group")
+            )
+        );
+
+        return productElements;
     }
 
     /**
