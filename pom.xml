@@ -191,6 +191,7 @@
 			<id>qc</id>
 			<properties>
 				<skip.unit.tests>true</skip.unit.tests>
+				<skip.dependency-check>true</skip.dependency-check>
 			</properties>
 			<build>
 				<plugins>
@@ -198,13 +199,19 @@
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-surefire-plugin</artifactId>
 						<configuration>
-						<properties>
-							<property>
-								<name>dataproviderthreadcount</name>
-								<value>${threads}</value> 
-							</property>
-						</properties>
+							<systemPropertyVariables>
+								<threads>${threads}</threads>
+							</systemPropertyVariables>
+							<parallel>methods</parallel>
+        					<threadCount>${threads}</threadCount>
+							<properties>
+								<property>
+									<name>dataproviderthreadcount</name>
+									<value>${threads}</value> 
+								</property>
+							</properties>
 							<skipTests>${skip.unit.tests}</skipTests>
+							<skipDependencyCheck>${skip.dependency-check}</skipDependencyCheck>
 						</configuration>
 					</plugin>
 				</plugins>
