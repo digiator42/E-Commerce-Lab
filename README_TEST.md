@@ -25,15 +25,16 @@
 
 
 ## Coverage Summary
-| Module | Unit | Integration | ISTQB |
+| Module | Unit | Integration | Automation |
 |---|---|---|---|
-| Authentication | ✅ | ✅ | 🔲 |
-| 2FA | ✅ | ✅ | 🔲 |
-| Products | ✅ | ✅ | 🔲 |
-| Orders | ✅ | ✅ | 🔲 |
-| Cart | ✅ | ✅ | 🔲 |
-| Wishlist | ✅ | ✅ | 🔲 |
-| Admin | ✅ | ✅ | 🔲 |
+| Authentication | ✅ | ✅ | ✅ |
+| User Management | ✅ | ✅ | ✅ |
+| 2FA | ✅ | ✅ | ✅ |
+| Products | ✅ | ✅ | ✅ |
+| Orders | ✅ | ✅ | ✅ |
+| Cart | ✅ | ✅ | ✅ |
+| Wishlist | ✅ | ✅ | ✅ |
+| Admin | ✅ | ✅ | ✅ |
 
 ## Quick Links
 - [General Test Plan](./docs/test-plan.md)
@@ -82,12 +83,8 @@
     $env:REMEMBER_ME_KEY = "32bitkey"
     ```
 - ## QC Automation Tests
+  - Now QC profile adds dynamic parallel thread testing, default is 1 thread, setting up parallel here is optional it just opens drivers side by side. 
   - ### Run
-    > ./mvnw verify -P qc "-Dspring.profiles.active=test,postgres"
+    > $env:parallel="true"; ./mvnw verify -P qc "-Ddependency-check.skip=true"
     #### OR 
-    > ./mvnw verify -P qc "-Dspring.profiles.active=test,mysql-primary"
-
-
-
-   
-
+    > $env:parallel="true"; ./mvnw verify -P qc "-Ddependency-check.skip=true" "-Dthreads=10"
