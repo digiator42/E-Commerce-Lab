@@ -36,3 +36,4 @@ run-env.ps1
 /uploads
 /security-test-results*
 /screenshots
+*__.java
