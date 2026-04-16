@@ -15,7 +15,7 @@ import org.testng.annotations.Test;
         "html:target/cucumber/index.html",
         "json:target/cucumber/index.json",
     },
-    tags = "@E2E or @smoke",
+    tags = "@profile or @Checkout or @authentication",
     monochrome = true,
     publish = false
 )

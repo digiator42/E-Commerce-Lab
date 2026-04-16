@@ -85,9 +85,12 @@ public class LoginSteps {
 
     @Then("an error message {string} should be displayed")
     public void an_error_message_should_be_displayed(String expectedErrorMessage) {
+        // Error toast has bg-red-600 class
+        By errorToast = By.cssSelector(".bg-red-600.fixed span.flex-1");
+
         WebElement errorElement = SeleniumUtils.waitForElement(
             getDriver(),
-            toastMessage,
+            errorToast,
             SeleniumUtils.DEFAULT_TIMEOUT
         );
 

@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 
 public class SeleniumUtils {
 
@@ -188,5 +189,37 @@ public class SeleniumUtils {
         }
 
         System.out.println("Taking screenshot and saving to: " + filePath);
+    }
+
+    /**
+     * Wait for and get toast message by type
+     * 
+     * @param type success, error, warning, info
+     */
+    public static String waitForToast(WebDriver driver, String type, int timeoutInSeconds) {
+        Map<String, String> colorClasses = Map.of(
+            "success", "bg-green-600",
+            "error", "bg-red-600",
+            "warning", "bg-yellow-600",
+            "info", "bg-blue-600"
+        );
+
+        String bgClass = colorClasses.getOrDefault(type, "bg-gray-900");
+        By toastMessage = By.cssSelector("." + bgClass + ".fixed span.flex-1");
+
+        WebElement toast = waitForElement(driver, toastMessage, timeoutInSeconds);
+        return toast.getText().trim();
+    }
+
+    /**
+     * Check if toast with specific type and message is displayed
+     */
+    public static boolean isToastDisplayed(WebDriver driver, String type, String expectedMessage) {
+        try {
+            String actualMessage = waitForToast(driver, type, 5);
+            return actualMessage.contains(expectedMessage);
+        } catch (Exception e) {
+            return false;
+        }
     }
 }
