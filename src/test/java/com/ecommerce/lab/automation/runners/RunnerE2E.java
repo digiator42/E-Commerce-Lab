@@ -15,7 +15,7 @@ import org.testng.annotations.Test;
         "html:target/cucumber/index.html",
         "json:target/cucumber/index.json",
     },
-    tags = "@profile or @Checkout or @authentication",
+    tags = "@Checkout or @profile or @authentication or @products or @cart",
     monochrome = true,
     publish = false
 )
