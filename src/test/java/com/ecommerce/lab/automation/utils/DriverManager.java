@@ -53,7 +53,7 @@ public class DriverManager {
 
     private static WebDriver createInstance(boolean sideBySide) {
         ChromeOptions options = new ChromeOptions();
-        boolean isGitHubActions = System.getenv("GITHUB_ACTIONS") != null;
+        boolean isGitHubActions = System.getenv("GITHUB_ACTIONS") != null && System.getenv("GITHUB_ACTIONS").equals("true");
 
         if (isGitHubActions) {
             options.addArguments("--headless", "--no-sandbox", "--disable-dev-shm-usage");

@@ -62,6 +62,10 @@ public class SecurityConfig {
                     )
                     .permitAll()
 
+                    .requestMatchers(
+                        "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html"
+                    ).permitAll()
+
                     // Frontend Routes & Error Path
                     .requestMatchers("/login", "/register", "/product/**", "/cart").permitAll()
 
