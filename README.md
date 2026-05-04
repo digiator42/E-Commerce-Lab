@@ -111,4 +111,4 @@ The project integrates **GitHub Actions** for continuous integration and deploym
 - [Bug Report](./docs/bug-report.xlsx)
 - [Cucumber Report](https://digiator42.github.io/E-Commerce-Lab/cucumber/)
 - [QC Report](https://digiator42.github.io/E-Commerce-Lab/QC-Report.html)
-
+- [API Docs](https://e-commerce-lab.onrender.com/swagger-ui/index.html)
