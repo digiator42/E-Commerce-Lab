@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 
 import jakarta.persistence.EntityManager;
 import org.springframework.core.io.UrlResource;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
@@ -33,12 +34,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
-import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import com.ecommerce.lab.dto.OrderResponseDTO;
@@ -72,7 +69,6 @@ public class AdminController {
     private final ProductRepository productRepository;
     private final OrderRepository orderRepository;
     private final CategoryRepository categoryRepository;
-    private final RequestMappingHandlerMapping handlerMapping;
     private final UserRepository userRepository;
     private final CouponRepository couponRepository;
     private final EntityManager entityManager;
@@ -288,40 +284,6 @@ public class AdminController {
             .contentType(MediaType.IMAGE_JPEG)
             .header(HttpHeaders.CONTENT_DISPOSITION, "inline")
             .body(resource);
-    }
-
-    @GetMapping("/routes")
-    public ResponseEntity<List<Map<String, Object>>> getAllRoutes() {
-        List<Map<String, Object>> routes = handlerMapping.getHandlerMethods()
-            .entrySet().stream()
-            .map(entry -> {
-                RequestMappingInfo info = entry.getKey();
-                HandlerMethod method = entry.getValue();
-
-                java.util.Set<String> patterns = java.util.Collections.emptySet();
-
-                if (info.getPathPatternsCondition() != null) {
-                    patterns = info.getPathPatternsCondition().getPatternValues();
-                } else if (info.getPatternsCondition() != null) {
-                    patterns = info.getPatternsCondition().getPatterns();
-                }
-
-                ResponseStatus statusAnnotation = method.getMethodAnnotation(ResponseStatus.class);
-                String status = (statusAnnotation != null) ? statusAnnotation.value().toString()
-                    : "200 OK (Default)";
-
-                return Map.of(
-                    "path", patterns,
-                    "methods", info.getMethodsCondition().getMethods().stream()
-                        .map(Enum::name)
-                        .collect(Collectors.toList()),
-                    "handler", method.getShortLogMessage(),
-                    "expectedStatus", status
-                );
-            })
-            .collect(Collectors.toList());
-
-        return ResponseEntity.ok(routes);
     }
 
     // Get All Coupons
