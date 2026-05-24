@@ -1,109 +1,43 @@
-# E-Commerce-Lab
 
-## Overview
-E-Commerce-Lab serves as both a development playground and a testing lab.
+## Test Strategy
+- **Unit Tests**: Service layer logic, utilities, isolated components
+- **Integration Tests**: Full stack flows, security, DB integrity
+- **ISTQB Formal Tests**: Jira tickets, Excel traceability matrix
 
-## Features
-- Product catalog management
-- User account and role handling
-- Shopping cart and checkout flow
-- Admin dashboard with admin priviliges
-- Payment simulation
+## Test Scope
+### In Scope
+- Authentication (login, register, JWT, sessions)
+- Two Factor Authentication (TOTP, email 2FA)
+- Product management (CRUD, pagination, filtering)
+- Security (role-based access, unauthorized access)
+- Database integrity (1 Active Profile each (PG, MySQL))
 
-Refere to [README_DEV.md](README_DEV.md) for detailed technical architecture and business logic.
+### Out of Scope
+- Payment gateway (third party, Simulated)
 
-## Tech Stack
-- **Backend:** Java, Spring Boot
-- **Build Tool:** Maven
-- **Testing:** Selenium, TestNG, JUnit, Automation scripts
-- **Database:** PostgreSQL, MySQL
-- **Version Control:** GitHub
-
-## Project Structure
-```bash
-.
-├── src
-│   ├── main
-│   │   ├── java/com/ecommerce/lab
-│   │   │   ├── config/             # Spring Security & App Configuration
-│   │   │   ├── controller/         # REST Endpoints
-│   │   │   ├── model/              # JPA Entities
-│   │   │   ├── dto/                # Data Transfer Objects
-│   │   │   ├── repository/         # Multi-DB (MySQL/Postgres) support
-│   │   │   ├── security/           # JWT & Auth Logic
-│   │   │   └── service/            # Business Logic
-│   │   └── resources
-│   │       ├── static/             # Vanilla JS, CSS, & Components
-│   │       └── templates/          # HTML Views
-│   │
-│   └── test
-│       ├── java/com/ecommerce/lab
-│       │   ├── unit/               # Fast Development/Component Tests
-│       │   └── automation/         # Heavy QC Automation (Selenium + TestNG)
-│       │       ├── runners/        # Cucumber IT Runners
-│       │       ├── steps/          # Gherkin Step Definitions
-│       │       └── pages/          # Selenium Page Object Models (POM)
-│       └── resources
-│           └── features/           # Gherkin .feature files
-│
-├── docs/                           # Manual test cases & project documentation
-├── security-tests/                 # OWASP Top 10 Audit logs & scripts
-├── .github/workflows/              # CI/CD Pipeline (GitHub Actions)
-└── pom.xml                         # Build config with QC & Dev profiles
-```
-
-## Getting Started
-   ```bash
-   > git clone https://github.com/digiator42/E-Commerce-Lab.git
-   > cd E-Commerce-Lab
-   > ./mvnw spring-boot:run # this would run with postgres
-   # If you want to run with mysql db / windows
-   > $env:SPRING_PROFILES_ACTIVE="mysql-primary"; ./mvnw spring-boot:run
-   # linux
-   > export SPRING_PROFILES_ACTIVE="mysql-primary" ./mvnw spring-boot:run
-
-   ```
-## Run using docker
-```bash
-# Build the image
-docker build -t ecommerce-lab .
-
-# Run the container
-docker run -p 8080:8080 -e SPRING_PROFILES_ACTIVE=mysql-primary ecommerce-lab
-```
-
-## Profiles
-- > The application uses Spring Profiles to manage different environments:
-
-   | Profile | Configuration File | Description |
-   |---|---|---|
-   | `default` | `application.yml` | Production settings with standard database configurations. |
-   | `dev` | `application-dev.yml` | Development environment with debug logging and H2 console enabled. |
-   | `test` | `application-test.yml` | Dedicated testing environment using a separate test database to ensure data isolation. |
-   | `ci` | `application-cicd.yml` | Optimized for GitHub Actions CI/CD pipelines using temporary databases. |
+## Test Types
+| Type | Description |
+|---|---|
+| Functional | Features work as specified |
+| Security | Auth, roles, JWT validation, OWASP TOP 10 |
+| Negative | Invalid inputs, edge cases |
+| Boundary | Min/Max values, empty fields |
 
 
-## Testing
-- The project follows a structured testing methodology combining automated frameworks and formal ISTQB practices.
-
-  - **Manual & Formal Testing**: Comprehensive test suites are managed via **Jira (Sprint 4)** and documented in a detailed **Excel Traceability Matrix**. This includes functional verification, edge case analysis, and regression logs.
-  - **Security Testing**: Security audits are performed using a mix of manual penetration testing and automated PowerShell scripts to identify vulnerabilities like IDOR, XSS, and Broken Access Control.
-  - **Automated Testing**: The framework utilizes **JUnit** for unit/integration logic and **Selenium**/**TestNG** for end-to-end user flow validation.
-
-  For a detailed breakdown of the test strategy, coverage summary, and security vulnerability reports, refer to [README_TEST.md](README_TEST.md) and [README_SECURITY.md](README_SECURITY.md).
-
-## CI/CD
-The project integrates **GitHub Actions** for continuous integration and deployment. On every push or pull request, the pipeline executes the full test suite (QC Automation).
-
-- **Automated Reporting**: The CI/CD pipeline generates two comprehensive reports:
-    - **[QC Report](https://digiator42.github.io/E-Commerce-Lab/QC-Report.html)**: Built using the **AventStack Extent Reports** plugin, providing a high-level dashboard of test execution.
-    - **[Cucumber Report](https://digiator42.github.io/E-Commerce-Lab/cucumber/)**: Detailed Gherkin-style breakdown of behavioral scenarios.
-- **Test Screenshots**: For both successful and failed tests, a **screenshot is captured for every scenario**.
-- **GitHub Pages Deployment**: Reports are automatically deployed to GitHub Pages after each run for easy stakeholder access.
-
+## Coverage Summary
+| Module | Unit | Integration | Automation |
+|---|---|---|---|
+| Authentication | ✅ | ✅ | ✅ |
+| User Management | ✅ | ✅ | ✅ |
+| 2FA | ✅ | ✅ | ✅ |
+| Products | ✅ | ✅ | ✅ |
+| Orders | ✅ | ✅ | ✅ |
+| Cart | ✅ | ✅ | ✅ |
+| Wishlist | ✅ | ✅ | ✅ |
+| Admin | ✅ | ✅ | ✅ |
 
 ## Quick Links
-- [Test Plan Brief](./docs/test-plan.md)
+- [General Test Plan](./docs/test-plan.md)
 - [ISTQB Test Plan](./docs/test%20plan.pdf)
 - [User Stories](./docs/user%20stories.pdf)
 - [ISTQB Test Cases](./docs/tests/manual/test-cases.xlsx)
@@ -112,3 +46,50 @@ The project integrates **GitHub Actions** for continuous integration and deploym
 - [Cucumber Report](https://digiator42.github.io/E-Commerce-Lab/cucumber/)
 - [QC Report](https://digiator42.github.io/E-Commerce-Lab/QC-Report.html)
 - [API Docs](https://e-commerce-lab.onrender.com/swagger-ui/index.html)
+
+## Framework Tests
+- ### Unit Tests
+  - Isolating controllers, service and repository tests with in-memory databases (H2) and Mockito for dependencies. 
+- ### Integration Tests
+  - Testing full stack flows with real databases (PostgreSQL, MySQL) to validate authentication, product management, and security features.
+- ### End-to-End (E2E) / System Tests
+  - Performed heavy load tests with 10k products and 1k users to evaluate performance and stability under realistic conditions.
+  - #### Performance Comparison: MySQL vs. PostgreSQL
+    - **Scenario**: High-concurrency load test on `productId` lookup.
+    - **Observation**: MySQL profile encountered   `CannotCreateTransactionException` under sustained load.
+    - **Root Cause**: Hikari Pool exhaustion. 58 threads timed out waiting for a   connection (Pool size: 10).
+    - **Comparison**: PostgreSQL profile handled the same load without connection   timeouts, suggesting faster query execution or better default connection   handling.
+    - **Fixes**: 
+        - Increased `maximum-pool-size` to 30.
+
+## Run tests
+- ### Framework Tests
+  - #### Run all tests using the default PostgreSQL profile
+    > $env:SPRING_PROFILES_ACTIVE="test"; ./mvnw test
+
+    #### Run tests with a MySql profile
+    > $env:SPRING_PROFILES_ACTIVE="test,mysql-primary"; ./mvnw test
+
+    #### Run a specific test class
+    > ./mvnw test -Dtest=ClassTestName
+    #### Or you can use PS script `run-tests.ps1`, you need to set all below attributes.
+    ```bash
+    $env:MYSQL_USERNAME = ""
+    $env:MYSQL_PASSWORD = ""
+
+    $env:POSTGRES_USERNAME = ""
+    $env:POSTGRES_PASSWORD = ""
+
+    $env:JWT_SECRET_KEY = "32bitkey"
+    $env:REMEMBER_ME_KEY = "32bitkey"
+    ```
+- ## QC Automation Tests
+  - Now QC profile adds dynamic parallel thread testing, default is 1 thread, setting up parallel here is optional it just opens drivers side by side. 
+  - ### Run
+    > ./mvnw verify -P qc
+    #### OR 
+    > $env:parallel="true"; ./mvnw verify -P qc "-Dthreads=10"
+  - ### Run specific test tag
+    > ./mvnw verify -P qc "-Dcucumber.filter.tags=@RunThis"
+  - ### Run specific test tag
+    > ./mvnw verify -P qc "-Dcucumber.filter.name=Add a product to the cart successfully"
