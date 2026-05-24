@@ -19,7 +19,7 @@ import java.util.Map;
 
 public class SeleniumUtils {
 
-    public static final String BASE_URL = "http://localhost:8080";
+    public static final String BASE_URL = "https://e-commerce-lab.onrender.com";
     public static final int DEFAULT_TIMEOUT = 10;
     public static final int MINOR_TIMEOUT = 5;
 

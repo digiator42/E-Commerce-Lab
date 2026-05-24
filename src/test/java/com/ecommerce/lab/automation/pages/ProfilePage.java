@@ -127,7 +127,7 @@ public class ProfilePage {
      * Get profile display name
      */
     public String getProfileDisplayName() {
-        return driver.findElement(profileDisplayName).getText();
+        return SeleniumUtils.waitForElement(driver, profileDisplayName, SeleniumUtils.DEFAULT_TIMEOUT).getText();
     }
 
     /**

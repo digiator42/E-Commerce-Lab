@@ -8,7 +8,7 @@ Feature: User Profile Management
     Given the user "hassan@example.com" with "password123" is logged in
     And the user is on the profile page
 
-  @view-profile
+  @view-profile @RunThis
   Scenario: User views their profile information
     Then the profile page should be displayed
     And the page title should contains "MASTERSHOP"
